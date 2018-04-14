@@ -1,0 +1,10 @@
+[package]
+name = "evtclib"
+version = "0.1.0"
+authors = ["Daniel"]
+
+[dependencies]
+num-traits = "0.2"
+num-derive = "0.2"
+quick-error = "1.2.1"
+byteorder = "1"
