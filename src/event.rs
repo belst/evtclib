@@ -104,18 +104,39 @@ pub enum EventKind {
     },
 }
 
+/// A higher-level representation of a combat event.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Event {
+    /// The time when the event happened.
+    ///
+    /// This are the milliseconds since Windows has been started (`timeGetTime()`).
     pub time: u64,
+    /// The kind of the event.
     pub kind: EventKind,
+    /// Whether the agent had more than 90% of its health.
+    ///
+    /// This is the scholar threshold.
     pub is_ninety: bool,
+    /// Whether the target health was below 50%.
+    ///
+    /// This is the threshold for many runes and trait damage modifiers (e.g.
+    /// *Bolt to the Heart*).
     pub is_fifty: bool,
+    /// Whether the source agent was moving.
     pub is_moving: bool,
+    /// Whether the source agent was flanking the target.
     pub is_flanking: bool,
+    /// Whether some (or all) damage was mitigated by shields.
     pub is_shields: bool,
 }
 
 impl Event {
+    /// Transform a raw event to a "high-level" event.
+    ///
+    /// If the event is not known, or some other error occured, `None` is
+    /// returned.
+    ///
+    /// * `raw_event` - the raw event to transform.
     pub fn from_raw(raw_event: &raw::CbtEvent) -> Option<Event> {
         use raw::CbtStateChange;
         let kind = match raw_event.is_statechange {
@@ -211,6 +232,7 @@ fn check_activation(raw_event: &raw::CbtEvent) -> Option<EventKind> {
                 CbtActivation::CancelFire => Activation::CancelFire(raw_event.value),
                 CbtActivation::CancelCancel => Activation::CancelCancel(raw_event.value),
                 CbtActivation::Reset => Activation::Reset,
+                // Already checked and handled above
                 CbtActivation::None => unreachable!(),
             },
         }),
@@ -290,7 +312,7 @@ pub enum WeaponSet {
 
 impl WeaponSet {
     /// Parse a given integer into the correct enum value.
-    pub fn from_u64(value: u64) -> WeaponSet {
+    fn from_u64(value: u64) -> WeaponSet {
         match value {
             // magic constants from arcdps README
             0 => WeaponSet::Water0,

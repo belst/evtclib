@@ -118,13 +118,17 @@ impl Log {
     }
 
     /// Return an iterator over all agents that represent player characters.
-    pub fn players(&self) -> impl Iterator<Item=&Agent> {
-        self.agents.iter().filter(|a| matches!(a.kind, AgentKind::Player { .. }))
+    pub fn players(&self) -> impl Iterator<Item = &Agent> {
+        self.agents
+            .iter()
+            .filter(|a| matches!(a.kind, AgentKind::Player { .. }))
     }
 
     /// Return an iterator over all agents that are NPCs.
-    pub fn npcs(&self) -> impl Iterator<Item=&Agent> {
-        self.agents.iter().filter(|a| matches!(a.kind, AgentKind::Character(_)))
+    pub fn npcs(&self) -> impl Iterator<Item = &Agent> {
+        self.agents
+            .iter()
+            .filter(|a| matches!(a.kind, AgentKind::Character(_)))
     }
 
     /// Return all events present in this log.
@@ -135,7 +139,7 @@ impl Log {
 
 pub fn process(data: &raw::Evtc) -> Result<Log, EvtcError> {
     // Prepare "augmented" agents
-    let mut agents = setup_agents(data)?; 
+    let mut agents = setup_agents(data)?;
     // Do the first aware/last aware field
     set_agent_awares(data, &mut agents)?;
 
