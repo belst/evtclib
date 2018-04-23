@@ -240,7 +240,7 @@ impl Agent {
     /// Gadgets are entities spawned by some skills, like the "Binding Roots"
     /// spawned by Entangle.
     pub fn is_gadget(&self) -> bool {
-        self.is_elite == std::u32::MAX && (self.prof & 0xffff0000) == 0xffff0000
+        self.is_elite == std::u32::MAX && (self.prof & 0xffff_0000) == 0xffff_0000
     }
 
     /// Checks whether this agent is a character.
@@ -248,7 +248,7 @@ impl Agent {
     /// Characters are entities like clones, pets, minions, spirits, but also
     /// minis.
     pub fn is_character(&self) -> bool {
-        self.is_elite == std::u32::MAX && (self.prof & 0xffff0000) != 0xffff0000
+        self.is_elite == std::u32::MAX && (self.prof & 0xffff_0000) != 0xffff_0000
     }
 
     /// Checks whether this agent is a player.

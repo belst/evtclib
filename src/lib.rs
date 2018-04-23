@@ -119,12 +119,12 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
 
         let agent = Agent {
             addr: raw_agent.addr,
-            kind: kind,
+            kind,
             toughness: raw_agent.toughness,
             concentration: raw_agent.concentration,
             healing: raw_agent.healing,
             condition: raw_agent.condition,
-            name: name,
+            name,
             instance_id: 0,
             first_aware: 0,
             last_aware: u64::max_value(),

@@ -143,8 +143,8 @@ pub fn parse_header<T: Read>(input: &mut T) -> ParseResult<Header> {
 
     Ok(Header {
         arcdps_build: build_string,
-        combat_id: combat_id,
-        agent_count: agent_count,
+        combat_id,
+        agent_count,
     })
 }
 
@@ -188,14 +188,14 @@ pub fn parse_agent<T: Read>(input: &mut T) -> ParseResult<Agent> {
     input.read_exact(&mut skip)?;
 
     Ok(Agent {
-        addr: addr,
-        prof: prof,
-        is_elite: is_elite,
-        toughness: toughness,
-        concentration: concentration,
-        healing: healing,
-        condition: condition,
-        name: name,
+        addr,
+        prof,
+        is_elite,
+        toughness,
+        concentration,
+        healing,
+        condition,
+        name,
     })
 }
 
@@ -218,7 +218,7 @@ pub fn parse_skill<T: Read>(input: &mut T) -> ParseResult<Skill> {
     let id = input.read_i32::<LittleEndian>()?;
     let mut name = [0; 64];
     input.read_exact(&mut name)?;
-    Ok(Skill { id: id, name: name })
+    Ok(Skill { id, name })
 }
 
 /// Parse all combat events.
@@ -231,7 +231,7 @@ pub fn parse_events<T: Read>(input: &mut T) -> ParseResult<Vec<CbtEvent>> {
         match event {
             Ok(x) => result.push(x),
             Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => return Ok(result),
-            Err(e) => return Err(e.into()),
+            Err(e) => return Err(e),
         }
     }
 }
@@ -271,27 +271,27 @@ pub fn parse_event<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
     input.read_u16::<LE>()?;
 
     Ok(CbtEvent {
-        time: time,
-        src_agent: src_agent,
-        dst_agent: dst_agent,
-        value: value,
-        buff_dmg: buff_dmg,
-        overstack_value: overstack_value,
-        skillid: skillid,
-        src_instid: src_instid,
-        dst_instid: dst_instid,
-        src_master_instid: src_master_instid,
-        iff: iff,
-        buff: buff,
-        result: result,
-        is_activation: is_activation,
-        is_buffremove: is_buffremove,
-        is_ninety: is_ninety,
-        is_fifty: is_fifty,
-        is_moving: is_moving,
-        is_statechange: is_statechange,
-        is_flanking: is_flanking,
-        is_shields: is_shields,
+        time,
+        src_agent,
+        dst_agent,
+        value,
+        buff_dmg,
+        overstack_value,
+        skillid,
+        src_instid,
+        dst_instid,
+        src_master_instid,
+        iff,
+        buff,
+        result,
+        is_activation,
+        is_buffremove,
+        is_ninety,
+        is_fifty,
+        is_moving,
+        is_statechange,
+        is_flanking,
+        is_shields,
     })
 }
 
@@ -306,10 +306,10 @@ pub fn parse_file<T: Read>(input: &mut T) -> ParseResult<Evtc> {
     let events = parse_events(input)?;
 
     Ok(Evtc {
-        header: header,
-        skill_count: skill_count,
-        agents: agents,
-        skills: skills,
-        events: events,
+        header,
+        skill_count,
+        agents,
+        skills,
+        events,
     })
 }

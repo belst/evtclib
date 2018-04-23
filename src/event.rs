@@ -219,7 +219,7 @@ impl Event {
         };
         Some(Event {
             time: raw_event.time,
-            kind: kind,
+            kind,
             is_ninety: raw_event.is_ninety,
             is_fifty: raw_event.is_fifty,
             is_moving: raw_event.is_moving,
