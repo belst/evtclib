@@ -38,7 +38,11 @@ pub enum AgentKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AgentName {
     Single(String),
-    Player { character_name: String, account_name: String, subgroup: u8 }
+    Player {
+        character_name: String,
+        account_name: String,
+        subgroup: u8,
+    },
 }
 
 /// An agent.
@@ -91,16 +95,25 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
         } else if raw_agent.is_gadget() {
             AgentKind::Gadget(raw_agent.prof as u16)
         } else if raw_agent.is_player() {
-            AgentKind::Player { profession: raw_agent.prof, elite: raw_agent.is_elite }
+            AgentKind::Player {
+                profession: raw_agent.prof,
+                elite: raw_agent.is_elite,
+            }
         } else {
             return Err(EvtcError::InvalidData);
         };
 
         let name = if raw_agent.is_player() {
-            let first = raw_agent.name.iter().cloned()
+            let first = raw_agent
+                .name
+                .iter()
+                .cloned()
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>();
-            let second = raw_agent.name.iter().cloned()
+            let second = raw_agent
+                .name
+                .iter()
+                .cloned()
                 .skip(first.len() + 1)
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>();
@@ -111,7 +124,10 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
                 subgroup: third,
             }
         } else {
-            let name = raw_agent.name.iter().cloned()
+            let name = raw_agent
+                .name
+                .iter()
+                .cloned()
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>();
             AgentName::Single(String::from_utf8(name)?)
@@ -139,7 +155,7 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
 fn get_agent_by_addr(agents: &mut [Agent], addr: u64) -> Option<&mut Agent> {
     for agent in agents {
         if agent.addr == addr {
-            return Some(agent)
+            return Some(agent);
         }
     }
     None
@@ -150,7 +166,7 @@ fn set_agent_awares(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcEr
         if event.is_statechange == raw::CbtStateChange::None {
             if let Some(current_agent) = get_agent_by_addr(agents, event.src_agent) {
                 current_agent.instance_id = event.src_instid;
-                if current_agent.first_aware == 0  {
+                if current_agent.first_aware == 0 {
                     current_agent.first_aware = event.time;
                 }
                 current_agent.last_aware = event.time;
@@ -165,7 +181,9 @@ fn set_agent_masters(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcE
         if event.src_master_instid != 0 {
             let mut master_addr = None;
             for agent in &*agents {
-                if agent.instance_id == event.src_master_instid && agent.first_aware < event.time && event.time < agent.last_aware {
+                if agent.instance_id == event.src_master_instid && agent.first_aware < event.time
+                    && event.time < agent.last_aware
+                {
                     master_addr = Some(agent.addr);
                     break;
                 }

@@ -9,34 +9,19 @@ use num_traits::FromPrimitive;
 pub enum EventKind {
     // State change events
     /// The agent has entered combat.
-    EnterCombat {
-        agent_addr: u64,
-        subgroup: u64,
-    },
+    EnterCombat { agent_addr: u64, subgroup: u64 },
     /// The agent has left combat.
-    ExitCombat {
-        agent_addr: u64,
-    },
+    ExitCombat { agent_addr: u64 },
     /// The agent is now alive.
-    ChangeUp {
-        agent_addr: u64,
-    },
+    ChangeUp { agent_addr: u64 },
     /// The agent is now downed.
-    ChangeDown {
-        agent_addr: u64,
-    },
+    ChangeDown { agent_addr: u64 },
     /// The agent is now dead.
-    ChangeDead {
-        agent_addr: u64,
-    },
+    ChangeDead { agent_addr: u64 },
     /// The agent is now in tracking range.
-    Spawn {
-        agent_addr: u64,
-    },
+    Spawn { agent_addr: u64 },
     /// The agent has left the tracking range.
-    Despawn {
-        agent_addr: u64,
-    },
+    Despawn { agent_addr: u64 },
     /// The agent has reached a health treshold.
     HealthUpdate {
         agent_addr: u64,
@@ -54,36 +39,19 @@ pub enum EventKind {
         local_timestamp: u32,
     },
     /// The agent has swapped the weapon set.
-    WeaponSwap {
-        agent_addr: u64,
-        set: WeaponSet,
-    },
+    WeaponSwap { agent_addr: u64, set: WeaponSet },
     /// The given agent has its max health changed.
-    MaxHealthUpdate {
-        agent_addr: u64,
-        max_health: u64,
-    },
+    MaxHealthUpdate { agent_addr: u64, max_health: u64 },
     /// The given agent is the point-of-view.
-    PointOfView {
-        agent_addr: u64,
-    },
+    PointOfView { agent_addr: u64 },
     /// The given language is the text language.
-    Language {
-        language: raw::Language,
-    },
+    Language { language: raw::Language },
     /// The log was made with the given game build.
-    Build {
-        build: u64,
-    },
+    Build { build: u64 },
     /// The shard id of the server.
-    ShardId {
-        shard_id: u64,
-    },
+    ShardId { shard_id: u64 },
     /// A reward has been awarded.
-    Reward {
-        reward_id: u64,
-        reward_type: i32,
-    },
+    Reward { reward_id: u64, reward_type: i32 },
 
     /// A skill has been used.
     SkillUse {
@@ -214,7 +182,7 @@ impl Event {
             CbtStateChange::None => if let Some(kind) = check_activation(raw_event) {
                 kind
             } else {
-                return None
+                return None;
             },
         };
         Some(Event {
@@ -274,7 +242,9 @@ fn check_damage(raw_event: &raw::CbtEvent) -> Option<EventKind> {
             damage: raw_event.value,
             result: raw_event.result,
         })
-    } else if raw_event.buff == 1 && raw_event.buff_dmg != 0 && raw_event.dst_agent != 0 && raw_event.value == 0 {
+    } else if raw_event.buff == 1 && raw_event.buff_dmg != 0 && raw_event.dst_agent != 0
+        && raw_event.value == 0
+    {
         Some(EventKind::ConditionTick {
             source_agent_addr: raw_event.src_agent,
             destination_agent_addr: raw_event.dst_agent,
