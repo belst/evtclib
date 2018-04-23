@@ -43,6 +43,25 @@
 //! we can use those values instead of some other garbage. The other enums
 //! already have the `None` variant, and the corresponding byte is zeroed, so
 //! there's no problem with those.
+//!
+//! # Buffering
+//!
+//! Parsing the `evtc` file does many small reads. If you supply a raw reader,
+//! each read requires a system call, and the overhead will be massive. It is
+//! advised that you wrap the readers in a `BufReader`, if the underlying reader
+//! does not do buffering on its own:
+//!
+//! ```no_run
+//! use std::io::BufReader;
+//! use std::fs::File;
+//! let mut input = BufReader::new(File::open("log.evtc").unwrap());
+//! let parsed = evtclib::raw::parse_file(&mut input);
+//! ```
+//!
+//! ```raw
+//! buffered: cargo run --release  0.22s user 0.04s system 94% cpu 0.275 total
+//! raw file: cargo run --release  0.79s user 1.47s system 98% cpu 2.279 total
+//! ```
 
 use byteorder::{LittleEndian, ReadBytesExt, LE};
 use num_traits::FromPrimitive;
