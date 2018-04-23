@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{self, fmt};
 
 /// The "friend or foe" enum.
 #[repr(C)]
@@ -232,6 +232,29 @@ pub struct Agent {
     pub condition: i16,
     /// Name/Account combo field.
     pub name: [u8; 64],
+}
+
+impl Agent {
+    /// Checks whether this agent is a gadget.
+    ///
+    /// Gadgets are entities spawned by some skills, like the "Binding Roots"
+    /// spawned by Entangle.
+    pub fn is_gadget(&self) -> bool {
+        self.is_elite == std::u32::MAX && (self.prof & 0xffff0000) == 0xffff0000
+    }
+
+    /// Checks whether this agent is a character.
+    ///
+    /// Characters are entities like clones, pets, minions, spirits, but also
+    /// minis.
+    pub fn is_character(&self) -> bool {
+        self.is_elite == std::u32::MAX && (self.prof & 0xffff0000) != 0xffff0000
+    }
+
+    /// Checks whether this agent is a player.
+    pub fn is_player(&self) -> bool {
+        self.is_elite != std::u32::MAX
+    }
 }
 
 impl fmt::Debug for Agent {
