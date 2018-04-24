@@ -3,8 +3,8 @@ extern crate evtclib;
 use byteorder::{ReadBytesExt, BE, LE};
 use std::fs::File;
 
-use std::io::BufReader;
 use std::collections::HashMap;
+use std::io::BufReader;
 
 // My addr: 5480786193115521456
 // My instid: 624
@@ -15,7 +15,7 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     let mut f = BufReader::new(File::open("material/Samarog.evtc")?);
 
     let result = evtclib::raw::parse_file(&mut f)?;
-/*
+    /*
     for agent in result.agents.iter().filter(|a| a.is_player()) {
         println!("Agent: {:?}", agent);
     }
@@ -75,16 +75,48 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
         } else {
             println!("Failed: {:#?}", event);
             failed += 1;
-            continue
+            continue;
         };
-        match &shiny.kind {
-            &EventKind::Physical { source_agent_addr: src, damage: dmg, .. } if src == 5480786193115521456 => { count += 1; damage += dmg as u64; },
-            &EventKind::ConditionTick { source_agent_addr: src, damage: dmg, .. } if src == 5480786193115521456 => { count += 1; damage += dmg as u64; },
+        match shiny.kind {
+            EventKind::Physical {
+                source_agent_addr: src,
+                damage: dmg,
+                ..
+            } if src == 5480786193115521456 =>
+            {
+                count += 1;
+                damage += dmg as u64;
+            }
+            EventKind::ConditionTick {
+                source_agent_addr: src,
+                damage: dmg,
+                ..
+            } if src == 5480786193115521456 =>
+            {
+                count += 1;
+                damage += dmg as u64;
+            }
+
             _ => (),
         }
     }
     println!("Count: {}, Damage: {}", count, damage);
     println!("Failed events: {}", failed);
+
+    let processed = evtclib::process(&result).unwrap();
+    //println!("Me: {:#?}", processed.agent_by_addr(5480786193115521456));
+    let stats = evtclib::statistics::calculate(&processed).unwrap();
+    println!("{:#?}", stats);
+    let mine = stats.agent_stats.get(&5480786193115521456).unwrap();
+    println!("Mine: {:#?}", mine);
+    println!(
+        "DPS: {:#?}",
+        mine.total_damage.total_damage / (mine.combat_time() / 1000)
+    );
+    println!(
+        "Boss DPS: {:#?}",
+        mine.boss_damage.total_damage / (mine.combat_time() / 1000)
+    );
 
     Ok(())
 }

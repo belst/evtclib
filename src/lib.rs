@@ -29,6 +29,8 @@ pub mod raw;
 mod event;
 pub use event::{Event, EventKind};
 
+pub mod statistics;
+
 /// A macro that returns `true` when the given expression matches the pattern.
 ///
 /// ```rust
@@ -41,7 +43,13 @@ macro_rules! matches {
             $($pattern)|+ => true,
             _ => false,
         }
-    )
+    );
+    ($expression:expr, $pattern:pat if $condi:expr) => (
+        match $expression {
+            $pattern if $condi => true,
+            _ => false,
+        }
+    );
 }
 
 quick_error! {
@@ -99,6 +107,7 @@ pub struct Agent {
 pub struct Log {
     agents: Vec<Agent>,
     events: Vec<Event>,
+    boss_id: u16,
 }
 
 impl Log {
@@ -117,6 +126,15 @@ impl Log {
         self.agents.iter().find(|a| a.instance_id == instance_id)
     }
 
+    /// Return the master agent of the given agent.
+    ///
+    /// * `addr` - The address of the agent which to get the master for.
+    pub fn master_agent(&self, addr: u64) -> Option<&Agent> {
+        self.agent_by_addr(addr)
+            .and_then(|a| a.master_agent)
+            .and_then(|a| self.agent_by_addr(a))
+    }
+
     /// Return an iterator over all agents that represent player characters.
     pub fn players(&self) -> impl Iterator<Item = &Agent> {
         self.agents
@@ -129,6 +147,13 @@ impl Log {
         self.agents
             .iter()
             .filter(|a| matches!(a.kind, AgentKind::Character(_)))
+    }
+
+    /// Return the boss agent.
+    pub fn boss(&self) -> &Agent {
+        self.npcs()
+            .find(|n| matches!(n.kind, AgentKind::Character(x) if x == self.boss_id))
+            .expect("Boss has no agent!")
     }
 
     /// Return all events present in this log.
@@ -148,7 +173,11 @@ pub fn process(data: &raw::Evtc) -> Result<Log, EvtcError> {
 
     let events = data.events.iter().filter_map(Event::from_raw).collect();
 
-    Ok(Log { agents, events })
+    Ok(Log {
+        agents,
+        events,
+        boss_id: data.header.combat_id,
+    })
 }
 
 fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
