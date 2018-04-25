@@ -1,15 +1,34 @@
 //! This module aids in the creation of actual boss statistics.
 use super::*;
 use std::collections::HashMap;
+use std::error::Error;
 
 pub mod boon;
+pub mod trackers;
+
+use self::trackers::{RunnableTracker, Tracker};
 
 pub type StatResult<T> = Result<T, StatError>;
 
 quick_error! {
-    #[derive(Clone, Debug)]
+    #[derive(Debug)]
     pub enum StatError {
+        TrackerError(err: Box<Error>) {
+            description("tracker error")
+            display("tracker returned an error: {}", err)
+            cause(&**err)
+        }
     }
+}
+
+macro_rules! try_tracker {
+    ($expr:expr) => {
+        #[allow(unreachable_code)]
+        match $expr {
+            Ok(e) => e,
+            Err(e) => return Err(StatError::TrackerError(e)),
+        }
+    };
 }
 
 /// A struct containing the calculated statistics for the log.
@@ -56,94 +75,57 @@ pub struct DamageStats {
     pub add_damage: u64,
 }
 
-// A support macro to introduce a new block.
-//
-// Doesn't really require a macro, but it's nicer to look at
-//   with! { foo = bar }
-// rather than
-//   { let foo = bar; ... }
-macro_rules! with {
-    ($name:ident = $expr:expr => $bl:block) => {{
-        let $name = $expr;
-        $bl
-    }};
+/// Takes a bunch of trackers and runs them on the given log.
+///
+/// This method returns "nothing", as the statistics are saved in the trackers.
+/// It's the job of the caller to extract them appropriately.
+pub fn run_trackers(log: &Log, trackers: &mut [&mut RunnableTracker]) -> StatResult<()> {
+    for event in log.events() {
+        for mut tracker in trackers.iter_mut() {
+            try_tracker!((*tracker).run_feed(event));
+        }
+    }
+    Ok(())
 }
 
 /// Calculate the statistics for the given log.
 pub fn calculate(log: &Log) -> StatResult<Statistics> {
-    use super::EventKind::*;
-
     let mut agent_stats = HashMap::<u64, AgentStats>::new();
-    let mut log_start_time = 0;
 
-    fn get_stats(map: &mut HashMap<u64, AgentStats>, source: u64, target: u64) -> &mut DamageStats {
-        map.entry(source)
-            .or_insert_with(Default::default)
-            .per_target_damage
-            .entry(target)
-            .or_insert_with(Default::default)
+    let mut damage_tracker = trackers::DamageTracker::new(log);
+    let mut log_start_tracker = trackers::LogStartTracker::new();
+    let mut combat_time_tracker = trackers::CombatTimeTracker::new();
+
+    run_trackers(
+        log,
+        &mut [
+            &mut damage_tracker,
+            &mut log_start_tracker,
+            &mut combat_time_tracker,
+        ],
+    )?;
+
+    let log_start_time = try_tracker!(log_start_tracker.finalize());
+
+    let combat_times = try_tracker!(combat_time_tracker.finalize());
+    for (agent_addr, &(enter_time, exit_time)) in &combat_times {
+        let agent = agent_stats
+            .entry(*agent_addr)
+            .or_insert_with(Default::default);
+        if enter_time != 0 {
+            agent.enter_combat = enter_time - log_start_time;
+        }
+        if exit_time != 0 {
+            agent.exit_combat = exit_time - log_start_time;
+        }
     }
 
-    for event in log.events() {
-        match event.kind {
-            LogStart { .. } => {
-                log_start_time = event.time;
-            }
-
-            EnterCombat { agent_addr, .. } => {
-                agent_stats
-                    .entry(agent_addr)
-                    .or_insert_with(Default::default)
-                    .enter_combat = event.time - log_start_time;
-            }
-
-            ExitCombat { agent_addr } => {
-                agent_stats
-                    .entry(agent_addr)
-                    .or_insert_with(Default::default)
-                    .exit_combat = event.time - log_start_time;
-            }
-
-            Physical {
-                source_agent_addr,
-                destination_agent_addr,
-                damage,
-                ..
-            } => {
-                with! { stats = get_stats(&mut agent_stats, source_agent_addr, destination_agent_addr) => {
-                    stats.total_damage += damage as u64;
-                    stats.power_damage += damage as u64;
-                }}
-
-                if let Some(master) = log.master_agent(source_agent_addr) {
-                    let master_stats =
-                        get_stats(&mut agent_stats, master.addr, destination_agent_addr);
-                    master_stats.total_damage += damage as u64;
-                    master_stats.add_damage += damage as u64;
-                }
-            }
-
-            ConditionTick {
-                source_agent_addr,
-                destination_agent_addr,
-                damage,
-                ..
-            } => {
-                with! { stats = get_stats(&mut agent_stats, source_agent_addr, destination_agent_addr) => {
-                    stats.total_damage += damage as u64;
-                    stats.condition_damage += damage as u64;
-                }}
-
-                if let Some(master) = log.master_agent(source_agent_addr) {
-                    let master_stats =
-                        get_stats(&mut agent_stats, master.addr, destination_agent_addr);
-                    master_stats.total_damage += damage as u64;
-                    master_stats.add_damage += damage as u64;
-                }
-            }
-
-            _ => (),
-        }
+    let damages = try_tracker!(damage_tracker.finalize());
+    for agent in damages.keys() {
+        agent_stats
+            .entry(*agent)
+            .or_insert_with(Default::default)
+            .per_target_damage = damages[agent].clone();
     }
 
     let boss = log.boss();
