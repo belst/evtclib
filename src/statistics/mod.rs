@@ -2,6 +2,8 @@
 use super::*;
 use std::collections::HashMap;
 
+pub mod boon;
+
 pub type StatResult<T> = Result<T, StatError>;
 
 quick_error! {
