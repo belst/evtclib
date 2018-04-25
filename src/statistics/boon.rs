@@ -16,7 +16,35 @@ pub enum BoonType {
 /// # A quick word about how boon queues work
 ///
 /// For each boon, you have an internal *boon queue*, limited to a specific
-/// capacity.
+/// capacity. When the current stack expires, the next one is taken from the
+/// queue.
+///
+/// The queue is sorted by boon strength. This means that "weak" boons are
+/// always at the end (and as such, are the first ones to be deleted when the
+/// queue is full). This prevents "bad" boons (e.g. the Quickness from Lightning
+/// Hammer #2) to override the "good" boons (e.g. the Quickness from your
+/// friendly neighborhood Chrono with 100% boon duration).
+///
+/// This also means that boons can be "lost". If the queue is full, the boon
+/// might not get applied, or it might replace another boon, thus wasting some
+/// of the boon duration.
+///
+/// Intensity-stacked boons (such as Might) work a bit differently: as time
+/// passes, all stacks are decreased simultaneously! As soon as a stack reaches
+/// 0, it is dropped.
+///
+/// Now, you might ask *"How do I know how big the boon queues are?"* and sadly,
+/// I do not have a satisfactory answer for this. For intensity-based boons, the
+/// answer is "the number of maximum stacks". However, most boons are not
+/// intensity-based. For all other boons, either check the source code of other
+/// people who (claim to) know, or just make up a value. Your calculations might
+/// be off by fractions of a second, but it should be good enough for most use
+/// cases.
+///
+/// Interesting fun fact: Most (if not all) boons don't have a hardcoded limit
+/// on how much you can have at a time, it rather depends on the boon duration
+/// of the person who applies them. The only limitation is the size of the boon
+/// queue.
 #[derive(Clone, Debug)]
 pub struct BoonQueue {
     capacity: u32,
