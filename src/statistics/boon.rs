@@ -107,6 +107,9 @@ impl BoonQueue {
     ///
     /// * `duration` - The amount of time (in milliseconds) to simulate.
     pub fn simulate(&mut self, duration: u64) {
+        if duration == 0 {
+            return;
+        }
         let mut remaining = duration;
         match self.boon_type {
             BoonType::Duration => {
@@ -136,6 +139,11 @@ impl BoonQueue {
     /// Remove all stacks.
     pub fn clear(&mut self) {
         self.queue.clear();
+    }
+
+    /// Checks if any stacks are left.
+    pub fn is_empty(&self) -> bool {
+        self.queue.is_empty()
     }
 
     /// Calculate when the stacks will have the next visible change.

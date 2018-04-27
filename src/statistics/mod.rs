@@ -49,6 +49,13 @@ pub struct AgentStats {
     pub total_damage: DamageStats,
     /// Damage directed to the boss.
     pub boss_damage: DamageStats,
+    /// Average stacks of boons.
+    ///
+    /// This also includes conditions.
+    ///
+    /// For duration-based boons, the average amount of stacks is the same as
+    /// the uptime.
+    pub boon_averages: HashMap<u16, f64>,
     /// Time when the agent has entered combat (millseconds since log start).
     pub enter_combat: u64,
     /// Time when the agent has left combat (millseconds since log start).
@@ -95,6 +102,7 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
     let mut damage_tracker = trackers::DamageTracker::new(log);
     let mut log_start_tracker = trackers::LogStartTracker::new();
     let mut combat_time_tracker = trackers::CombatTimeTracker::new();
+    let mut boon_tracker = trackers::BoonTracker::new();
 
     run_trackers(
         log,
@@ -102,6 +110,7 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
             &mut damage_tracker,
             &mut log_start_tracker,
             &mut combat_time_tracker,
+            &mut boon_tracker,
         ],
     )?;
 
@@ -137,6 +146,19 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
             .get(&boss.addr)
             .cloned()
             .unwrap_or_else(Default::default);
+    }
+
+    let boons = try_tracker!(boon_tracker.finalize());
+    for (agent, boon_map) in &boons {
+        let agent = agent_stats.entry(*agent).or_insert_with(Default::default);
+        let combat_time = agent.combat_time() as f64;
+        if combat_time == 0. {
+            continue;
+        }
+        agent.boon_averages = boon_map
+            .iter()
+            .map(|(id, area)| (*id, *area as f64 / combat_time))
+            .collect();
     }
 
     Ok(Statistics { agent_stats })

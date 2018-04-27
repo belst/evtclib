@@ -15,6 +15,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use super::super::{Event, EventKind, Log};
+use super::boon::{BoonQueue, BoonType};
 use super::DamageStats;
 
 // A support macro to introduce a new block.
@@ -189,9 +190,7 @@ pub struct CombatTimeTracker {
 impl CombatTimeTracker {
     /// Create a new combat time tracker.
     pub fn new() -> CombatTimeTracker {
-        CombatTimeTracker {
-            times: HashMap::new(),
-        }
+        Default::default()
     }
 }
 
@@ -217,5 +216,119 @@ impl Tracker for CombatTimeTracker {
 
     fn finalize(self) -> Result<Self::Stat, Self::Error> {
         Ok(self.times)
+    }
+}
+
+/// A tracker that tracks the total "boon area" per agent.
+///
+/// The boon area is defined as the amount of stacks multiplied by the time. So
+/// 1 stack of Might for 1000 milliseconds equals 1000 "stackmilliseconds" of
+/// Might. You can use this boon area to calculate the average amount of stacks
+/// by taking the boon area and dividing it by the combat time.
+///
+/// Note that this also tracks conditions, because internally, they're handled
+/// the same way.
+#[derive(Default)]
+pub struct BoonTracker {
+    boon_areas: HashMap<u64, HashMap<u16, u64>>,
+    boon_queues: HashMap<u64, HashMap<u16, BoonQueue>>,
+    last_time: u64,
+}
+
+impl BoonTracker {
+    const MAX_STACKS: u32 = 25;
+
+    /// Creates a new boon tracker.
+    pub fn new() -> BoonTracker {
+        Default::default()
+    }
+
+    /// Updates the internal boon queues by the given amount of milliseconds.
+    ///
+    /// * `delta_t` - Amount of milliseconds to update.
+    fn update_queues(&mut self, delta_t: u64) {
+        self.boon_queues
+            .values_mut()
+            .flat_map(HashMap::values_mut)
+            .for_each(|queue| queue.simulate(delta_t));
+
+        // Throw away empty boon queues or agents without any boon queue to
+        // improve performance
+        self.boon_queues
+            .values_mut()
+            .for_each(|q| q.retain(|_, v| !v.is_empty()));
+        self.boon_queues.retain(|_, q| !q.is_empty());
+    }
+
+    /// Update the internal tracking areas.
+    ///
+    /// Does not update the boon queues.
+    ///
+    /// * `delta_t` - Amount of milliseconds that passed.
+    fn update_areas(&mut self, delta_t: u64) {
+        for (agent, queues) in &self.boon_queues {
+            for (buff_id, queue) in queues {
+                let current_stacks = queue.current_stacks();
+                let area = self.boon_areas
+                    .entry(*agent)
+                    .or_insert_with(Default::default)
+                    .entry(*buff_id)
+                    .or_insert(0);
+                *area += current_stacks as u64 * delta_t;
+            }
+        }
+    }
+
+    /// Get the boon queue for the given agent and buff_id.
+    ///
+    /// If the queue does not yet exist, create it.
+    ///
+    /// * `agent` - The agent.
+    /// * `buff_id` - The buff (or condition) id.
+    fn get_queue(&mut self, agent: u64, buff_id: u16) -> &mut BoonQueue {
+        // XXX: Properly differentiate between intensity and duration based
+        // boons, otherwise the results will be off.
+        self.boon_queues
+            .entry(agent)
+            .or_insert_with(Default::default)
+            .entry(buff_id)
+            .or_insert_with(|| BoonQueue::new(Self::MAX_STACKS, BoonType::Intensity))
+    }
+}
+
+impl Tracker for BoonTracker {
+    type Stat = HashMap<u64, HashMap<u16, u64>>;
+    type Error = !;
+
+    fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
+        let delta_t = event.time - self.last_time;
+        self.update_queues(delta_t);
+        self.update_areas(delta_t);
+        self.last_time = event.time;
+
+        match event.kind {
+            EventKind::BuffApplication {
+                destination_agent_addr,
+                buff_id,
+                duration,
+                ..
+            } => {
+                self.get_queue(destination_agent_addr, buff_id)
+                    .add_stack(duration as u64);
+            }
+
+            _ => (),
+        }
+
+        Ok(())
+    }
+
+    fn finalize(self) -> Result<Self::Stat, Self::Error> {
+        println!("Number of agents: {}", self.boon_queues.len());
+        println!(
+            "Number of boon queues: {}",
+            self.boon_queues.values().flat_map(|qs| qs.values()).count()
+        );
+        Ok(self.boon_areas)
     }
 }
