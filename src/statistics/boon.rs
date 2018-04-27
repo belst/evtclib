@@ -158,6 +158,18 @@ impl BoonQueue {
             BoonType::Intensity => self.queue.last().cloned().unwrap_or(0),
         }
     }
+
+    /// Calculate when the boon queue should be updated next.
+    ///
+    /// The next update always means that a stack runs out, even if it has no
+    /// visible effect.
+    ///
+    /// For each queue: `next_update() <= next_change()`.
+    ///
+    /// A return value of 0 means that there's no update awaiting.
+    pub fn next_update(&self) -> u64 {
+        self.queue.last().cloned().unwrap_or(0)
+    }
 }
 
 #[cfg(test)]

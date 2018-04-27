@@ -151,6 +151,9 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
     let boons = try_tracker!(boon_tracker.finalize());
     for (agent, boon_map) in &boons {
         let agent = agent_stats.entry(*agent).or_insert_with(Default::default);
+        if agent.exit_combat < agent.enter_combat {
+            continue;
+        }
         let combat_time = agent.combat_time() as f64;
         if combat_time == 0. {
             continue;

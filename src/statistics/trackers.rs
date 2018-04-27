@@ -233,6 +233,7 @@ pub struct BoonTracker {
     boon_areas: HashMap<u64, HashMap<u16, u64>>,
     boon_queues: HashMap<u64, HashMap<u16, BoonQueue>>,
     last_time: u64,
+    next_update: u64,
 }
 
 impl BoonTracker {
@@ -279,6 +280,17 @@ impl BoonTracker {
         }
     }
 
+    fn update_next_update(&mut self) {
+        let next_update = self.boon_queues
+            .values()
+            .flat_map(HashMap::values)
+            .map(BoonQueue::next_update)
+            .filter(|v| *v != 0)
+            .min()
+            .unwrap_or(0);
+        self.next_update = next_update;
+    }
+
     /// Get the boon queue for the given agent and buff_id.
     ///
     /// If the queue does not yet exist, create it.
@@ -302,9 +314,12 @@ impl Tracker for BoonTracker {
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
         let delta_t = event.time - self.last_time;
-        self.update_queues(delta_t);
-        self.update_areas(delta_t);
-        self.last_time = event.time;
+        if self.next_update != 0 && delta_t > self.next_update {
+            self.update_queues(delta_t);
+            self.update_areas(delta_t);
+            self.update_next_update();
+            self.last_time = event.time;
+        }
 
         match event.kind {
             EventKind::BuffApplication {
@@ -315,6 +330,7 @@ impl Tracker for BoonTracker {
             } => {
                 self.get_queue(destination_agent_addr, buff_id)
                     .add_stack(duration as u64);
+                self.update_next_update();
             }
 
             _ => (),
