@@ -16,6 +16,7 @@ use std::error::Error;
 
 use super::super::{Event, EventKind, Log};
 use super::boon::{BoonQueue, BoonType};
+use super::gamedata;
 use super::DamageStats;
 
 // A support macro to introduce a new block.
@@ -237,8 +238,6 @@ pub struct BoonTracker {
 }
 
 impl BoonTracker {
-    const MAX_STACKS: u32 = 25;
-
     /// Creates a new boon tracker.
     pub fn new() -> BoonTracker {
         Default::default()
@@ -304,7 +303,13 @@ impl BoonTracker {
             .entry(agent)
             .or_insert_with(Default::default)
             .entry(buff_id)
-            .or_insert_with(|| BoonQueue::new(Self::MAX_STACKS, BoonType::Intensity))
+            .or_insert_with(|| {
+                gamedata::get_boon(buff_id)
+                    .map(gamedata::Boon::create_queue)
+                    // For unknown boons, default to a duration-based counter
+                    // with 5 stacks.
+                    .unwrap_or_else(|| BoonQueue::new(5, BoonType::Duration))
+            })
     }
 }
 
@@ -330,6 +335,16 @@ impl Tracker for BoonTracker {
             } => {
                 self.get_queue(destination_agent_addr, buff_id)
                     .add_stack(duration as u64);
+                self.update_next_update();
+            }
+
+            // XXX: Properly handle SINGLE and MANUAL removal types
+            EventKind::BuffRemove {
+                destination_agent_addr,
+                buff_id,
+                ..
+            } => {
+                self.get_queue(destination_agent_addr, buff_id).clear();
                 self.update_next_update();
             }
 

@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 pub mod boon;
+pub mod gamedata;
 pub mod trackers;
 
 use self::trackers::{RunnableTracker, Tracker};
