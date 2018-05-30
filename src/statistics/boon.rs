@@ -33,18 +33,8 @@ pub enum BoonType {
 /// passes, all stacks are decreased simultaneously! As soon as a stack reaches
 /// 0, it is dropped.
 ///
-/// Now, you might ask *"How do I know how big the boon queues are?"* and sadly,
-/// I do not have a satisfactory answer for this. For intensity-based boons, the
-/// answer is "the number of maximum stacks". However, most boons are not
-/// intensity-based. For all other boons, either check the source code of other
-/// people who (claim to) know, or just make up a value. Your calculations might
-/// be off by fractions of a second, but it should be good enough for most use
-/// cases.
-///
-/// Interesting fun fact: Most (if not all) boons don't have a hardcoded limit
-/// on how much you can have at a time, it rather depends on the boon duration
-/// of the person who applies them. The only limitation is the size of the boon
-/// queue.
+/// You can find more information and the size of some of the queues on the wiki:
+/// https://wiki.guildwars2.com/wiki/Effect_stacking
 #[derive(Clone, Debug)]
 pub struct BoonQueue {
     capacity: u32,
