@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use super::super::{Event, EventKind, Log};
-use super::boon::{BoonQueue, BoonType};
+use super::boon::BoonQueue;
 use super::gamedata;
 use super::DamageStats;
 
@@ -229,6 +229,9 @@ impl Tracker for CombatTimeTracker {
 ///
 /// Note that this also tracks conditions, because internally, they're handled
 /// the same way.
+///
+/// This tracker only tracks the boons that are known to evtclib, that is the
+/// boons defined in `evtclib::statistics::gamedata::BOONS`.
 #[derive(Default)]
 pub struct BoonTracker {
     boon_areas: HashMap<u64, HashMap<u16, u64>>,
@@ -296,20 +299,27 @@ impl BoonTracker {
     ///
     /// * `agent` - The agent.
     /// * `buff_id` - The buff (or condition) id.
-    fn get_queue(&mut self, agent: u64, buff_id: u16) -> &mut BoonQueue {
-        // XXX: Properly differentiate between intensity and duration based
-        // boons, otherwise the results will be off.
-        self.boon_queues
+    fn get_queue(&mut self, agent: u64, buff_id: u16) -> Option<&mut BoonQueue> {
+        use std::collections::hash_map::Entry;
+        let mut entry = self.boon_queues
             .entry(agent)
             .or_insert_with(Default::default)
-            .entry(buff_id)
-            .or_insert_with(|| {
-                gamedata::get_boon(buff_id)
-                    .map(gamedata::Boon::create_queue)
-                    // For unknown boons, default to a duration-based counter
-                    // with 5 stacks.
-                    .unwrap_or_else(|| BoonQueue::new(5, BoonType::Duration))
-            })
+            .entry(buff_id);
+        match entry {
+            // Queue already exists
+            Entry::Occupied(e) => Some(e.into_mut()),
+            // Queue needs to be created, but only if we know about that boon.
+            Entry::Vacant(e) => {
+                let boon_queue = gamedata::get_boon(buff_id)
+                    .map(gamedata::Boon::create_queue);
+                if let Some(queue) = boon_queue {
+                    Some(e.insert(queue))
+                } else {
+                    None
+                }
+            }
+
+        }
     }
 }
 
@@ -333,8 +343,9 @@ impl Tracker for BoonTracker {
                 duration,
                 ..
             } => {
-                self.get_queue(destination_agent_addr, buff_id)
-                    .add_stack(duration as u64);
+                if let Some(queue) = self.get_queue(destination_agent_addr, buff_id) {
+                    queue.add_stack(duration as u64);
+                }
                 self.update_next_update();
             }
 
@@ -344,7 +355,9 @@ impl Tracker for BoonTracker {
                 buff_id,
                 ..
             } => {
-                self.get_queue(destination_agent_addr, buff_id).clear();
+                if let Some(queue) = self.get_queue(destination_agent_addr, buff_id) {
+                    queue.clear();
+                }
                 self.update_next_update();
             }
 
