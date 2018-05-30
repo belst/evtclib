@@ -16,7 +16,7 @@
 //!
 //! (Look at the note on "Buffering" in the [parser
 //! module](raw/parser/index.html#buffering))
-#![feature(try_trait, stmt_expr_attributes)]
+#![feature(try_trait, stmt_expr_attributes, never_type)]
 #[macro_use]
 extern crate quick_error;
 #[macro_use]
