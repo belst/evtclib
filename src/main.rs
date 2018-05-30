@@ -118,5 +118,11 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
         mine.boss_damage.total_damage / (mine.combat_time() / 1000)
     );
 
+    println!("Boons:");
+    for (boon, uptime) in &mine.boon_averages {
+        let boon = evtclib::statistics::gamedata::get_boon(*boon);
+        println!("{}: {}", boon.unwrap().1, uptime);
+    }
+
     Ok(())
 }
