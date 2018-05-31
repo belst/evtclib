@@ -6,8 +6,10 @@
 //! functions whenever possible.
 mod types;
 
-pub use self::types::{Agent, CbtActivation, CbtBuffRemove, CbtCustomSkill, CbtEvent, CbtResult,
-                      CbtStateChange, Language, Skill, IFF};
+pub use self::types::{
+    Agent, CbtActivation, CbtBuffRemove, CbtCustomSkill, CbtEvent, CbtResult, CbtStateChange,
+    Language, Skill, IFF,
+};
 
 pub mod parser;
 

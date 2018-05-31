@@ -291,7 +291,8 @@ impl Skill {
     ///
     /// Returns `None` if the name is not valid UTF-8.
     pub fn name_string(&self) -> Option<String> {
-        let bytes = self.name
+        let bytes = self
+            .name
             .iter()
             .cloned()
             .take_while(|b| *b != 0)

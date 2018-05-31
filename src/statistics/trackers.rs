@@ -272,7 +272,8 @@ impl BoonTracker {
         for (agent, queues) in &self.boon_queues {
             for (buff_id, queue) in queues {
                 let current_stacks = queue.current_stacks();
-                let area = self.boon_areas
+                let area = self
+                    .boon_areas
                     .entry(*agent)
                     .or_insert_with(Default::default)
                     .entry(*buff_id)
@@ -283,7 +284,8 @@ impl BoonTracker {
     }
 
     fn update_next_update(&mut self) {
-        let next_update = self.boon_queues
+        let next_update = self
+            .boon_queues
             .values()
             .flat_map(HashMap::values)
             .map(BoonQueue::next_update)
@@ -301,7 +303,8 @@ impl BoonTracker {
     /// * `buff_id` - The buff (or condition) id.
     fn get_queue(&mut self, agent: u64, buff_id: u16) -> Option<&mut BoonQueue> {
         use std::collections::hash_map::Entry;
-        let mut entry = self.boon_queues
+        let mut entry = self
+            .boon_queues
             .entry(agent)
             .or_insert_with(Default::default)
             .entry(buff_id);
@@ -310,15 +313,13 @@ impl BoonTracker {
             Entry::Occupied(e) => Some(e.into_mut()),
             // Queue needs to be created, but only if we know about that boon.
             Entry::Vacant(e) => {
-                let boon_queue = gamedata::get_boon(buff_id)
-                    .map(gamedata::Boon::create_queue);
+                let boon_queue = gamedata::get_boon(buff_id).map(gamedata::Boon::create_queue);
                 if let Some(queue) = boon_queue {
                     Some(e.insert(queue))
                 } else {
                     None
                 }
             }
-
         }
     }
 }

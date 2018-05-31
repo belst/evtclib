@@ -264,7 +264,9 @@ fn check_damage(raw_event: &raw::CbtEvent) -> Option<EventKind> {
             damage: raw_event.value,
             result: raw_event.result,
         })
-    } else if raw_event.buff == 1 && raw_event.buff_dmg != 0 && raw_event.dst_agent != 0
+    } else if raw_event.buff == 1
+        && raw_event.buff_dmg != 0
+        && raw_event.dst_agent != 0
         && raw_event.value == 0
     {
         Some(EventKind::ConditionTick {

@@ -37,11 +37,9 @@ pub static BOONS: &[Boon] = &[
     Boon(719, "Swiftness", 9, BoonType::Duration),
     Boon(1187, "Quickness", 5, BoonType::Duration),
     Boon(726, "Vigor", 5, BoonType::Duration),
-
     // Intensity based
     Boon(740, "Might", 25, BoonType::Intensity),
     Boon(1122, "Stability", 25, BoonType::Intensity),
-
     // Standard conditions.
     // Duration based
     Boon(720, "Blinded", 5, BoonType::Duration),
@@ -51,7 +49,6 @@ pub static BOONS: &[Boon] = &[
     Boon(727, "Immobile", 3, BoonType::Duration),
     Boon(26766, "Slow", 3, BoonType::Duration),
     Boon(742, "Weakness", 3, BoonType::Duration),
-
     // Intensity based
     Boon(736, "Bleeding", 1500, BoonType::Intensity),
     Boon(737, "Burning", 1500, BoonType::Intensity),

@@ -275,7 +275,8 @@ fn set_agent_masters(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcE
         if event.src_master_instid != 0 {
             let mut master_addr = None;
             for agent in &*agents {
-                if agent.instance_id == event.src_master_instid && agent.first_aware < event.time
+                if agent.instance_id == event.src_master_instid
+                    && agent.first_aware < event.time
                     && event.time < agent.last_aware
                 {
                     master_addr = Some(agent.addr);

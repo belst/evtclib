@@ -116,7 +116,8 @@ impl BoonQueue {
             }
 
             BoonType::Intensity => {
-                self.queue = self.queue
+                self.queue = self
+                    .queue
                     .iter()
                     .cloned()
                     .filter(|v| *v > duration)
