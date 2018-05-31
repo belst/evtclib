@@ -303,7 +303,7 @@ impl BoonTracker {
     /// * `buff_id` - The buff (or condition) id.
     fn get_queue(&mut self, agent: u64, buff_id: u16) -> Option<&mut BoonQueue> {
         use std::collections::hash_map::Entry;
-        let mut entry = self
+        let entry = self
             .boon_queues
             .entry(agent)
             .or_insert_with(Default::default)
