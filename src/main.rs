@@ -1,6 +1,7 @@
 extern crate byteorder;
 extern crate evtclib;
 use byteorder::{ReadBytesExt, BE, LE};
+use std::env;
 use std::fs::File;
 
 use std::collections::HashMap;
@@ -12,7 +13,7 @@ use std::io::BufReader;
 
 pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     println!("Hello World!");
-    let mut f = BufReader::new(File::open("material/Samarog.evtc")?);
+    let mut f = BufReader::new(File::open(env::args().skip(1).next().unwrap())?);
 
     let result = evtclib::raw::parse_file(&mut f)?;
     /*

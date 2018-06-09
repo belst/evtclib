@@ -16,7 +16,7 @@ use std::error::Error;
 
 use super::super::{Event, EventKind, Log};
 use super::boon::BoonQueue;
-use super::gamedata;
+use super::gamedata::{self, Mechanic, Trigger};
 use super::DamageStats;
 
 // A support macro to introduce a new block.
@@ -375,5 +375,42 @@ impl Tracker for BoonTracker {
             self.boon_queues.values().flat_map(|qs| qs.values()).count()
         );
         Ok(self.boon_areas)
+    }
+}
+
+/// A tracker that tracks boss mechanics for each player.
+pub struct MechanicTracker {
+    mechanics: HashMap<u64, HashMap<&'static Mechanic, u32>>,
+    available_mechanics: Vec<&'static Mechanic>,
+    boss_address: u64,
+}
+
+impl MechanicTracker {
+    /// Create a new mechanic tracker that watches over the given mechanics.
+    pub fn new(boss_address: u64, mechanics: Vec<&'static Mechanic>) -> MechanicTracker {
+        MechanicTracker {
+            mechanics: HashMap::new(),
+            available_mechanics: mechanics,
+            boss_address: boss_address,
+        }
+    }
+}
+
+impl Tracker for MechanicTracker {
+    type Stat = HashMap<u64, HashMap<&'static Mechanic, u32>>;
+    type Error = !;
+
+    fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
+        for mechanic in &self.available_mechanics {
+            match (&event.kind, &mechanic.1) {
+                (EventKind::SkillUse { .. }, Trigger::SkillOnPlayer { .. }) => (),
+                _ => (),
+            }
+        }
+        Ok(())
+    }
+
+    fn finalize(self) -> Result<Self::Stat, Self::Error> {
+        Ok(self.mechanics)
     }
 }

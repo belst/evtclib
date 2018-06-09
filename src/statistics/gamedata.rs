@@ -2,6 +2,12 @@
 //! some statistics.
 use super::boon::{BoonQueue, BoonType};
 
+/// Enum containing all bosses with their IDs.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Boss {
+    ValeGuardian = 15483,
+}
+
 /// Contains a boon.
 ///
 /// Fields:
@@ -60,4 +66,50 @@ pub static BOONS: &[Boon] = &[
 
 pub fn get_boon(boon_id: u16) -> Option<&'static Boon> {
     BOONS.iter().find(|b| b.0 == boon_id)
+}
+
+/// Contains pre-defined triggers for boss mechanics.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Trigger {
+    /// Triggers when the given boon is applied to the player.
+    BoonPlayer(u16),
+    /// Triggers when the given boon is applied to the boss.
+    BoonBoss(u16),
+    /// Triggers when the given skill is used by a player.
+    SkillByPlayer(u16),
+    /// Triggers when the given skill is used on a player.
+    SkillOnPlayer(u16),
+    /// Triggers when the given boon is stripped from an enemy.
+    BoonStripped(u16),
+    /// Triggers when the given entity spawned.
+    Spawn(u16),
+    /// Triggers when the boss finishes channeling the given skill.
+    ChannelComplete(u16),
+}
+
+/// Struct describing a boss mechanic.
+///
+/// Fields:
+/// * Boss id that this mechanic belongs to.
+/// * How the mechanic is triggered.
+/// * Technical term for the mechanic (for debugging purposes).
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Mechanic(pub u16, pub Trigger, pub &'static str);
+
+macro_rules! mechanics {
+    ($boss_id:expr => [ $($name:expr => $trigger:expr,)* ]) => {
+        $(Mechanic($boss_id as u16, $trigger, $name)),*
+    }
+}
+
+/// A slice of all mechanics that we know about.
+pub static MECHANICS: &[Mechanic] = &[
+    mechanics! { Boss::ValeGuardian => [
+        "Unstable Magic Spike" => Trigger::SkillOnPlayer(31860),
+    ]},
+];
+
+/// Get all mechanics that belong to the given boss.
+pub fn get_mechanics(boss_id: u16) -> Vec<&'static Mechanic> {
+    MECHANICS.iter().filter(|m| m.0 == boss_id).collect()
 }
