@@ -82,12 +82,29 @@ impl<S, E: Error + 'static, T: Tracker<Stat = S, Error = E>> RunnableTracker for
 /// Basically, this is a factory that allows new trackers to be created. Each
 /// tracker can be given a key that it should listen on, which is expressed by
 /// the `K` type parameter and the `key` parameter to `create`.
+///
+/// A blanket implementation for closures is provided, so you can use any
+/// `FnMut(K) -> T`, where `K` is the key and `T` is the tracker.
 pub trait Multiplexable<K> {
     /// The type of tracker that this multiplexable/factory creates.
     type T: Tracker;
 
     /// Create a new tracker, listening for the given key.
     fn create(&mut self, key: K) -> Self::T;
+}
+
+// This implementation allows a closure to be used as a multiplexable/tracker
+// factory.
+impl<T, K, O> Multiplexable<K> for T
+where
+    T: FnMut(K) -> O,
+    O: Tracker,
+{
+    type T = O;
+
+    fn create(&mut self, key: K) -> Self::T {
+        self(key)
+    }
 }
 
 /// A helper that wraps (decorates) another tracker and separates the results
@@ -106,13 +123,20 @@ pub trait Multiplexable<K> {
 /// * `F` Factory that creates new trackers for each key.
 /// * `T` Inner tracker type. Usually determined by the factory.
 /// * `S` Selection function type. Takes an event and outputs a key.
+///
+/// # Example
+///
+/// ```
+/// # use evtclib::statistics::trackers::*;
+/// let boons = Multiplexer::multiplex_on_destination(|agent| BoonTracker::new(agent));
+/// ```
 pub struct Multiplexer<K, F, T, S> {
     factory: F,
     trackers: HashMap<K, T>,
     selector: S,
 }
 
-impl<K, F, T, S> Multiplexer<K, F, T, S> {
+impl Multiplexer<(), (), (), ()> {
     /// Create a new multiplexer that multiplexes on the source agent.
     pub fn multiplex_on_source<Factory: Multiplexable<u64>>(
         factory: Factory,
@@ -318,18 +342,24 @@ impl Tracker for CombatTimeTracker {
 ///
 /// This tracker only tracks the boons that are known to evtclib, that is the
 /// boons defined in `evtclib::statistics::gamedata::BOONS`.
-#[derive(Default)]
 pub struct BoonTracker {
-    boon_areas: HashMap<u64, HashMap<u16, u64>>,
-    boon_queues: HashMap<u64, HashMap<u16, BoonQueue>>,
+    agent_addr: u64,
+    boon_areas: HashMap<u16, u64>,
+    boon_queues: HashMap<u16, BoonQueue>,
     last_time: u64,
     next_update: u64,
 }
 
 impl BoonTracker {
-    /// Creates a new boon tracker.
-    pub fn new() -> BoonTracker {
-        Default::default()
+    /// Creates a new boon tracker for the given agent.
+    pub fn new(agent_addr: u64) -> BoonTracker {
+        BoonTracker {
+            agent_addr,
+            boon_areas: Default::default(),
+            boon_queues: Default::default(),
+            last_time: 0,
+            next_update: 0,
+        }
     }
 
     /// Updates the internal boon queues by the given amount of milliseconds.
@@ -338,14 +368,9 @@ impl BoonTracker {
     fn update_queues(&mut self, delta_t: u64) {
         self.boon_queues
             .values_mut()
-            .flat_map(HashMap::values_mut)
             .for_each(|queue| queue.simulate(delta_t));
 
-        // Throw away empty boon queues or agents without any boon queue to
-        // improve performance
-        self.boon_queues
-            .values_mut()
-            .for_each(|q| q.retain(|_, v| !v.is_empty()));
+        // Throw away empty boon queues or to improve performance
         self.boon_queues.retain(|_, q| !q.is_empty());
     }
 
@@ -355,17 +380,10 @@ impl BoonTracker {
     ///
     /// * `delta_t` - Amount of milliseconds that passed.
     fn update_areas(&mut self, delta_t: u64) {
-        for (agent, queues) in &self.boon_queues {
-            for (buff_id, queue) in queues {
-                let current_stacks = queue.current_stacks();
-                let area = self
-                    .boon_areas
-                    .entry(*agent)
-                    .or_insert_with(Default::default)
-                    .entry(*buff_id)
-                    .or_insert(0);
-                *area += current_stacks as u64 * delta_t;
-            }
+        for (buff_id, queue) in &self.boon_queues {
+            let current_stacks = queue.current_stacks();
+            let area = self.boon_areas.entry(*buff_id).or_insert(0);
+            *area += current_stacks as u64 * delta_t;
         }
     }
 
@@ -373,7 +391,6 @@ impl BoonTracker {
         let next_update = self
             .boon_queues
             .values()
-            .flat_map(HashMap::values)
             .map(BoonQueue::next_update)
             .filter(|v| *v != 0)
             .min()
@@ -381,19 +398,14 @@ impl BoonTracker {
         self.next_update = next_update;
     }
 
-    /// Get the boon queue for the given agent and buff_id.
+    /// Get the boon queue for the given buff_id.
     ///
     /// If the queue does not yet exist, create it.
     ///
-    /// * `agent` - The agent.
     /// * `buff_id` - The buff (or condition) id.
-    fn get_queue(&mut self, agent: u64, buff_id: u16) -> Option<&mut BoonQueue> {
+    fn get_queue(&mut self, buff_id: u16) -> Option<&mut BoonQueue> {
         use std::collections::hash_map::Entry;
-        let entry = self
-            .boon_queues
-            .entry(agent)
-            .or_insert_with(Default::default)
-            .entry(buff_id);
+        let entry = self.boon_queues.entry(buff_id);
         match entry {
             // Queue already exists
             Entry::Occupied(e) => Some(e.into_mut()),
@@ -411,10 +423,14 @@ impl BoonTracker {
 }
 
 impl Tracker for BoonTracker {
-    type Stat = HashMap<u64, HashMap<u16, u64>>;
+    type Stat = HashMap<u16, u64>;
     type Error = !;
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
+        if event.kind.destination_agent_addr() != Some(self.agent_addr) {
+            return Ok(());
+        }
+
         let delta_t = event.time - self.last_time;
         if self.next_update != 0 && delta_t > self.next_update {
             self.update_queues(delta_t);
@@ -425,12 +441,11 @@ impl Tracker for BoonTracker {
 
         match event.kind {
             EventKind::BuffApplication {
-                destination_agent_addr,
                 buff_id,
                 duration,
                 ..
             } => {
-                if let Some(queue) = self.get_queue(destination_agent_addr, buff_id) {
+                if let Some(queue) = self.get_queue(buff_id) {
                     queue.add_stack(duration as u64);
                 }
                 self.update_next_update();
@@ -438,11 +453,10 @@ impl Tracker for BoonTracker {
 
             // XXX: Properly handle SINGLE and MANUAL removal types
             EventKind::BuffRemove {
-                destination_agent_addr,
                 buff_id,
                 ..
             } => {
-                if let Some(queue) = self.get_queue(destination_agent_addr, buff_id) {
+                if let Some(queue) = self.get_queue(buff_id) {
                     queue.clear();
                 }
                 self.update_next_update();
@@ -455,11 +469,6 @@ impl Tracker for BoonTracker {
     }
 
     fn finalize(self) -> Result<Self::Stat, Self::Error> {
-        println!("Number of agents: {}", self.boon_queues.len());
-        println!(
-            "Number of boon queues: {}",
-            self.boon_queues.values().flat_map(|qs| qs.values()).count()
-        );
         Ok(self.boon_areas)
     }
 }

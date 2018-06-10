@@ -103,7 +103,8 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
     let mut damage_tracker = trackers::DamageTracker::new(log);
     let mut log_start_tracker = trackers::LogStartTracker::new();
     let mut combat_time_tracker = trackers::CombatTimeTracker::new();
-    let mut boon_tracker = trackers::BoonTracker::new();
+    let mut boon_tracker =
+        trackers::Multiplexer::multiplex_on_destination(|dest| trackers::BoonTracker::new(dest));
 
     run_trackers(
         log,
