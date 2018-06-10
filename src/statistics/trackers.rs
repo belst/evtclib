@@ -13,6 +13,7 @@
 //! trackers on the same log.
 use std::collections::HashMap;
 use std::error::Error;
+use std::hash::Hash;
 
 use super::super::{Event, EventKind, Log};
 use super::boon::BoonQueue;
@@ -73,6 +74,91 @@ pub trait RunnableTracker {
 impl<S, E: Error + 'static, T: Tracker<Stat = S, Error = E>> RunnableTracker for T {
     fn run_feed(&mut self, event: &Event) -> Result<(), Box<Error>> {
         self.feed(event).map_err(|e| Box::new(e) as Box<Error>)
+    }
+}
+
+/// A trait that allows a tracker to be multiplexed.
+///
+/// Basically, this is a factory that allows new trackers to be created. Each
+/// tracker can be given a key that it should listen on, which is expressed by
+/// the `K` type parameter and the `key` parameter to `create`.
+pub trait Multiplexable<K> {
+    /// The type of tracker that this multiplexable/factory creates.
+    type T: Tracker;
+
+    /// Create a new tracker, listening for the given key.
+    fn create(&mut self, key: K) -> Self::T;
+}
+
+/// A helper that wraps (decorates) another tracker and separates the results
+/// based on the given criteria.
+///
+/// Instead of outputting a single statistic, it outputs a `HashMap`, mapping
+/// the criteria to its own tracker.
+///
+/// This can be used for example to count damage per player: The damage tracker
+/// itself only counts damage for a single player, and together with a
+/// multiplexer, it will count the damage per player.
+///
+/// Type parameters:
+/// * `K` Key that is used to distinguish criteria. For example, `u64` for a
+///   multiplexer that separates based on agents.
+/// * `F` Factory that creates new trackers for each key.
+/// * `T` Inner tracker type. Usually determined by the factory.
+/// * `S` Selection function type. Takes an event and outputs a key.
+pub struct Multiplexer<K, F, T, S> {
+    factory: F,
+    trackers: HashMap<K, T>,
+    selector: S,
+}
+
+impl<K, F, T, S> Multiplexer<K, F, T, S> {
+    /// Create a new multiplexer that multiplexes on the source agent.
+    pub fn multiplex_on_source<Factory: Multiplexable<u64>>(
+        factory: Factory,
+    ) -> Multiplexer<u64, Factory, Factory::T, impl Fn(&Event) -> Option<u64>> {
+        Multiplexer {
+            factory,
+            trackers: HashMap::new(),
+            selector: |event: &Event| event.kind.source_agent_addr(),
+        }
+    }
+
+    /// Create a new multiplexer that multiplexes on the destination agent.
+    pub fn multiplex_on_destination<Factory: Multiplexable<u64>>(
+        factory: Factory,
+    ) -> Multiplexer<u64, Factory, Factory::T, impl Fn(&Event) -> Option<u64>> {
+        Multiplexer {
+            factory,
+            trackers: HashMap::new(),
+            selector: |event: &Event| event.kind.destination_agent_addr(),
+        }
+    }
+}
+
+impl<K: Hash + Eq + Clone, F: Multiplexable<K>, S: FnMut(&Event) -> Option<K>> Tracker
+    for Multiplexer<K, F, F::T, S>
+{
+    type Stat = HashMap<K, <F::T as Tracker>::Stat>;
+    type Error = <F::T as Tracker>::Error;
+
+    fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
+        if let Some(key) = (self.selector)(event) {
+            let factory = &mut self.factory;
+            let entry = self
+                .trackers
+                .entry(key.clone())
+                .or_insert_with(|| factory.create(key));
+            entry.feed(event)?;
+        }
+        Ok(())
+    }
+
+    fn finalize(self) -> Result<Self::Stat, Self::Error> {
+        self.trackers
+            .into_iter()
+            .map(|(k, v)| v.finalize().map(|inner| (k, inner)))
+            .collect()
     }
 }
 
