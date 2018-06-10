@@ -9,6 +9,11 @@
 //! doesn't matter what you track, it doesn't matter how many trackers you
 //! define.
 //!
+//! If you want to track stats separated by player or phases, consider writing
+//! your tracker in a way that it only tracks statistics for a single player,
+//! and then use a [`Multiplexer`](struct.Multiplexer.html) to automatically
+//! track it for every player/agent.
+//!
 //! You can use [`run_trackers`](../fn.run_trackers.html) to run multiple
 //! trackers on the same log.
 use std::collections::HashMap;
