@@ -45,7 +45,7 @@ struct Record<X, T, D> {
 /// * `T` tag for each data point. Can be arbitrary.
 /// * `D` actual data. Must be [`Monoid`](trait.Monoid.html), so that it can be
 ///   summed up.
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct RecordFunc<X, T, D> {
     data: Vec<Record<X, T, D>>,
 }
@@ -135,6 +135,12 @@ where
             .iter()
             .filter(|record| predicate(&record.tag))
             .fold(D::mempty(), |a, b| a.combine(&b.data))
+    }
+}
+
+impl<X: Ord, T, D: Monoid> Default for RecordFunc<X, T, D> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
