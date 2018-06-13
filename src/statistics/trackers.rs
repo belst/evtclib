@@ -22,8 +22,8 @@ use std::hash::Hash;
 
 use super::super::{Event, EventKind, Log};
 use super::boon::BoonQueue;
+use super::damage::{DamageLog, DamageType};
 use super::gamedata::{self, Mechanic, Trigger};
-use super::DamageStats;
 
 // A support macro to introduce a new block.
 //
@@ -82,120 +82,10 @@ impl<S, E: Error + 'static, T: Tracker<Stat = S, Error = E>> RunnableTracker for
     }
 }
 
-/// A trait that allows a tracker to be multiplexed.
-///
-/// Basically, this is a factory that allows new trackers to be created. Each
-/// tracker can be given a key that it should listen on, which is expressed by
-/// the `K` type parameter and the `key` parameter to `create`.
-///
-/// A blanket implementation for closures is provided, so you can use any
-/// `FnMut(K) -> T`, where `K` is the key and `T` is the tracker.
-pub trait Multiplexable<K> {
-    /// The type of tracker that this multiplexable/factory creates.
-    type T: Tracker;
-
-    /// Create a new tracker, listening for the given key.
-    fn create(&mut self, key: K) -> Self::T;
-}
-
-// This implementation allows a closure to be used as a multiplexable/tracker
-// factory.
-impl<T, K, O> Multiplexable<K> for T
-where
-    T: FnMut(K) -> O,
-    O: Tracker,
-{
-    type T = O;
-
-    fn create(&mut self, key: K) -> Self::T {
-        self(key)
-    }
-}
-
-/// A helper that wraps (decorates) another tracker and separates the results
-/// based on the given criteria.
-///
-/// Instead of outputting a single statistic, it outputs a `HashMap`, mapping
-/// the criteria to its own tracker.
-///
-/// This can be used for example to count damage per player: The damage tracker
-/// itself only counts damage for a single player, and together with a
-/// multiplexer, it will count the damage per player.
-///
-/// Type parameters:
-/// * `K` Key that is used to distinguish criteria. For example, `u64` for a
-///   multiplexer that separates based on agents.
-/// * `F` Factory that creates new trackers for each key.
-/// * `T` Inner tracker type. Usually determined by the factory.
-/// * `S` Selection function type. Takes an event and outputs a key.
-///
-/// # Example
-///
-/// ```
-/// # use evtclib::statistics::trackers::*;
-/// let boons = Multiplexer::multiplex_on_destination(|agent| BoonTracker::new(agent));
-/// ```
-pub struct Multiplexer<K, F, T, S> {
-    factory: F,
-    trackers: HashMap<K, T>,
-    selector: S,
-}
-
-impl Multiplexer<(), (), (), ()> {
-    /// Create a new multiplexer that multiplexes on the source agent.
-    pub fn multiplex_on_source<Factory: Multiplexable<u64>>(
-        factory: Factory,
-    ) -> Multiplexer<u64, Factory, Factory::T, impl Fn(&Event) -> Option<u64>> {
-        Multiplexer {
-            factory,
-            trackers: HashMap::new(),
-            selector: |event: &Event| event.kind.source_agent_addr(),
-        }
-    }
-
-    /// Create a new multiplexer that multiplexes on the destination agent.
-    pub fn multiplex_on_destination<Factory: Multiplexable<u64>>(
-        factory: Factory,
-    ) -> Multiplexer<u64, Factory, Factory::T, impl Fn(&Event) -> Option<u64>> {
-        Multiplexer {
-            factory,
-            trackers: HashMap::new(),
-            selector: |event: &Event| event.kind.destination_agent_addr(),
-        }
-    }
-}
-
-impl<K: Hash + Eq + Clone, F: Multiplexable<K>, S: FnMut(&Event) -> Option<K>> Tracker
-    for Multiplexer<K, F, F::T, S>
-{
-    type Stat = HashMap<K, <F::T as Tracker>::Stat>;
-    type Error = <F::T as Tracker>::Error;
-
-    fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
-        if let Some(key) = (self.selector)(event) {
-            let factory = &mut self.factory;
-            let entry = self
-                .trackers
-                .entry(key.clone())
-                .or_insert_with(|| factory.create(key));
-            entry.feed(event)?;
-        }
-        Ok(())
-    }
-
-    fn finalize(self) -> Result<Self::Stat, Self::Error> {
-        self.trackers
-            .into_iter()
-            .map(|(k, v)| v.finalize().map(|inner| (k, inner)))
-            .collect()
-    }
-}
-
 /// A tracker that tracks per-target damage of all agents.
 pub struct DamageTracker<'l> {
     log: &'l Log,
-    // Source -> Target -> Damage
-    damages: HashMap<u64, HashMap<u64, DamageStats>>,
+    damage_log: DamageLog,
 }
 
 impl<'t> DamageTracker<'t> {
@@ -203,21 +93,13 @@ impl<'t> DamageTracker<'t> {
     pub fn new(log: &Log) -> DamageTracker {
         DamageTracker {
             log,
-            damages: HashMap::new(),
+            damage_log: DamageLog::new(),
         }
-    }
-
-    fn get_stats(&mut self, source: u64, target: u64) -> &mut DamageStats {
-        self.damages
-            .entry(source)
-            .or_insert_with(Default::default)
-            .entry(target)
-            .or_insert_with(Default::default)
     }
 }
 
 impl<'t> Tracker for DamageTracker<'t> {
-    type Stat = HashMap<u64, HashMap<u64, DamageStats>>;
+    type Stat = DamageLog;
     type Error = !;
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
@@ -226,36 +108,44 @@ impl<'t> Tracker for DamageTracker<'t> {
                 source_agent_addr,
                 destination_agent_addr,
                 damage,
+                skill_id,
                 ..
             } => {
-                with! { stats = self.get_stats(source_agent_addr, destination_agent_addr) => {
-                    stats.total_damage += damage as u64;
-                    stats.power_damage += damage as u64;
-                }}
-
-                if let Some(master) = self.log.master_agent(source_agent_addr) {
-                    let master_stats = self.get_stats(master.addr, destination_agent_addr);
-                    master_stats.total_damage += damage as u64;
-                    master_stats.add_damage += damage as u64;
-                }
+                let source = if let Some(master) = self.log.master_agent(source_agent_addr) {
+                    master.addr
+                } else {
+                    source_agent_addr
+                };
+                self.damage_log.log(
+                    event.time,
+                    source,
+                    destination_agent_addr,
+                    DamageType::Physical,
+                    skill_id,
+                    damage as u64,
+                );
             }
 
             EventKind::ConditionTick {
                 source_agent_addr,
                 destination_agent_addr,
                 damage,
+                condition_id,
                 ..
             } => {
-                with! { stats = self.get_stats(source_agent_addr, destination_agent_addr) => {
-                    stats.total_damage += damage as u64;
-                    stats.condition_damage += damage as u64;
-                }}
-
-                if let Some(master) = self.log.master_agent(source_agent_addr) {
-                    let master_stats = self.get_stats(master.addr, destination_agent_addr);
-                    master_stats.total_damage += damage as u64;
-                    master_stats.add_damage += damage as u64;
-                }
+                let source = if let Some(master) = self.log.master_agent(source_agent_addr) {
+                    master.addr
+                } else {
+                    source_agent_addr
+                };
+                self.damage_log.log(
+                    event.time,
+                    source,
+                    destination_agent_addr,
+                    DamageType::Condition,
+                    condition_id,
+                    damage as u64,
+                );
             }
 
             _ => (),
@@ -264,7 +154,7 @@ impl<'t> Tracker for DamageTracker<'t> {
     }
 
     fn finalize(self) -> Result<Self::Stat, Self::Error> {
-        Ok(self.damages)
+        Ok(self.damage_log)
     }
 }
 
@@ -446,9 +336,7 @@ impl Tracker for BoonTracker {
 
         match event.kind {
             EventKind::BuffApplication {
-                buff_id,
-                duration,
-                ..
+                buff_id, duration, ..
             } => {
                 if let Some(queue) = self.get_queue(buff_id) {
                     queue.add_stack(duration as u64);
@@ -457,10 +345,7 @@ impl Tracker for BoonTracker {
             }
 
             // XXX: Properly handle SINGLE and MANUAL removal types
-            EventKind::BuffRemove {
-                buff_id,
-                ..
-            } => {
+            EventKind::BuffRemove { buff_id, .. } => {
                 if let Some(queue) = self.get_queue(buff_id) {
                     queue.clear();
                 }
@@ -480,30 +365,53 @@ impl Tracker for BoonTracker {
 
 /// A tracker that tracks boss mechanics for each player.
 pub struct MechanicTracker {
-    mechanics: HashMap<u64, HashMap<&'static Mechanic, u32>>,
+    mechanics: HashMap<&'static Mechanic, u32>,
     available_mechanics: Vec<&'static Mechanic>,
     boss_address: u64,
+    agent_address: u64,
 }
 
 impl MechanicTracker {
     /// Create a new mechanic tracker that watches over the given mechanics.
-    pub fn new(boss_address: u64, mechanics: Vec<&'static Mechanic>) -> MechanicTracker {
+    pub fn new(
+        agent_address: u64,
+        boss_address: u64,
+        mechanics: Vec<&'static Mechanic>,
+    ) -> MechanicTracker {
         MechanicTracker {
             mechanics: HashMap::new(),
             available_mechanics: mechanics,
-            boss_address: boss_address,
+            boss_address,
+            agent_address,
         }
     }
 }
 
 impl Tracker for MechanicTracker {
-    type Stat = HashMap<u64, HashMap<&'static Mechanic, u32>>;
+    type Stat = HashMap<&'static Mechanic, u32>;
     type Error = !;
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
+        fn increase(map: &mut HashMap<&'static Mechanic, u32>, entry: &'static Mechanic) {
+            *map.entry(entry).or_insert(0) += 1;
+        }
+
         for mechanic in &self.available_mechanics {
             match (&event.kind, &mechanic.1) {
-                (EventKind::SkillUse { .. }, Trigger::SkillOnPlayer { .. }) => (),
+                (
+                    EventKind::Physical {
+                        source_agent_addr,
+                        destination_agent_addr,
+                        skill_id,
+                        ..
+                    },
+                    Trigger::SkillOnPlayer(trigger_id),
+                ) if skill_id == trigger_id
+                    && *source_agent_addr == self.boss_address
+                    && *destination_agent_addr == self.agent_address =>
+                {
+                    increase(&mut self.mechanics, mechanic);
+                }
                 _ => (),
             }
         }

@@ -70,6 +70,10 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     let mut count = 0;
     let mut damage = 0;
     let mut failed = 0;
+    let mut boonq =
+        evtclib::statistics::boon::BoonQueue::new(5, evtclib::statistics::boon::BoonType::Duration);
+    let mut last_time = 0;
+    let mut uptime = 0;
     for event in &result.events {
         let shiny = if let Some(c) = evtclib::Event::from_raw(event) {
             c
@@ -78,6 +82,8 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
             failed += 1;
             continue;
         };
+        uptime += boonq.current_stacks() as u64 * (event.time - last_time);
+        boonq.simulate(event.time - last_time);
         match shiny.kind {
             EventKind::Physical {
                 source_agent_addr: src,
@@ -98,8 +104,33 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
                 damage += dmg as u64;
             }
 
+            EventKind::BuffApplication {
+                buff_id: 1187,
+                destination_agent_addr: 5480786193115521456,
+                duration,
+                ..
+            } => {
+                //println!("{:10} I got might for {}!", shiny.time, duration);
+                boonq.add_stack(duration as u64);
+            }
+
+            EventKind::BuffRemove {
+                source_agent_addr: 5480786193115521456,
+                buff_id: 736,
+                removal,
+                total_duration,
+                longest_stack,
+                ..
+            } => {
+                println!(
+                    "{:10} Buffremove, removal {:?} dur {:?} longest {:?}",
+                    shiny.time, removal, total_duration, longest_stack
+                );
+            }
+
             _ => (),
         }
+        last_time = event.time;
     }
     println!("Count: {}, Damage: {}", count, damage);
     println!("Failed events: {}", failed);
@@ -107,23 +138,15 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     let processed = evtclib::process(&result).unwrap();
     //println!("Me: {:#?}", processed.agent_by_addr(5480786193115521456));
     let stats = evtclib::statistics::calculate(&processed).unwrap();
-    println!("{:#?}", stats);
+    //println!("{:#?}", stats);
     let mine = stats.agent_stats.get(&5480786193115521456).unwrap();
-    println!("Mine: {:#?}", mine);
-    println!(
-        "DPS: {:#?}",
-        mine.total_damage.total_damage / (mine.combat_time() / 1000)
-    );
-    println!(
-        "Boss DPS: {:#?}",
-        mine.boss_damage.total_damage / (mine.combat_time() / 1000)
-    );
 
-    println!("Boons:");
-    for (boon, uptime) in &mine.boon_averages {
-        let boon = evtclib::statistics::gamedata::get_boon(*boon);
-        println!("{}: {}", boon.unwrap().1, uptime);
-    }
+    let my_addr = 5480786193115521456;
+
+    let my_damage = stats.damage_log.damage(|m| m.source == my_addr);
+
+    println!("Damages: {:?}", stats.damage_log);
+    println!("My damage: {:?}", my_damage);
 
     Ok(())
 }

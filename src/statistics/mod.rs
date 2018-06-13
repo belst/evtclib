@@ -4,9 +4,12 @@ use std::collections::HashMap;
 use std::error::Error;
 
 pub mod boon;
+pub mod damage;
 pub mod gamedata;
+pub mod math;
 pub mod trackers;
 
+use self::damage::DamageLog;
 use self::trackers::{RunnableTracker, Tracker};
 
 pub type StatResult<T> = Result<T, StatError>;
@@ -35,6 +38,8 @@ macro_rules! try_tracker {
 /// A struct containing the calculated statistics for the log.
 #[derive(Clone, Debug)]
 pub struct Statistics {
+    /// The complete damage log.
+    pub damage_log: DamageLog,
     /// A map mapping agent addresses to their stats.
     pub agent_stats: HashMap<u64, AgentStats>,
 }
@@ -42,14 +47,6 @@ pub struct Statistics {
 /// A struct describing the agent statistics.
 #[derive(Clone, Debug, Default)]
 pub struct AgentStats {
-    /// Damage done per target during the fight.
-    ///
-    /// Maps from target address to the damage done to this target.
-    pub per_target_damage: HashMap<u64, DamageStats>,
-    /// Total damage dealt during the fight.
-    pub total_damage: DamageStats,
-    /// Damage directed to the boss.
-    pub boss_damage: DamageStats,
     /// Average stacks of boons.
     ///
     /// This also includes conditions.
@@ -68,19 +65,6 @@ impl AgentStats {
     pub fn combat_time(&self) -> u64 {
         self.exit_combat - self.enter_combat
     }
-}
-
-/// Damage statistics for a given target.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct DamageStats {
-    /// The total damage of the player, including all minions/pets/...
-    pub total_damage: u64,
-    /// The condition damage that the player dealt.
-    pub condition_damage: u64,
-    /// The power damage that the player dealt.
-    pub power_damage: u64,
-    /// The damage that was done by minions/pets/...
-    pub add_damage: u64,
 }
 
 /// Takes a bunch of trackers and runs them on the given log.
@@ -103,8 +87,6 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
     let mut damage_tracker = trackers::DamageTracker::new(log);
     let mut log_start_tracker = trackers::LogStartTracker::new();
     let mut combat_time_tracker = trackers::CombatTimeTracker::new();
-    let mut boon_tracker =
-        trackers::Multiplexer::multiplex_on_destination(|dest| trackers::BoonTracker::new(dest));
 
     run_trackers(
         log,
@@ -112,7 +94,6 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
             &mut damage_tracker,
             &mut log_start_tracker,
             &mut combat_time_tracker,
-            &mut boon_tracker,
         ],
     )?;
 
@@ -131,51 +112,10 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
         }
     }
 
-    let damages = try_tracker!(damage_tracker.finalize());
-    for agent in damages.keys() {
-        agent_stats
-            .entry(*agent)
-            .or_insert_with(Default::default)
-            .per_target_damage = damages[agent].clone();
-    }
+    let damage_log = try_tracker!(damage_tracker.finalize());
 
-    let boss = log.boss();
-
-    for agent_stat in agent_stats.values_mut() {
-        tally_damage(agent_stat);
-        agent_stat.boss_damage = agent_stat
-            .per_target_damage
-            .get(&boss.addr)
-            .cloned()
-            .unwrap_or_else(Default::default);
-    }
-
-    let boons = try_tracker!(boon_tracker.finalize());
-    for (agent, boon_map) in &boons {
-        let agent = agent_stats.entry(*agent).or_insert_with(Default::default);
-        if agent.exit_combat < agent.enter_combat {
-            continue;
-        }
-        let combat_time = agent.combat_time() as f64;
-        if combat_time == 0. {
-            continue;
-        }
-        agent.boon_averages = boon_map
-            .iter()
-            .map(|(id, area)| (*id, *area as f64 / combat_time))
-            .collect();
-    }
-
-    Ok(Statistics { agent_stats })
-}
-
-/// Takes the per target damage stats and tallies them up into the total damage
-/// stats.
-fn tally_damage(stats: &mut AgentStats) {
-    for damage in stats.per_target_damage.values() {
-        stats.total_damage.total_damage += damage.total_damage;
-        stats.total_damage.power_damage += damage.power_damage;
-        stats.total_damage.condition_damage += damage.condition_damage;
-        stats.total_damage.add_damage += damage.add_damage;
-    }
+    Ok(Statistics {
+        damage_log,
+        agent_stats,
+    })
 }
