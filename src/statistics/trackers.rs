@@ -18,25 +18,11 @@
 //! trackers on the same log.
 use std::collections::HashMap;
 use std::error::Error;
-use std::hash::Hash;
 
 use super::super::{Event, EventKind, Log};
 use super::boon::BoonQueue;
 use super::damage::{DamageLog, DamageType};
 use super::gamedata::{self, Mechanic, Trigger};
-
-// A support macro to introduce a new block.
-//
-// Doesn't really require a macro, but it's nicer to look at
-//   with! { foo = bar }
-// rather than
-//   { let foo = bar; ... }
-macro_rules! with {
-    ($name:ident = $expr:expr => $bl:block) => {{
-        let $name = $expr;
-        $bl
-    }};
-}
 
 /// A tracker.
 ///
@@ -322,9 +308,6 @@ impl Tracker for BoonTracker {
     type Error = !;
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
-        if event.kind.destination_agent_addr() != Some(self.agent_addr) {
-            return Ok(());
-        }
 
         let delta_t = event.time - self.last_time;
         if self.next_update != 0 && delta_t > self.next_update {

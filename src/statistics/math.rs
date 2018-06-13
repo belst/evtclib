@@ -45,7 +45,7 @@ struct Record<X, T, D> {
 /// * `T` tag for each data point. Can be arbitrary.
 /// * `D` actual data. Must be [`Monoid`](trait.Monoid.html), so that it can be
 ///   summed up.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct RecordFunc<X, T, D> {
     data: Vec<Record<X, T, D>>,
 }
@@ -82,6 +82,11 @@ where
     /// Get the amount of data points saved.
     pub fn len(&self) -> usize {
         self.data.len()
+    }
+
+    /// Check whether there are no records.
+    pub fn is_emtpy(&self) -> bool {
+        self.data.is_empty()
     }
 
     /// Get the absolute value at the specific point.

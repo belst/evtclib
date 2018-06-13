@@ -36,7 +36,7 @@ impl Monoid for Damage {
 }
 
 /// Provides access to the damage log.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct DamageLog {
     inner: RecordFunc<u64, Meta, Damage>,
 }
