@@ -21,6 +21,8 @@
 extern crate quick_error;
 #[macro_use]
 extern crate num_derive;
+#[macro_use]
+extern crate getset;
 extern crate byteorder;
 extern crate fnv;
 extern crate num_traits;
@@ -88,18 +90,29 @@ pub enum AgentName {
 }
 
 /// An agent.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters)]
 pub struct Agent {
+    #[get="pub"]
     addr: u64,
+    #[get="pub"]
     kind: AgentKind,
+    #[get="pub"]
     toughness: i16,
+    #[get="pub"]
     concentration: i16,
+    #[get="pub"]
     healing: i16,
+    #[get="pub"]
     condition: i16,
+    #[get="pub"]
     name: AgentName,
+    #[get="pub"]
     instance_id: u16,
+    #[get="pub"]
     first_aware: u64,
+    #[get="pub"]
     last_aware: u64,
+    #[get="pub"]
     master_agent: Option<u64>,
 }
 
