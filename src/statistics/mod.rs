@@ -114,6 +114,8 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
         // event.time to track information related to time.
         if enter_time != 0 {
             agent.enter_combat = enter_time;
+        } else {
+            agent.enter_combat = log_start_time;
         }
         if exit_time != 0 {
             agent.exit_combat = exit_time;
