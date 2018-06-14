@@ -35,6 +35,8 @@ pub use event::{Event, EventKind};
 
 pub mod statistics;
 
+use statistics::gamedata::{self, Boss};
+
 /// A macro that returns `true` when the given expression matches the pattern.
 ///
 /// ```rust
@@ -165,10 +167,33 @@ impl Log {
     }
 
     /// Return the boss agent.
+    ///
+    /// Be careful with encounters that have multiple boss agents, such as Trio
+    /// and Xera.
     pub fn boss(&self) -> &Agent {
         self.npcs()
             .find(|n| matches!(n.kind, AgentKind::Character(x) if x == self.boss_id))
             .expect("Boss has no agent!")
+    }
+
+    /// Return all boss agents.
+    ///
+    /// This correctly returns multiple agents on encounters where multiple
+    /// agents are needed.
+    pub fn boss_agents(&self) -> Vec<&Agent> {
+        let boss_ids = if self.boss_id == Boss::Xera as u16 {
+            vec![self.boss_id, gamedata::XERA_PHASE2_ID]
+        } else {
+            vec![self.boss_id]
+        };
+        self.npcs()
+            .filter(|a| matches!(a.kind, AgentKind::Character(x) if boss_ids.contains(&x)))
+            .collect()
+    }
+
+    /// Check whether the given address is a boss agent.
+    pub fn is_boss(&self, addr: u64) -> bool {
+        self.boss_agents().into_iter().any(|a| *a.addr() == addr)
     }
 
     /// Return all events present in this log.

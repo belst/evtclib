@@ -5,8 +5,23 @@ use super::boon::{BoonQueue, BoonType};
 /// Enum containing all bosses with their IDs.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Boss {
-    ValeGuardian = 15483,
+    ValeGuardian = 0x3C4E,
+
+    /// Xera ID for phase 1.
+    ///
+    /// This is only half of Xera's ID, as there will be a second agent for the
+    /// second phase. This agent will have another ID, see
+    /// [`XERA_PHASE2_ID`](constant.XERA_PHASE2_ID.html).
+    Xera = 0x3F76,
 }
+
+/// ID for Xera in the second phase.
+///
+/// The original Xera will despawn, and after the tower phase, a separate spawn
+/// will take over. This new Xera will have this ID. Care needs to be taken when
+/// calculating boss damage on this encounter, as both Xeras have to be taken
+/// into account.
+pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 
 /// Contains a boon.
 ///
@@ -103,11 +118,9 @@ macro_rules! mechanics {
 }
 
 /// A slice of all mechanics that we know about.
-pub static MECHANICS: &[Mechanic] = &[
-    mechanics! { Boss::ValeGuardian => [
-        "Unstable Magic Spike" => Trigger::SkillOnPlayer(31860),
-    ]},
-];
+pub static MECHANICS: &[Mechanic] = &[mechanics! { Boss::ValeGuardian => [
+    "Unstable Magic Spike" => Trigger::SkillOnPlayer(31860),
+]}];
 
 /// Get all mechanics that belong to the given boss.
 pub fn get_mechanics(boss_id: u16) -> Vec<&'static Mechanic> {
