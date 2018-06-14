@@ -148,5 +148,12 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     println!("Damages: {:?}", stats.damage_log);
     println!("My damage: {:?}", my_damage);
 
+    for boon in evtclib::statistics::gamedata::BOONS {
+        let avg = mine
+            .boon_log
+            .average_stacks(mine.enter_combat, mine.exit_combat, boon.0);
+        println!("{}: {}", boon.1, avg);
+    }
+
     Ok(())
 }

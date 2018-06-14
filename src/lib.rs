@@ -22,6 +22,7 @@ extern crate quick_error;
 #[macro_use]
 extern crate num_derive;
 extern crate byteorder;
+extern crate fnv;
 extern crate num_traits;
 
 pub mod raw;

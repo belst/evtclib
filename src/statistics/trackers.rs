@@ -20,9 +20,11 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use super::super::{Event, EventKind, Log};
-use super::boon::BoonQueue;
+use super::boon::{BoonLog, BoonQueue};
 use super::damage::{DamageLog, DamageType};
 use super::gamedata::{self, Mechanic, Trigger};
+
+use fnv::FnvHashMap;
 
 /// A tracker.
 ///
@@ -224,22 +226,18 @@ impl Tracker for CombatTimeTracker {
 /// This tracker only tracks the boons that are known to evtclib, that is the
 /// boons defined in `evtclib::statistics::gamedata::BOONS`.
 pub struct BoonTracker {
-    agent_addr: u64,
-    boon_areas: HashMap<u16, u64>,
-    boon_queues: HashMap<u16, BoonQueue>,
+    boon_logs: FnvHashMap<u64, BoonLog>,
+    boon_queues: FnvHashMap<u64, FnvHashMap<u16, BoonQueue>>,
     last_time: u64,
-    next_update: u64,
 }
 
 impl BoonTracker {
     /// Creates a new boon tracker for the given agent.
-    pub fn new(agent_addr: u64) -> BoonTracker {
+    pub fn new() -> BoonTracker {
         BoonTracker {
-            agent_addr,
-            boon_areas: Default::default(),
+            boon_logs: Default::default(),
             boon_queues: Default::default(),
             last_time: 0,
-            next_update: 0,
         }
     }
 
@@ -247,46 +245,50 @@ impl BoonTracker {
     ///
     /// * `delta_t` - Amount of milliseconds to update.
     fn update_queues(&mut self, delta_t: u64) {
+        if delta_t == 0 {
+            return;
+        }
+
         self.boon_queues
             .values_mut()
+            .flat_map(|m| m.values_mut())
             .for_each(|queue| queue.simulate(delta_t));
 
         // Throw away empty boon queues or to improve performance
+        self.boon_queues
+            .values_mut()
+            .for_each(|m| m.retain(|_, q| !q.is_empty()));
         self.boon_queues.retain(|_, q| !q.is_empty());
     }
 
-    /// Update the internal tracking areas.
-    ///
-    /// Does not update the boon queues.
-    ///
-    /// * `delta_t` - Amount of milliseconds that passed.
-    fn update_areas(&mut self, delta_t: u64) {
-        for (buff_id, queue) in &self.boon_queues {
-            let current_stacks = queue.current_stacks();
-            let area = self.boon_areas.entry(*buff_id).or_insert(0);
-            *area += current_stacks as u64 * delta_t;
+    fn update_logs(&mut self, time: u64) {
+        if time == self.last_time {
+            return;
         }
-    }
-
-    fn update_next_update(&mut self) {
-        let next_update = self
-            .boon_queues
-            .values()
-            .map(BoonQueue::next_update)
-            .filter(|v| *v != 0)
-            .min()
-            .unwrap_or(0);
-        self.next_update = next_update;
+        for (agent, boons) in &self.boon_queues {
+            let agent_log = self
+                .boon_logs
+                .entry(*agent)
+                .or_insert_with(Default::default);
+            for (boon_id, queue) in boons {
+                agent_log.log(time, *boon_id, queue.current_stacks());
+            }
+        }
     }
 
     /// Get the boon queue for the given buff_id.
     ///
     /// If the queue does not yet exist, create it.
     ///
+    /// * `agent_addr` - The address of the agent.
     /// * `buff_id` - The buff (or condition) id.
-    fn get_queue(&mut self, buff_id: u16) -> Option<&mut BoonQueue> {
+    fn get_queue(&mut self, agent_addr: u64, buff_id: u16) -> Option<&mut BoonQueue> {
         use std::collections::hash_map::Entry;
-        let entry = self.boon_queues.entry(buff_id);
+        let entry = self
+            .boon_queues
+            .entry(agent_addr)
+            .or_insert_with(Default::default)
+            .entry(buff_id);
         match entry {
             // Queue already exists
             Entry::Occupied(e) => Some(e.into_mut()),
@@ -304,45 +306,48 @@ impl BoonTracker {
 }
 
 impl Tracker for BoonTracker {
-    type Stat = HashMap<u16, u64>;
+    type Stat = HashMap<u64, BoonLog>;
     type Error = !;
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
-
         let delta_t = event.time - self.last_time;
-        if self.next_update != 0 && delta_t > self.next_update {
-            self.update_queues(delta_t);
-            self.update_areas(delta_t);
-            self.update_next_update();
-            self.last_time = event.time;
-        }
+        self.update_queues(delta_t);
 
         match event.kind {
             EventKind::BuffApplication {
-                buff_id, duration, ..
+                destination_agent_addr,
+                buff_id,
+                duration,
+                ..
             } => {
-                if let Some(queue) = self.get_queue(buff_id) {
+                if let Some(queue) = self.get_queue(destination_agent_addr, buff_id) {
                     queue.add_stack(duration as u64);
                 }
-                self.update_next_update();
             }
 
             // XXX: Properly handle SINGLE and MANUAL removal types
-            EventKind::BuffRemove { buff_id, .. } => {
-                if let Some(queue) = self.get_queue(buff_id) {
+            EventKind::BuffRemove {
+                destination_agent_addr,
+                buff_id,
+                ..
+            } => {
+                if let Some(queue) = self.get_queue(destination_agent_addr, buff_id) {
                     queue.clear();
                 }
-                self.update_next_update();
             }
 
             _ => (),
         }
+        self.update_logs(event.time);
+        self.last_time = event.time;
 
         Ok(())
     }
 
     fn finalize(self) -> Result<Self::Stat, Self::Error> {
-        Ok(self.boon_areas)
+        // Convert from FnvHashMap to HashMap in order to not leak
+        // implementation details.
+        Ok(self.boon_logs.into_iter().collect())
     }
 }
 

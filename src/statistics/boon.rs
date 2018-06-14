@@ -1,4 +1,13 @@
+//! Module providing functions and structs to deal with boon related statistics.
 use std::cmp;
+
+use std::collections::HashMap;
+use std::fmt;
+use std::ops::Mul;
+
+use super::math::{Monoid, RecordFunc, Semigroup};
+
+use fnv::FnvHashMap;
 
 /// The type of a boon.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -40,6 +49,7 @@ pub struct BoonQueue {
     capacity: u32,
     queue: Vec<u64>,
     boon_type: BoonType,
+    next_update: u64,
 }
 
 impl BoonQueue {
@@ -52,6 +62,7 @@ impl BoonQueue {
             capacity,
             queue: Vec::new(),
             boon_type,
+            next_update: 0,
         }
     }
 
@@ -75,6 +86,7 @@ impl BoonQueue {
     pub fn add_stack(&mut self, duration: u64) {
         self.queue.push(duration);
         self.fix_queue();
+        self.next_update = self.next_change();
     }
 
     /// Return the amount of current stacks.
@@ -98,6 +110,10 @@ impl BoonQueue {
     /// * `duration` - The amount of time (in milliseconds) to simulate.
     pub fn simulate(&mut self, duration: u64) {
         if duration == 0 {
+            return;
+        }
+        if duration < self.next_update {
+            self.next_update -= duration;
             return;
         }
         let mut remaining = duration;
@@ -125,6 +141,7 @@ impl BoonQueue {
                     .collect();
             }
         }
+        self.next_update = self.next_change();
     }
 
     /// Remove all stacks.
@@ -160,6 +177,112 @@ impl BoonQueue {
     /// A return value of 0 means that there's no update awaiting.
     pub fn next_update(&self) -> u64 {
         self.queue.last().cloned().unwrap_or(0)
+    }
+}
+
+/// Amount of stacks of a boon.
+// Since this is also used to represent changes in stacks, we need access to
+// negative numbers too, as stacks can drop.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Stacks(i32);
+
+impl Semigroup for Stacks {
+    #[inline]
+    fn combine(&self, other: &Self) -> Self {
+        Stacks(self.0 + other.0)
+    }
+}
+
+impl Monoid for Stacks {
+    #[inline]
+    fn mempty() -> Self {
+        Stacks(0)
+    }
+}
+
+// This shouldn't be negative, as total stacks are always greater than 0, thus
+// the area below the curve will always be positive.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[doc(hidden)]
+pub struct BoonArea(u64);
+
+impl Semigroup for BoonArea {
+    #[inline]
+    fn combine(&self, other: &Self) -> Self {
+        BoonArea(self.0 + other.0)
+    }
+}
+
+impl Monoid for BoonArea {
+    #[inline]
+    fn mempty() -> Self {
+        BoonArea(0)
+    }
+}
+
+impl Mul<u64> for Stacks {
+    type Output = BoonArea;
+
+    #[inline]
+    fn mul(self, rhs: u64) -> BoonArea {
+        BoonArea(self.0 as u64 * rhs)
+    }
+}
+
+/// A boon log for a specific player.
+///
+/// This logs the amount of stacks of each boon a player had at any given time.
+#[derive(Clone, Default)]
+pub struct BoonLog {
+    // Keep a separate RecordFunc for each boon.
+    inner: FnvHashMap<u16, RecordFunc<u64, (), Stacks>>,
+}
+
+impl BoonLog {
+    /// Create a new, empty boon log.
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// Add an event to the boon log.
+    pub fn log(&mut self, time: u64, boon_id: u16, stacks: u32) {
+        let func = self.inner.entry(boon_id).or_insert_with(Default::default);
+        let current = func.tally();
+        if current.0 == stacks as i32 {
+            return;
+        }
+        let diff = stacks as i32 - current.0;
+        func.insert(time, (), Stacks(diff));
+    }
+
+    /// Get the average amount of stacks between the two given time points.
+    ///
+    /// * `a` - Start time point.
+    /// * `b` - End time point.
+    /// * `boon_id` - ID of the boon that you want to get the average for.
+    pub fn average_stacks(&self, a: u64, b: u64, boon_id: u16) -> f32 {
+        assert!(b > a);
+        let func = if let Some(f) = self.inner.get(&boon_id) {
+            f
+        } else {
+            return 0.;
+        };
+        let area = func.integral(&a, &b);
+        area.0 as f32 / (b - a) as f32
+    }
+
+    /// Get the amount of stacks at the given time point.
+    ///
+    /// * `x` - Time point.
+    /// * `boon_id` - ID of the boon that you want to get.
+    pub fn stacks_at(&self, x: u64, boon_id: u16) -> u32 {
+        self.inner.get(&boon_id).map(|f| f.get(&x)).unwrap_or(0)
+    }
+}
+
+impl fmt::Debug for BoonLog {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BoonLog {{ .. }}")
     }
 }
 

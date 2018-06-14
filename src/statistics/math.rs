@@ -1,5 +1,8 @@
 //! This module provides some basic mathematical structures.
 
+use std::iter;
+use std::ops::{Mul, Sub};
+
 /// A semigroup.
 ///
 /// This trait lets you combine elements by a binary operation.
@@ -135,6 +138,39 @@ where
             .iter()
             .filter(|record| predicate(&record.tag))
             .fold(D::mempty(), |a, b| a.combine(&b.data))
+    }
+}
+
+impl<X, T, D, A> RecordFunc<X, T, D>
+where
+    X: Ord + Sub<X, Output = X> + Copy,
+    D: Monoid + Mul<X, Output = A>,
+    A: Monoid,
+{
+    #[inline]
+    pub fn integral(&self, a: &X, b: &X) -> A {
+        self.integral_only(a, b, |_| true)
+    }
+
+    pub fn integral_only<F: FnMut(&T) -> bool>(&self, a: &X, b: &X, mut predicate: F) -> A {
+        let points = self
+            .data
+            .iter()
+            .skip_while(|record| record.x < *a)
+            .take_while(|record| record.x <= *b)
+            .filter(|record| predicate(&record.tag))
+            .map(|record| record.x)
+            .chain(iter::once(*b))
+            .collect::<Vec<_>>();
+        let mut area = A::mempty();
+        let mut last = *a;
+        for point in points {
+            let diff = point - last;
+            let value = self.get_only(&last, &mut predicate);
+            area = area.combine(&(value * diff));
+            last = point;
+        }
+        area
     }
 }
 
