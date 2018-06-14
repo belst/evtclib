@@ -26,6 +26,7 @@ extern crate getset;
 extern crate byteorder;
 extern crate fnv;
 extern crate num_traits;
+extern crate zip;
 
 pub mod raw;
 

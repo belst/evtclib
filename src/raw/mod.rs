@@ -6,6 +6,8 @@
 //! functions whenever possible.
 mod types;
 
+use zip::ZipArchive;
+
 pub use self::types::{
     Agent, CbtActivation, CbtBuffRemove, CbtCustomSkill, CbtEvent, CbtResult, CbtStateChange,
     Language, Skill, IFF,
@@ -13,4 +15,13 @@ pub use self::types::{
 
 pub mod parser;
 
-pub use self::parser::{parse_file, Evtc, ParseError};
+pub use self::parser::{parse_file, Evtc, ParseError, ParseResult};
+
+use std::io::{Read, Seek};
+
+/// Parse a complete log that was compressed as a zip file.
+pub fn parse_zip<T: Read + Seek>(input: &mut T) -> ParseResult<Evtc> {
+    let mut archive = ZipArchive::new(input)?;
+    let mut file = archive.by_index(0)?;
+    parse_file(&mut file)
+}

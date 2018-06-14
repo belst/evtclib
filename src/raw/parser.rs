@@ -117,11 +117,17 @@ quick_error! {
         MalformedHeader {
             description("malformed header")
         }
+        InvalidZip(err: ::zip::result::ZipError) {
+            from()
+            description("zip error")
+            display("Archive error: {}", err)
+            cause(err)
+        }
     }
 }
 
 /// A type indicating the parse result.
-type ParseResult<T> = Result<T, ParseError>;
+pub type ParseResult<T> = Result<T, ParseError>;
 
 /// Parse the header of an evtc file.
 ///
