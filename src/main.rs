@@ -15,7 +15,7 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     println!("Hello World!");
     let mut f = BufReader::new(File::open(env::args().skip(1).next().unwrap())?);
 
-    let result = evtclib::raw::parse_file(&mut f)?;
+    let result = evtclib::raw::parse_zip(&mut f)?;
     /*
     for agent in result.agents.iter().filter(|a| a.is_player()) {
         println!("Agent: {:?}", agent);
@@ -89,7 +89,7 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
                 source_agent_addr: src,
                 damage: dmg,
                 ..
-            } if src == 5480786193115521456 =>
+            } if src == 17963907008649399712 =>
             {
                 count += 1;
                 damage += dmg as u64;
@@ -98,7 +98,7 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
                 source_agent_addr: src,
                 damage: dmg,
                 ..
-            } if src == 5480786193115521456 =>
+            } if src == 17963907008649399712 =>
             {
                 count += 1;
                 damage += dmg as u64;
@@ -135,18 +135,20 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     println!("Count: {}, Damage: {}", count, damage);
     println!("Failed events: {}", failed);
 
-    let processed = evtclib::process(&result).unwrap();
+    let processed = evtclib::process(&result).expect("Failed processing");
     //println!("Me: {:#?}", processed.agent_by_addr(5480786193115521456));
+    println!("Players: {:#?}", processed.players().collect::<Vec<_>>());
     let stats = evtclib::statistics::calculate(&processed).unwrap();
     //println!("{:#?}", stats);
-    let mine = stats.agent_stats.get(&5480786193115521456).unwrap();
+    let my_addr = me(&processed);
+    let mine = stats.agent_stats.get(&my_addr).expect("My stats not found");
 
-    let my_addr = 5480786193115521456;
+    let my_damage = stats.damage_log.damage(|m| m.source == my_addr && processed.is_boss(m.target));
 
-    let my_damage = stats.damage_log.damage(|m| m.source == my_addr);
-
+    let combat_time = (mine.exit_combat - mine.enter_combat) as f32/ 1000.;
     println!("Damages: {:?}", stats.damage_log);
-    println!("My damage: {:?}", my_damage);
+    println!("Combat time: {} ({} till {})", combat_time, mine.enter_combat, mine.exit_combat);
+    println!("My boss dps: {:?}", my_damage.0 as f32 / combat_time);
 
     for boon in evtclib::statistics::gamedata::BOONS {
         let avg = mine
@@ -155,5 +157,19 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
         println!("{}: {}", boon.1, avg);
     }
 
+    //println!("NPCs: {:#?}", processed.npcs().collect::<Vec<_>>());
+    println!("Bosses: {:#?}", processed.boss_agents());
+
     Ok(())
+}
+
+fn me(log: &evtclib::Log) -> u64 {
+    for agent in log.players() {
+        if let evtclib::AgentName::Player { account_name, .. } = agent.name() {
+            if account_name == ":Dunje.4863" {
+                return *agent.addr();
+            }
+        }
+    }
+    0
 }
