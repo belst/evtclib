@@ -276,7 +276,11 @@ impl BoonLog {
     /// * `x` - Time point.
     /// * `boon_id` - ID of the boon that you want to get.
     pub fn stacks_at(&self, x: u64, boon_id: u16) -> u32 {
-        self.inner.get(&boon_id).map(|f| f.get(&x)).unwrap_or(0)
+        self.inner
+            .get(&boon_id)
+            .map(|f| f.get(&x))
+            .unwrap_or(Stacks(0))
+            .0 as u32
     }
 }
 
