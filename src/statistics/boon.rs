@@ -1,7 +1,5 @@
 //! Module providing functions and structs to deal with boon related statistics.
 use std::cmp;
-
-use std::collections::HashMap;
 use std::fmt;
 use std::ops::Mul;
 
@@ -50,6 +48,7 @@ pub struct BoonQueue {
     queue: Vec<u64>,
     boon_type: BoonType,
     next_update: u64,
+    backlog: u64,
 }
 
 impl BoonQueue {
@@ -63,6 +62,7 @@ impl BoonQueue {
             queue: Vec::new(),
             boon_type,
             next_update: 0,
+            backlog: 0,
         }
     }
 
@@ -84,9 +84,11 @@ impl BoonQueue {
     ///
     /// * `duration` - Duration (in milliseconds) of the added stack.
     pub fn add_stack(&mut self, duration: u64) {
+        let backlog = self.backlog;
+        self.do_simulate(backlog);
         self.queue.push(duration);
         self.fix_queue();
-        self.next_update = self.next_change();
+        self.next_update = self.next_update();
     }
 
     /// Return the amount of current stacks.
@@ -114,8 +116,15 @@ impl BoonQueue {
         }
         if duration < self.next_update {
             self.next_update -= duration;
-            return;
+            self.backlog += duration;
+        } else {
+            let total = self.backlog + duration;
+            self.do_simulate(total);
         }
+    }
+
+    /// Simulate the thing without using the backlog.
+    fn do_simulate(&mut self, duration: u64) {
         let mut remaining = duration;
         match self.boon_type {
             BoonType::Duration => {
@@ -141,12 +150,15 @@ impl BoonQueue {
                     .collect();
             }
         }
-        self.next_update = self.next_change();
+        self.next_update = self.next_update();
+        self.backlog = 0;
     }
 
     /// Remove all stacks.
     pub fn clear(&mut self) {
         self.queue.clear();
+        self.next_update = 0;
+        self.backlog = 0;
     }
 
     /// Checks if any stacks are left.
@@ -261,7 +273,7 @@ impl BoonLog {
     /// * `b` - End time point.
     /// * `boon_id` - ID of the boon that you want to get the average for.
     pub fn average_stacks(&self, a: u64, b: u64, boon_id: u16) -> f32 {
-        assert!(b > a);
+        assert!(b >= a, "timespan is negative?!");
         let func = if let Some(f) = self.inner.get(&boon_id) {
             f
         } else {

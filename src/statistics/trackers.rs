@@ -253,7 +253,9 @@ impl BoonTracker {
             .values_mut()
             .flat_map(|m| m.values_mut())
             .for_each(|queue| queue.simulate(delta_t));
+    }
 
+    fn cleanup_queues(&mut self) {
         // Throw away empty boon queues or to improve performance
         self.boon_queues
             .values_mut()
@@ -262,9 +264,6 @@ impl BoonTracker {
     }
 
     fn update_logs(&mut self, time: u64) {
-        if time == self.last_time {
-            return;
-        }
         for (agent, boons) in &self.boon_queues {
             let agent_log = self
                 .boon_logs
@@ -338,8 +337,10 @@ impl Tracker for BoonTracker {
 
             _ => (),
         }
+
         self.update_logs(event.time);
         self.last_time = event.time;
+        self.cleanup_queues();
 
         Ok(())
     }
