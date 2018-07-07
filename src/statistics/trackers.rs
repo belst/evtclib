@@ -25,6 +25,8 @@ use super::damage::{DamageLog, DamageType};
 use super::gamedata::{self, Mechanic, Trigger};
 use super::mechanics::MechanicLog;
 
+use super::super::raw::CbtResult;
+
 use fnv::FnvHashMap;
 
 /// A tracker.
@@ -389,10 +391,14 @@ impl Tracker for MechanicTracker {
                         source_agent_addr,
                         destination_agent_addr,
                         skill_id,
+                        result,
                         ..
                     },
                     Trigger::SkillOnPlayer(trigger_id),
-                ) if skill_id == trigger_id && self.is_boss(*source_agent_addr) =>
+                ) if skill_id == trigger_id
+                    && self.is_boss(*source_agent_addr)
+                    && *result != CbtResult::Evade
+                    && *result != CbtResult::Block =>
                 {
                     self.log
                         .increase(event.time, mechanic, *destination_agent_addr);
