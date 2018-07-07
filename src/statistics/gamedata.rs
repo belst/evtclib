@@ -113,6 +113,23 @@ pub enum Trigger {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Mechanic(pub u16, pub Trigger, pub &'static str);
 
+impl Mechanic {
+    #[inline]
+    pub fn boss_id(&self) -> u16 {
+        self.0
+    }
+
+    #[inline]
+    pub fn trigger(&self) -> &Trigger {
+        &self.1
+    }
+
+    #[inline]
+    pub fn name(&self) -> &'static str {
+        self.2
+    }
+}
+
 macro_rules! mechanics {
     ( $( $boss_id:expr => [ $($name:expr => $trigger:expr,)* ], )* ) => {
         &[

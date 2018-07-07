@@ -37,6 +37,8 @@ pub mod statistics;
 
 use statistics::gamedata::{self, Boss};
 
+use std::fmt;
+
 /// A macro that returns `true` when the given expression matches the pattern.
 ///
 /// ```rust
@@ -90,6 +92,18 @@ pub enum AgentName {
         account_name: String,
         subgroup: u8,
     },
+}
+
+impl fmt::Display for AgentName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            AgentName::Single(ref name) => name,
+            AgentName::Player {
+                ref character_name, ..
+            } => character_name,
+        };
+        f.write_str(name)
+    }
 }
 
 /// An agent.

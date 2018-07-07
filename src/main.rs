@@ -163,11 +163,11 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     }
 
     for agent in processed.players() {
-        println!("{:?}", agent.name());
+        println!("{}", agent.name());
         for mechanic in evtclib::statistics::gamedata::get_mechanics(processed.boss_id()) {
             println!(
-                "{}: {}",
-                mechanic.2,
+                "  {}: {}",
+                mechanic.name(),
                 stats
                     .mechanic_log
                     .count(|m, a| m == mechanic && a == *agent.addr())
