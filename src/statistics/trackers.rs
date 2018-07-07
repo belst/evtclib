@@ -23,6 +23,7 @@ use super::super::{Event, EventKind, Log};
 use super::boon::{BoonLog, BoonQueue};
 use super::damage::{DamageLog, DamageType};
 use super::gamedata::{self, Mechanic, Trigger};
+use super::mechanics::MechanicLog;
 
 use fnv::FnvHashMap;
 
@@ -354,37 +355,33 @@ impl Tracker for BoonTracker {
 
 /// A tracker that tracks boss mechanics for each player.
 pub struct MechanicTracker {
-    mechanics: HashMap<&'static Mechanic, u32>,
+    log: MechanicLog,
     available_mechanics: Vec<&'static Mechanic>,
-    boss_address: u64,
-    agent_address: u64,
+    boss_addresses: Vec<u64>,
 }
 
 impl MechanicTracker {
     /// Create a new mechanic tracker that watches over the given mechanics.
-    pub fn new(
-        agent_address: u64,
-        boss_address: u64,
-        mechanics: Vec<&'static Mechanic>,
-    ) -> MechanicTracker {
+    pub fn new(boss_addresses: Vec<u64>, mechanics: Vec<&'static Mechanic>) -> MechanicTracker {
         MechanicTracker {
-            mechanics: HashMap::new(),
+            log: MechanicLog::default(),
             available_mechanics: mechanics,
-            boss_address,
-            agent_address,
+            boss_addresses,
         }
     }
 }
 
+impl MechanicTracker {
+    fn is_boss(&self, addr: u64) -> bool {
+        self.boss_addresses.contains(&addr)
+    }
+}
+
 impl Tracker for MechanicTracker {
-    type Stat = HashMap<&'static Mechanic, u32>;
+    type Stat = MechanicLog;
     type Error = !;
 
     fn feed(&mut self, event: &Event) -> Result<(), Self::Error> {
-        fn increase(map: &mut HashMap<&'static Mechanic, u32>, entry: &'static Mechanic) {
-            *map.entry(entry).or_insert(0) += 1;
-        }
-
         for mechanic in &self.available_mechanics {
             match (&event.kind, &mechanic.1) {
                 (
@@ -395,11 +392,10 @@ impl Tracker for MechanicTracker {
                         ..
                     },
                     Trigger::SkillOnPlayer(trigger_id),
-                ) if skill_id == trigger_id
-                    && *source_agent_addr == self.boss_address
-                    && *destination_agent_addr == self.agent_address =>
+                ) if skill_id == trigger_id && self.is_boss(*source_agent_addr) =>
                 {
-                    increase(&mut self.mechanics, mechanic);
+                    self.log
+                        .increase(event.time, mechanic, *destination_agent_addr);
                 }
                 _ => (),
             }
@@ -408,6 +404,6 @@ impl Tracker for MechanicTracker {
     }
 
     fn finalize(self) -> Result<Self::Stat, Self::Error> {
-        Ok(self.mechanics)
+        Ok(self.log)
     }
 }

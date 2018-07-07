@@ -7,10 +7,12 @@ pub mod boon;
 pub mod damage;
 pub mod gamedata;
 pub mod math;
+pub mod mechanics;
 pub mod trackers;
 
 use self::boon::BoonLog;
 use self::damage::DamageLog;
+use self::mechanics::MechanicLog;
 use self::trackers::{RunnableTracker, Tracker};
 
 pub type StatResult<T> = Result<T, StatError>;
@@ -41,6 +43,8 @@ macro_rules! try_tracker {
 pub struct Statistics {
     /// The complete damage log.
     pub damage_log: DamageLog,
+    /// The complete mechanics log.
+    pub mechanic_log: MechanicLog,
     /// A map mapping agent addresses to their stats.
     pub agent_stats: HashMap<u64, AgentStats>,
 }
@@ -90,6 +94,10 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
     let mut combat_time_tracker = trackers::CombatTimeTracker::new();
     let mut boon_tracker = trackers::BoonTracker::new();
 
+    let mechanics = gamedata::get_mechanics(log.boss_id);
+    let boss_addr = log.boss_agents().into_iter().map(|x| *x.addr()).collect();
+    let mut mechanic_tracker = trackers::MechanicTracker::new(boss_addr, mechanics);
+
     run_trackers(
         log,
         &mut [
@@ -97,6 +105,7 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
             &mut log_start_tracker,
             &mut combat_time_tracker,
             &mut boon_tracker,
+            &mut mechanic_tracker,
         ],
     )?;
 
@@ -131,9 +140,11 @@ pub fn calculate(log: &Log) -> StatResult<Statistics> {
     }
 
     let damage_log = try_tracker!(damage_tracker.finalize());
+    let mechanic_log = try_tracker!(mechanic_tracker.finalize());
 
     Ok(Statistics {
         damage_log,
+        mechanic_log,
         agent_stats,
     })
 }

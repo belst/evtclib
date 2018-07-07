@@ -143,11 +143,16 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
     let my_addr = me(&processed);
     let mine = stats.agent_stats.get(&my_addr).expect("My stats not found");
 
-    let my_damage = stats.damage_log.damage(|m| m.source == my_addr && processed.is_boss(m.target));
+    let my_damage = stats
+        .damage_log
+        .damage(|m| m.source == my_addr && processed.is_boss(m.target));
 
-    let combat_time = (mine.exit_combat - mine.enter_combat) as f32/ 1000.;
+    let combat_time = (mine.exit_combat - mine.enter_combat) as f32 / 1000.;
     println!("Damages: {:?}", stats.damage_log);
-    println!("Combat time: {} ({} till {})", combat_time, mine.enter_combat, mine.exit_combat);
+    println!(
+        "Combat time: {} ({} till {})",
+        combat_time, mine.enter_combat, mine.exit_combat
+    );
     println!("My boss dps: {:?}", my_damage.0 as f32 / combat_time);
 
     for boon in evtclib::statistics::gamedata::BOONS {
@@ -155,6 +160,19 @@ pub fn main() -> Result<(), evtclib::raw::parser::ParseError> {
             .boon_log
             .average_stacks(mine.enter_combat, mine.exit_combat, boon.0);
         println!("{}: {}", boon.1, avg);
+    }
+
+    for agent in processed.players() {
+        println!("{:?}", agent.name());
+        for mechanic in evtclib::statistics::gamedata::get_mechanics(processed.boss_id()) {
+            println!(
+                "{}: {}",
+                mechanic.2,
+                stats
+                    .mechanic_log
+                    .count(|m, a| m == mechanic && a == *agent.addr())
+            );
+        }
     }
 
     //println!("NPCs: {:#?}", processed.npcs().collect::<Vec<_>>());

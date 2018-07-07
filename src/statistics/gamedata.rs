@@ -13,6 +13,8 @@ pub enum Boss {
     /// second phase. This agent will have another ID, see
     /// [`XERA_PHASE2_ID`](constant.XERA_PHASE2_ID.html).
     Xera = 0x3F76,
+
+    Samarog = 0x4324,
 }
 
 /// ID for Xera in the second phase.
@@ -112,15 +114,23 @@ pub enum Trigger {
 pub struct Mechanic(pub u16, pub Trigger, pub &'static str);
 
 macro_rules! mechanics {
-    ($boss_id:expr => [ $($name:expr => $trigger:expr,)* ]) => {
-        $(Mechanic($boss_id as u16, $trigger, $name)),*
+    ( $( $boss_id:expr => [ $($name:expr => $trigger:expr,)* ], )* ) => {
+        &[
+            $( $(Mechanic($boss_id as u16, $trigger, $name)),* ),*
+         ]
     }
 }
 
 /// A slice of all mechanics that we know about.
-pub static MECHANICS: &[Mechanic] = &[mechanics! { Boss::ValeGuardian => [
-    "Unstable Magic Spike" => Trigger::SkillOnPlayer(31860),
-]}];
+pub static MECHANICS: &[Mechanic] = mechanics! {
+    Boss::ValeGuardian => [
+        "Unstable Magic Spike" => Trigger::SkillOnPlayer(31860),
+    ],
+    Boss::Samarog => [
+        "Prisoner Sweep" => Trigger::SkillOnPlayer(38168),
+        "Shockwave" => Trigger::SkillOnPlayer(37996),
+    ],
+};
 
 /// Get all mechanics that belong to the given boss.
 pub fn get_mechanics(boss_id: u16) -> Vec<&'static Mechanic> {

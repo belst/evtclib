@@ -95,27 +95,27 @@ pub enum AgentName {
 /// An agent.
 #[derive(Debug, Clone, Getters)]
 pub struct Agent {
-    #[get="pub"]
+    #[get = "pub"]
     addr: u64,
-    #[get="pub"]
+    #[get = "pub"]
     kind: AgentKind,
-    #[get="pub"]
+    #[get = "pub"]
     toughness: i16,
-    #[get="pub"]
+    #[get = "pub"]
     concentration: i16,
-    #[get="pub"]
+    #[get = "pub"]
     healing: i16,
-    #[get="pub"]
+    #[get = "pub"]
     condition: i16,
-    #[get="pub"]
+    #[get = "pub"]
     name: AgentName,
-    #[get="pub"]
+    #[get = "pub"]
     instance_id: u16,
-    #[get="pub"]
+    #[get = "pub"]
     first_aware: u64,
-    #[get="pub"]
+    #[get = "pub"]
     last_aware: u64,
-    #[get="pub"]
+    #[get = "pub"]
     master_agent: Option<u64>,
 }
 
@@ -194,6 +194,11 @@ impl Log {
     /// Check whether the given address is a boss agent.
     pub fn is_boss(&self, addr: u64) -> bool {
         self.boss_agents().into_iter().any(|a| *a.addr() == addr)
+    }
+
+    /// Returns the boss/encounter id.
+    pub fn boss_id(&self) -> u16 {
+        self.boss_id
     }
 
     /// Return all events present in this log.
