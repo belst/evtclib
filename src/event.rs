@@ -199,6 +199,8 @@ impl Event {
                 reward_id: raw_event.dst_agent,
                 reward_type: raw_event.value,
             },
+            // XXX: implement proper handling of those events!
+            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity => return None,
 
             CbtStateChange::None => if let Some(kind) = check_activation(raw_event) {
                 kind

@@ -123,6 +123,13 @@ pub enum CbtStateChange {
     /// * `dst_agent` is reward id.
     /// * `value` is reward type.
     Reward,
+    /// Combat event that will appear once per buff per agent on logging start (zero duration,
+    /// buff==18)
+    BuffInitial,
+    /// src_agent changed, cast float* p = (float*)&dst_agent, access as x/y/z (float[3])
+	Position,
+    /// src_agent changed, cast float* v = (float*)&dst_agent, access as x/y/z (float[3])
+	Velocity,
 }
 
 /// Combat buff remove type
