@@ -6,6 +6,8 @@ use super::boon::{BoonQueue, BoonType};
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Boss {
     ValeGuardian = 0x3C4E,
+    Gorseval = 0x3C45,
+    Sabetha = 0x3C0F,
 
     /// Xera ID for phase 1.
     ///
@@ -140,9 +142,23 @@ macro_rules! mechanics {
 
 /// A slice of all mechanics that we know about.
 pub static MECHANICS: &[Mechanic] = mechanics! {
+    // Wing 1
     Boss::ValeGuardian => [
-        "Unstable Magic Spike" => Trigger::SkillOnPlayer(31860),
+        // Teleport:
+        "Unstable Magic Spike" => Trigger::SkillOnPlayer(31392),
     ],
+    Boss::Gorseval => [
+        // Slam
+        "Spectral Impact" => Trigger::SkillOnPlayer(31875),
+        // Egg
+        "Ghastly Prison" => Trigger::BoonPlayer(31623),
+    ],
+    Boss::Sabetha => [
+        // Took the launch pad
+        "Shell-Shocked" => Trigger::BoonPlayer(34108),
+    ],
+
+    // Wing 4
     Boss::Samarog => [
         "Prisoner Sweep" => Trigger::SkillOnPlayer(38168),
         "Shockwave" => Trigger::SkillOnPlayer(37996),

@@ -127,9 +127,9 @@ pub enum CbtStateChange {
     /// buff==18)
     BuffInitial,
     /// src_agent changed, cast float* p = (float*)&dst_agent, access as x/y/z (float[3])
-	Position,
+    Position,
     /// src_agent changed, cast float* v = (float*)&dst_agent, access as x/y/z (float[3])
-	Velocity,
+    Velocity,
 }
 
 /// Combat buff remove type

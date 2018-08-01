@@ -395,13 +395,41 @@ impl Tracker for MechanicTracker {
                         ..
                     },
                     Trigger::SkillOnPlayer(trigger_id),
-                ) if skill_id == trigger_id
-                    && self.is_boss(*source_agent_addr)
-                    && *result != CbtResult::Evade
-                    && *result != CbtResult::Block =>
+                )
+                    if skill_id == trigger_id
+                        && self.is_boss(*source_agent_addr)
+                        && *result != CbtResult::Evade
+                        && *result != CbtResult::Absorb
+                        && *result != CbtResult::Block =>
                 {
                     self.log
                         .increase(event.time, mechanic, *destination_agent_addr);
+                }
+
+                (
+                    EventKind::BuffApplication {
+                        destination_agent_addr,
+                        buff_id,
+                        ..
+                    },
+                    Trigger::BoonPlayer(trigger_id),
+                )
+                    if buff_id == trigger_id =>
+                {
+                    // Some buff applications are registered multiple times. So
+                    // instead of counting those quick successions separately
+                    // (and thus having a wrong count), we check if this
+                    // mechanic has already been logged "shortly before" (10 millisecons).
+                    if self
+                        .log
+                        .count_between(event.time - 10, event.time + 1, |m, w| {
+                            &m == mechanic && w == *destination_agent_addr
+                        })
+                        == 0
+                    {
+                        self.log
+                            .increase(event.time, mechanic, *destination_agent_addr);
+                    }
                 }
                 _ => (),
             }
