@@ -283,8 +283,8 @@ pub fn parse_event<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
     let iff = IFF::from_u8(input.read_u8()?).unwrap_or(IFF::None);
     let buff = input.read_u8()?;
     let result = CbtResult::from_u8(input.read_u8()?).unwrap_or(CbtResult::None);
-    let is_activation = CbtActivation::from_u8(input.read_u8()?)?;
-    let is_buffremove = CbtBuffRemove::from_u8(input.read_u8()?)?;
+    let is_activation = CbtActivation::from_u8(input.read_u8()?).unwrap_or(CbtActivation::None);
+    let is_buffremove = CbtBuffRemove::from_u8(input.read_u8()?).unwrap_or(CbtBuffRemove::None);
     let is_ninety = input.read_u8()? != 0;
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
