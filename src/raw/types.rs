@@ -36,6 +36,8 @@ pub enum CbtResult {
     Blind,
     /// Physical hit was the killing blow
     KillingBlow,
+    /// Hit was downing hit.
+    Downed,
     /// Field is not used in this kind of event.
     None,
 }
@@ -130,6 +132,10 @@ pub enum CbtStateChange {
     Position,
     /// src_agent changed, cast float* v = (float*)&dst_agent, access as x/y/z (float[3])
     Velocity,
+    /// src_agent changed, cast float* f = (float*)&dst_agent, access as x/y (float[2])
+    Facing,
+    /// src_agent change, dst_agent new team id
+    TeamChange,
 }
 
 /// Combat buff remove type

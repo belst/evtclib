@@ -200,7 +200,7 @@ impl Event {
                 reward_type: raw_event.value,
             },
             // XXX: implement proper handling of those events!
-            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity => {
+            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity | CbtStateChange::Facing | CbtStateChange::TeamChange => {
                 return None
             }
 
