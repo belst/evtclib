@@ -132,6 +132,12 @@ pub enum CbtStateChange {
     Facing,
     /// src_agent change, dst_agent new team id
     TeamChange,
+    /// src_agent is an attacktarget, dst_agent is the parent agent (gadget type), value is the current targetable state
+    AttackTarget,
+    /// dst_agent is the new target-able state (0 = no, 1 = yes. default yes)
+    Targetable,
+    /// src_agent is map id
+    MapId,
 }
 
 /// Combat buff remove type
