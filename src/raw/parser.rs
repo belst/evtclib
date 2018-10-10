@@ -78,6 +78,8 @@ pub struct Header {
     pub combat_id: u16,
     /// Agent count.
     pub agent_count: u32,
+    /// Evtc revision
+    pub revision: u8,
 }
 
 /// A completely parsed (raw) EVTC file.
@@ -117,6 +119,10 @@ quick_error! {
         MalformedHeader {
             description("malformed header")
         }
+        UnknownRevision(rev: u8) {
+            description("unknown revision")
+            display("revision number not known: {}", rev)
+        }
         InvalidZip(err: ::zip::result::ZipError) {
             from()
             description("zip error")
@@ -147,17 +153,16 @@ pub fn parse_header<T: Read>(input: &mut T) -> ParseResult<Header> {
     input.read_exact(&mut arcdps_build)?;
     let build_string = String::from_utf8(arcdps_build)?;
 
-    // Read zero delimiter
-    let mut zero = [0];
-    input.read_exact(&mut zero)?;
-    if zero != [0] {
-        return Err(ParseError::MalformedHeader);
-    }
+    // Read revision byte
+    let mut revision = [0];
+    input.read_exact(&mut revision)?;
+    let revision = revision[0];
 
     // Read combat id.
     let combat_id = input.read_u16::<LittleEndian>()?;
 
-    // Read zero delimiter again.
+    // Read zero delimiter.
+    let mut zero = [0];
     input.read_exact(&mut zero)?;
     if zero != [0] {
         return Err(ParseError::MalformedHeader);
@@ -170,6 +175,7 @@ pub fn parse_header<T: Read>(input: &mut T) -> ParseResult<Header> {
         arcdps_build: build_string,
         combat_id,
         agent_count,
+        revision,
     })
 }
 
@@ -249,10 +255,11 @@ pub fn parse_skill<T: Read>(input: &mut T) -> ParseResult<Skill> {
 /// Parse all combat events.
 ///
 /// * `input` - Input stream.
-pub fn parse_events<T: Read>(input: &mut T) -> ParseResult<Vec<CbtEvent>> {
+/// * `parser` - The parse function to use.
+pub fn parse_events<T: Read>(input: &mut T, parser: fn(&mut T) -> ParseResult<CbtEvent>) -> ParseResult<Vec<CbtEvent>> {
     let mut result = Vec::new();
     loop {
-        let event = parse_event(input);
+        let event = parser(input);
         match event {
             Ok(x) => result.push(x),
             Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => return Ok(result),
@@ -263,15 +270,17 @@ pub fn parse_events<T: Read>(input: &mut T) -> ParseResult<Vec<CbtEvent>> {
 
 /// Parse a single combat event.
 ///
+/// This works for old combat events, i.e. files with revision == 0.
+///
 /// * `input` - Input stream.
-pub fn parse_event<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
+pub fn parse_event_rev0<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
     let time = input.read_u64::<LittleEndian>()?;
     let src_agent = input.read_u64::<LE>()?;
     let dst_agent = input.read_u64::<LE>()?;
     let value = input.read_i32::<LE>()?;
     let buff_dmg = input.read_i32::<LE>()?;
-    let overstack_value = input.read_u16::<LE>()?;
-    let skillid = input.read_u16::<LE>()?;
+    let overstack_value = input.read_u16::<LE>()? as u32;
+    let skillid = input.read_u16::<LE>()? as u32;
     let src_instid = input.read_u16::<LE>()?;
     let dst_instid = input.read_u16::<LE>()?;
     let src_master_instid = input.read_u16::<LE>()?;
@@ -306,6 +315,7 @@ pub fn parse_event<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
         src_instid,
         dst_instid,
         src_master_instid,
+        dst_master_instid: 0,
         iff,
         buff,
         result,
@@ -317,9 +327,70 @@ pub fn parse_event<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
         is_statechange,
         is_flanking,
         is_shields,
+        is_offcycle: false,
     })
 }
 
+/// Parse a single combat event.
+///
+/// This works for new combat events, i.e. files with revision == 1.
+///
+/// * `input` - Input stream.
+pub fn parse_event_rev1<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
+    let time = input.read_u64::<LittleEndian>()?;
+    let src_agent = input.read_u64::<LE>()?;
+    let dst_agent = input.read_u64::<LE>()?;
+    let value = input.read_i32::<LE>()?;
+    let buff_dmg = input.read_i32::<LE>()?;
+    let overstack_value = input.read_u32::<LE>()?;
+    let skillid = input.read_u32::<LE>()?;
+    let src_instid = input.read_u16::<LE>()?;
+    let dst_instid = input.read_u16::<LE>()?;
+    let src_master_instid = input.read_u16::<LE>()?;
+    let dst_master_instid = input.read_u16::<LE>()?;
+
+    let iff = IFF::from_u8(input.read_u8()?).unwrap_or(IFF::None);
+    let buff = input.read_u8()?;
+    let result = CbtResult::from_u8(input.read_u8()?).unwrap_or(CbtResult::None);
+    let is_activation = CbtActivation::from_u8(input.read_u8()?).unwrap_or(CbtActivation::None);
+    let is_buffremove = CbtBuffRemove::from_u8(input.read_u8()?).unwrap_or(CbtBuffRemove::None);
+    let is_ninety = input.read_u8()? != 0;
+    let is_fifty = input.read_u8()? != 0;
+    let is_moving = input.read_u8()? != 0;
+    let is_statechange = CbtStateChange::from_u8(input.read_u8()?)?;
+    let is_flanking = input.read_u8()? != 0;
+    let is_shields = input.read_u8()? != 0;
+    let is_offcycle = input.read_u8()? != 0;
+
+    // Four more bytes of internal tracking garbage.
+    input.read_u32::<LE>()?;
+
+    Ok(CbtEvent {
+        time,
+        src_agent,
+        dst_agent,
+        value,
+        buff_dmg,
+        overstack_value,
+        skillid,
+        src_instid,
+        dst_instid,
+        src_master_instid,
+        dst_master_instid,
+        iff,
+        buff,
+        result,
+        is_activation,
+        is_buffremove,
+        is_ninety,
+        is_fifty,
+        is_moving,
+        is_statechange,
+        is_flanking,
+        is_shields,
+        is_offcycle,
+    })
+}
 /// Parse a complete EVTC file.
 ///
 /// * `input` - Input stream.
@@ -328,7 +399,11 @@ pub fn parse_file<T: Read>(input: &mut T) -> ParseResult<Evtc> {
     let agents = parse_agents(input, header.agent_count)?;
     let skill_count = input.read_u32::<LittleEndian>()?;
     let skills = parse_skills(input, skill_count)?;
-    let events = parse_events(input)?;
+    let events = match header.revision {
+        0 => parse_events(input, parse_event_rev0)?,
+        1 => parse_events(input, parse_event_rev1)?,
+        x => return Err(ParseError::UnknownRevision(x)),
+    };
 
     Ok(Evtc {
         header,

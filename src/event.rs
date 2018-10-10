@@ -56,7 +56,7 @@ pub enum EventKind {
     /// A skill has been used.
     SkillUse {
         source_agent_addr: u64,
-        skill_id: u16,
+        skill_id: u32,
         activation: Activation,
     },
 
@@ -64,7 +64,7 @@ pub enum EventKind {
     ConditionTick {
         source_agent_addr: u64,
         destination_agent_addr: u64,
-        condition_id: u16,
+        condition_id: u32,
         damage: i32,
     },
 
@@ -72,14 +72,14 @@ pub enum EventKind {
     InvulnTick {
         source_agent_addr: u64,
         destination_agent_addr: u64,
-        condition_id: u16,
+        condition_id: u32,
     },
 
     /// Physical damage.
     Physical {
         source_agent_addr: u64,
         destination_agent_addr: u64,
-        skill_id: u16,
+        skill_id: u32,
         damage: i32,
         result: raw::CbtResult,
     },
@@ -88,16 +88,16 @@ pub enum EventKind {
     BuffApplication {
         source_agent_addr: u64,
         destination_agent_addr: u64,
-        buff_id: u16,
+        buff_id: u32,
         duration: i32,
-        overstack: u16,
+        overstack: u32,
     },
 
     /// Buff removed.
     BuffRemove {
         source_agent_addr: u64,
         destination_agent_addr: u64,
-        buff_id: u16,
+        buff_id: u32,
         total_duration: i32,
         longest_stack: i32,
         removal: raw::CbtBuffRemove,

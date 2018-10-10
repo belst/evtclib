@@ -1,7 +1,6 @@
 use std::{self, fmt};
 
 /// The "friend or foe" enum.
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum IFF {
     /// Green vs green, red vs red.
@@ -15,7 +14,6 @@ pub enum IFF {
 }
 
 /// Combat result (physical)
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum CbtResult {
     /// Good physical hit
@@ -43,7 +41,6 @@ pub enum CbtResult {
 }
 
 /// Combat activation
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum CbtActivation {
     /// Field is not used in this kind of event.
@@ -64,7 +61,6 @@ pub enum CbtActivation {
 ///
 /// The referenced fields are of the [`CbtEvent`](struct.CbtEvent.html)
 /// struct.
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum CbtStateChange {
     /// Field is not used in this kind of event.
@@ -139,7 +135,6 @@ pub enum CbtStateChange {
 }
 
 /// Combat buff remove type
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum CbtBuffRemove {
     /// Field is not used in this kind of event.
@@ -157,7 +152,6 @@ pub enum CbtBuffRemove {
 }
 
 /// Custom skill ids
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum CbtCustomSkill {
     /// Not custom but important and unnamed.
@@ -169,7 +163,6 @@ pub enum CbtCustomSkill {
 }
 
 /// Language
-#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum Language {
     /// English.
@@ -183,7 +176,12 @@ pub enum Language {
 }
 
 /// A combat event.
-#[repr(C)]
+///
+/// This event combines both the old structure and the new structure. Fields not
+/// present in the source are zeroed. When dealing with events, always make sure
+/// to check the header.revision tag.
+///
+/// For conflicting data types, the bigger one is chosen (e.g. u32 over u16).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CbtEvent {
     /// System time since Windows was started, in milliseconds.
@@ -197,15 +195,17 @@ pub struct CbtEvent {
     /// Estimated buff damage. Zero on application event.
     pub buff_dmg: i32,
     /// Estimated overwritten stack duration for buff application.
-    pub overstack_value: u16,
+    pub overstack_value: u32,
     /// Skill id.
-    pub skillid: u16,
+    pub skillid: u32,
     /// Agent map instance id.
     pub src_instid: u16,
     /// Agent map instance id.
     pub dst_instid: u16,
     /// Master source agent map instance id if source is a minion/pet.
     pub src_master_instid: u16,
+    /// Master destination agent map instance id if destination is a minion/pet.
+    pub dst_master_instid: u16,
     pub iff: IFF,
     /// Buff application, removal or damage event.
     pub buff: u8,
@@ -223,10 +223,11 @@ pub struct CbtEvent {
     pub is_flanking: bool,
     /// All or part damage was vs. barrier/shield.
     pub is_shields: bool,
+    /// False if buff dmg happened during tick, true otherwise.
+    pub is_offcycle: bool,
 }
 
 /// An agent.
-#[repr(C)]
 #[derive(Clone)]
 pub struct Agent {
     /// Agent id.
@@ -290,7 +291,6 @@ impl fmt::Debug for Agent {
 }
 
 /// A skill.
-#[repr(C)]
 #[derive(Clone)]
 pub struct Skill {
     /// Skill id.

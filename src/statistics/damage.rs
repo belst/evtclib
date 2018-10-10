@@ -14,7 +14,7 @@ pub struct Meta {
     pub source: u64,
     pub target: u64,
     pub kind: DamageType,
-    pub skill: u16,
+    pub skill: u32,
 }
 
 /// A small wrapper that wraps a damage number.
@@ -54,7 +54,7 @@ impl DamageLog {
         source: u64,
         target: u64,
         kind: DamageType,
-        skill: u16,
+        skill: u32,
         value: u64,
     ) {
         self.inner.insert(

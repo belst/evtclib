@@ -161,6 +161,14 @@ impl BoonQueue {
         self.backlog = 0;
     }
 
+    /// Cleanse a single stack
+    pub fn drop_single(&mut self) {
+        if self.is_empty() {
+            return;
+        }
+        self.queue.pop();
+    }
+
     /// Checks if any stacks are left.
     pub fn is_empty(&self) -> bool {
         self.queue.is_empty()
@@ -247,7 +255,7 @@ impl Mul<u64> for Stacks {
 #[derive(Clone, Default)]
 pub struct BoonLog {
     // Keep a separate RecordFunc for each boon.
-    inner: FnvHashMap<u16, RecordFunc<u64, (), Stacks>>,
+    inner: FnvHashMap<u32, RecordFunc<u64, (), Stacks>>,
 }
 
 impl BoonLog {
@@ -257,7 +265,7 @@ impl BoonLog {
     }
 
     /// Add an event to the boon log.
-    pub fn log(&mut self, time: u64, boon_id: u16, stacks: u32) {
+    pub fn log(&mut self, time: u64, boon_id: u32, stacks: u32) {
         let func = self.inner.entry(boon_id).or_insert_with(Default::default);
         let current = func.tally();
         if current.0 == stacks as i32 {
@@ -272,7 +280,7 @@ impl BoonLog {
     /// * `a` - Start time point.
     /// * `b` - End time point.
     /// * `boon_id` - ID of the boon that you want to get the average for.
-    pub fn average_stacks(&self, a: u64, b: u64, boon_id: u16) -> f32 {
+    pub fn average_stacks(&self, a: u64, b: u64, boon_id: u32) -> f32 {
         assert!(b >= a, "timespan is negative?!");
         let func = if let Some(f) = self.inner.get(&boon_id) {
             f
@@ -287,7 +295,7 @@ impl BoonLog {
     ///
     /// * `x` - Time point.
     /// * `boon_id` - ID of the boon that you want to get.
-    pub fn stacks_at(&self, x: u64, boon_id: u16) -> u32 {
+    pub fn stacks_at(&self, x: u64, boon_id: u32) -> u32 {
         self.inner
             .get(&boon_id)
             .map(|f| f.get(&x))

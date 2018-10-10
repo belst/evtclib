@@ -230,7 +230,7 @@ impl Tracker for CombatTimeTracker {
 /// boons defined in `evtclib::statistics::gamedata::BOONS`.
 pub struct BoonTracker {
     boon_logs: FnvHashMap<u64, BoonLog>,
-    boon_queues: FnvHashMap<u64, FnvHashMap<u16, BoonQueue>>,
+    boon_queues: FnvHashMap<u64, FnvHashMap<u32, BoonQueue>>,
     last_time: u64,
 }
 
@@ -284,7 +284,7 @@ impl BoonTracker {
     ///
     /// * `agent_addr` - The address of the agent.
     /// * `buff_id` - The buff (or condition) id.
-    fn get_queue(&mut self, agent_addr: u64, buff_id: u16) -> Option<&mut BoonQueue> {
+    fn get_queue(&mut self, agent_addr: u64, buff_id: u32) -> Option<&mut BoonQueue> {
         use std::collections::hash_map::Entry;
         let entry = self
             .boon_queues

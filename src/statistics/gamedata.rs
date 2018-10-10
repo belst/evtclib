@@ -35,7 +35,7 @@ pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 /// * maximum number of stacks
 /// * boon type (intensity or duration)
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Boon(pub u16, pub &'static str, pub u32, pub BoonType);
+pub struct Boon(pub u32, pub &'static str, pub u32, pub BoonType);
 
 impl Boon {
     pub fn create_queue(&self) -> BoonQueue {
@@ -83,7 +83,7 @@ pub static BOONS: &[Boon] = &[
     Boon(738, "Vulnerability", 25, BoonType::Intensity),
 ];
 
-pub fn get_boon(boon_id: u16) -> Option<&'static Boon> {
+pub fn get_boon(boon_id: u32) -> Option<&'static Boon> {
     BOONS.iter().find(|b| b.0 == boon_id)
 }
 
@@ -91,19 +91,19 @@ pub fn get_boon(boon_id: u16) -> Option<&'static Boon> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Trigger {
     /// Triggers when the given boon is applied to the player.
-    BoonPlayer(u16),
+    BoonPlayer(u32),
     /// Triggers when the given boon is applied to the boss.
-    BoonBoss(u16),
+    BoonBoss(u32),
     /// Triggers when the given skill is used by a player.
-    SkillByPlayer(u16),
+    SkillByPlayer(u32),
     /// Triggers when the given skill is used on a player.
-    SkillOnPlayer(u16),
+    SkillOnPlayer(u32),
     /// Triggers when the given boon is stripped from an enemy.
-    BoonStripped(u16),
+    BoonStripped(u32),
     /// Triggers when the given entity spawned.
     Spawn(u16),
     /// Triggers when the boss finishes channeling the given skill.
-    ChannelComplete(u16),
+    ChannelComplete(u32),
 }
 
 /// Struct describing a boss mechanic.
