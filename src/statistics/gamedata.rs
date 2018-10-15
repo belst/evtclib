@@ -27,7 +27,7 @@ pub enum Boss {
     Cairn = 0x432A,
     MursaatOverseer = 0x4314,
     Samarog = 0x4324,
-    Deimos = 0x3202,
+    Deimos = 0x4302,
 
     // Wing 5
     SoullessHorror = 0x4D37,
