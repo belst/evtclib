@@ -3,7 +3,7 @@
 use super::boon::{BoonQueue, BoonType};
 
 /// Enum containing all bosses with their IDs.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum Boss {
     ValeGuardian = 0x3C4E,
     Gorseval = 0x3C45,
