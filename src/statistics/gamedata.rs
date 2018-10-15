@@ -5,13 +5,16 @@ use super::boon::{BoonQueue, BoonType};
 /// Enum containing all bosses with their IDs.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum Boss {
+    // Wing 1
     ValeGuardian = 0x3C4E,
     Gorseval = 0x3C45,
     Sabetha = 0x3C0F,
 
+    // Wing 2
     Slothasor = 0x3EFB,
     Matthias = 0x3EF3,
 
+    // Wing 3
     KeepConstruct = 0x3F6B,
     /// Xera ID for phase 1.
     ///
@@ -20,17 +23,30 @@ pub enum Boss {
     /// [`XERA_PHASE2_ID`](constant.XERA_PHASE2_ID.html).
     Xera = 0x3F76,
 
+    // Wing 4
     Cairn = 0x432A,
     MursaatOverseer = 0x4314,
     Samarog = 0x4324,
     Deimos = 0x3202,
 
+    // Wing 5
     SoullessHorror = 0x4D37,
     Dhuum = 0x4BFA,
 
+    // Wing 6
     ConjuredAmalgamate = 0xABC6,
     LargosTwins = 0x5271,
     Qadim = 0x51C6,
+
+    // 100 CM
+    Skorvald = 0x44E0,
+    Artsariiv = 0x461D,
+    Arkk = 0x455F,
+
+    // 99 CM
+    MAMA = 0x427D,
+    Siax = 0x4284,
+    Ensolyss = 0x4234,
 }
 
 /// ID for Xera in the second phase.
