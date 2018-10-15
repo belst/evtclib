@@ -9,6 +9,10 @@ pub enum Boss {
     Gorseval = 0x3C45,
     Sabetha = 0x3C0F,
 
+    Slothasor = 0x3EFB,
+    Matthias = 0x3EF3,
+
+    KeepConstruct = 0x3F6B,
     /// Xera ID for phase 1.
     ///
     /// This is only half of Xera's ID, as there will be a second agent for the
@@ -16,7 +20,17 @@ pub enum Boss {
     /// [`XERA_PHASE2_ID`](constant.XERA_PHASE2_ID.html).
     Xera = 0x3F76,
 
+    Cairn = 0x432A,
+    MursaatOverseer = 0x4314,
     Samarog = 0x4324,
+    Deimos = 0x3202,
+
+    SoullessHorror = 0x4D37,
+    Dhuum = 0x4BFA,
+
+    ConjuredAmalgamate = 0xABC6,
+    LargosTwins = 0x5271,
+    Qadim = 0x51C6,
 }
 
 /// ID for Xera in the second phase.
