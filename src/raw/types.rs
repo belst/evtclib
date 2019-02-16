@@ -138,6 +138,13 @@ pub enum CbtStateChange {
     Targetable,
     /// src_agent is map id
     MapId,
+    /// internal use by arcDPS, won't see anywhere
+    ReplInfo,
+    /// src_agent is agent with buff, dst_agent is the stackid marked active
+    StackActive,
+    /// src_agent is agent with buff, value is the duration to reset to (also marks inactive),
+    /// pad61- is the stackid
+    StackReset,
 }
 
 /// Combat buff remove type
