@@ -1,6 +1,9 @@
 use super::raw;
 
+use std::io;
+
 use num_traits::FromPrimitive;
+use byteorder::{BigEndian, WriteBytesExt};
 
 /// A rusty enum for all possible combat events.
 ///
@@ -102,6 +105,13 @@ pub enum EventKind {
         longest_stack: i32,
         removal: raw::CbtBuffRemove,
     },
+
+    /// Guild identification
+    Guild {
+        source_agent_addr: u64,
+        raw_bytes: [u8; 16],
+        api_guild_id: Option<String>,
+    },
 }
 
 /// A higher-level representation of a combat event.
@@ -199,8 +209,13 @@ impl Event {
                 reward_id: raw_event.dst_agent,
                 reward_type: raw_event.value,
             },
+            CbtStateChange::Guild => EventKind::Guild {
+                source_agent_addr: raw_event.src_agent,
+                raw_bytes: get_guild_id_bytes(raw_event),
+                api_guild_id: get_api_guild_string(&get_guild_id_bytes(raw_event)),
+            },
             // XXX: implement proper handling of those events!
-            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity | CbtStateChange::Facing | CbtStateChange::TeamChange | CbtStateChange::AttackTarget | CbtStateChange::Targetable | CbtStateChange::MapId | CbtStateChange::ReplInfo | CbtStateChange::StackActive | CbtStateChange::StackReset | CbtStateChange::Guild=> {
+            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity | CbtStateChange::Facing | CbtStateChange::TeamChange | CbtStateChange::AttackTarget | CbtStateChange::Targetable | CbtStateChange::MapId | CbtStateChange::ReplInfo | CbtStateChange::StackActive | CbtStateChange::StackReset => {
                 return None
             }
 
@@ -296,6 +311,27 @@ fn check_damage(raw_event: &raw::CbtEvent) -> Option<EventKind> {
     } else {
         None
     }
+}
+
+fn get_guild_id_bytes(raw_event: &raw::CbtEvent) -> [u8; 16] {
+    let mut result = [0; 16];
+    let mut cursor = io::Cursor::new(&mut result as &mut [u8]);
+    cursor.write_u64::<BigEndian>(raw_event.dst_agent).unwrap();
+    cursor.write_i32::<BigEndian>(raw_event.value).unwrap();
+    cursor.write_i32::<BigEndian>(raw_event.buff_dmg).unwrap();
+    result
+}
+
+fn get_api_guild_string(bytes: &[u8; 16]) -> Option<String> {
+    if bytes == &[0; 16] {
+        return None;
+    }
+    let result = format!(
+        "{:02X}{:02X}{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
+        bytes[4], bytes[5], bytes[6], bytes[7], bytes[2], bytes[3], bytes[0], bytes[1], bytes[11],
+        bytes[10], bytes[9], bytes[8], bytes[15], bytes[14], bytes[13], bytes[12]
+    );
+    Some(result)
 }
 
 /// The different weapon-sets in game.
