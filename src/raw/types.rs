@@ -145,6 +145,8 @@ pub enum CbtStateChange {
     /// src_agent is agent with buff, value is the duration to reset to (also marks inactive),
     /// pad61- is the stackid
     StackReset,
+    /// src_agent is agent, dst_agent through buff_dmg is 16 byte guid (client form, needs minor rearrange for api form)
+    Guild,
 }
 
 /// Combat buff remove type
