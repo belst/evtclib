@@ -326,11 +326,18 @@ fn get_api_guild_string(bytes: &[u8; 16]) -> Option<String> {
     if bytes == &[0; 16] {
         return None;
     }
-    let result = format!(
-        "{:02X}{:02X}{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-        bytes[4], bytes[5], bytes[6], bytes[7], bytes[2], bytes[3], bytes[0], bytes[1], bytes[11],
-        bytes[10], bytes[9], bytes[8], bytes[15], bytes[14], bytes[13], bytes[12]
-    );
+    static PACKS: &[&[usize]] = &[
+        &[4, 5, 6, 7],
+        &[2, 3],
+        &[0, 1],
+        &[11, 10],
+        &[9, 8, 15, 14, 13, 12],
+    ];
+    let result = PACKS
+        .iter()
+        .map(|p| p.iter().map(|i| format!("{:02X}", bytes[*i])).collect())
+        .collect::<Vec<String>>()
+        .join("-");
     Some(result)
 }
 
