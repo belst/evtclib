@@ -133,6 +133,68 @@ pub struct Agent {
     master_agent: Option<u64>,
 }
 
+impl Agent {
+    /// Parse a raw agent.
+    pub fn from_raw(raw_agent: &raw::Agent) -> Result<Agent, EvtcError> {
+        let kind = if raw_agent.is_character() {
+            AgentKind::Character(raw_agent.prof as u16)
+        } else if raw_agent.is_gadget() {
+            AgentKind::Gadget(raw_agent.prof as u16)
+        } else if raw_agent.is_player() {
+            AgentKind::Player {
+                profession: raw_agent.prof,
+                elite: raw_agent.is_elite,
+            }
+        } else {
+            return Err(EvtcError::InvalidData);
+        };
+
+        let name = if raw_agent.is_player() {
+            let first = raw_agent
+                .name
+                .iter()
+                .cloned()
+                .take_while(|c| *c != 0)
+                .collect::<Vec<_>>();
+            let second = raw_agent
+                .name
+                .iter()
+                .cloned()
+                .skip(first.len() + 1)
+                .take_while(|c| *c != 0)
+                .collect::<Vec<_>>();
+            let third = raw_agent.name[first.len() + second.len() + 2] - b'0';
+            AgentName::Player {
+                character_name: String::from_utf8(first)?,
+                account_name: String::from_utf8(second)?,
+                subgroup: third,
+            }
+        } else {
+            let name = raw_agent
+                .name
+                .iter()
+                .cloned()
+                .take_while(|c| *c != 0)
+                .collect::<Vec<_>>();
+            AgentName::Single(String::from_utf8(name)?)
+        };
+
+        Ok(Agent {
+            addr: raw_agent.addr,
+            kind,
+            toughness: raw_agent.toughness,
+            concentration: raw_agent.concentration,
+            healing: raw_agent.healing,
+            condition: raw_agent.condition,
+            name,
+            instance_id: 0,
+            first_aware: 0,
+            last_aware: u64::max_value(),
+            master_agent: None,
+        })
+    }
+}
+
 /// A fully processed log file.
 #[derive(Debug, Clone)]
 pub struct Log {
@@ -243,64 +305,7 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
     let mut agents = Vec::with_capacity(data.agents.len());
 
     for raw_agent in &data.agents {
-        let kind = if raw_agent.is_character() {
-            AgentKind::Character(raw_agent.prof as u16)
-        } else if raw_agent.is_gadget() {
-            AgentKind::Gadget(raw_agent.prof as u16)
-        } else if raw_agent.is_player() {
-            AgentKind::Player {
-                profession: raw_agent.prof,
-                elite: raw_agent.is_elite,
-            }
-        } else {
-            return Err(EvtcError::InvalidData);
-        };
-
-        let name = if raw_agent.is_player() {
-            let first = raw_agent
-                .name
-                .iter()
-                .cloned()
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>();
-            let second = raw_agent
-                .name
-                .iter()
-                .cloned()
-                .skip(first.len() + 1)
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>();
-            let third = raw_agent.name[first.len() + second.len() + 2] - b'0';
-            AgentName::Player {
-                character_name: String::from_utf8(first)?,
-                account_name: String::from_utf8(second)?,
-                subgroup: third,
-            }
-        } else {
-            let name = raw_agent
-                .name
-                .iter()
-                .cloned()
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>();
-            AgentName::Single(String::from_utf8(name)?)
-        };
-
-        let agent = Agent {
-            addr: raw_agent.addr,
-            kind,
-            toughness: raw_agent.toughness,
-            concentration: raw_agent.concentration,
-            healing: raw_agent.healing,
-            condition: raw_agent.condition,
-            name,
-            instance_id: 0,
-            first_aware: 0,
-            last_aware: u64::max_value(),
-            master_agent: None,
-        };
-
-        agents.push(agent);
+        agents.push(Agent::from_raw(raw_agent)?);
     }
     Ok(agents)
 }
