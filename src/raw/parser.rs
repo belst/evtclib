@@ -97,6 +97,16 @@ pub struct Evtc {
     pub events: Vec<CbtEvent>,
 }
 
+/// A partially-parsed EVTC file, containing everything but the events.
+/// This can speed up parsing for applications which can work with the header.
+#[derive(Clone, Debug)]
+pub struct PartialEvtc {
+    pub header: Header,
+    pub skill_count: u32,
+    pub agents: Vec<Agent>,
+    pub skills: Vec<Skill>,
+}
+
 quick_error! {
     #[derive(Debug)]
     pub enum ParseError {
@@ -391,25 +401,54 @@ pub fn parse_event_rev1<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
         is_offcycle,
     })
 }
-/// Parse a complete EVTC file.
+
+
+
+/// Parse a partial EVTC file.
 ///
 /// * `input` - Input stream.
-pub fn parse_file<T: Read>(input: &mut T) -> ParseResult<Evtc> {
+pub fn parse_partial_file<T: Read>(input: &mut T) -> ParseResult<PartialEvtc> {
     let header = parse_header(input)?;
     let agents = parse_agents(input, header.agent_count)?;
     let skill_count = input.read_u32::<LittleEndian>()?;
     let skills = parse_skills(input, skill_count)?;
-    let events = match header.revision {
+
+    Ok(PartialEvtc {
+        header,
+        skill_count,
+        agents,
+        skills,
+    })
+}
+
+
+
+/// Finish a partial EVTC by reading the events.
+///
+/// * `partial` - The partial EVTC.
+/// * `input` - The input stream.
+pub fn finish_parsing<T: Read>(partial: PartialEvtc, input: &mut T) -> ParseResult<Evtc> {
+    let events = match partial.header.revision {
         0 => parse_events(input, parse_event_rev0)?,
         1 => parse_events(input, parse_event_rev1)?,
         x => return Err(ParseError::UnknownRevision(x)),
     };
 
     Ok(Evtc {
-        header,
-        skill_count,
-        agents,
-        skills,
+        header: partial.header,
+        skill_count: partial.skill_count,
+        agents: partial.agents,
+        skills: partial.skills,
         events,
     })
+}
+
+
+
+/// Parse a complete EVTC file.
+///
+/// * `input` - Input stream.
+pub fn parse_file<T: Read>(input: &mut T) -> ParseResult<Evtc> {
+    let partial = parse_partial_file(input)?;
+    finish_parsing(partial, input)
 }
