@@ -1,9 +1,10 @@
 //! This module contains some game data that is necessary to correctly calculate
 //! some statistics.
+use std::{fmt, str::FromStr};
 use super::boon::{BoonQueue, BoonType};
 
 /// Enum containing all bosses with their IDs.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, FromPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum Boss {
     // Wing 1
     ValeGuardian = 0x3C4E,
@@ -48,6 +49,61 @@ pub enum Boss {
     Siax = 0x4284,
     Ensolyss = 0x4234,
 }
+
+
+/// Error for when converting a string to the boss fails.
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct ParseBossError(String);
+
+
+impl fmt::Display for ParseBossError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Invalid boss identifier: {}", self.0)
+    }
+}
+
+
+impl FromStr for Boss {
+    type Err = ParseBossError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let lower = s.to_lowercase();
+        match &lower as &str {
+            "vg" | "vale guardian" => Ok(Boss::ValeGuardian),
+            "gorse" | "gorseval" => Ok(Boss::Gorseval),
+            "sab" | "sabetha" => Ok(Boss::Sabetha),
+
+            "sloth" | "slothasor" => Ok(Boss::Slothasor),
+            "matthias" => Ok(Boss::Matthias),
+
+            "kc" | "keep construct" => Ok(Boss::KeepConstruct),
+            "xera" => Ok(Boss::Xera),
+
+            "cairn" => Ok(Boss::Cairn),
+            "mo" | "mursaat overseer" => Ok(Boss::MursaatOverseer),
+            "sam" | "sama" | "samarog" => Ok(Boss::Samarog),
+            "deimos" => Ok(Boss::Deimos),
+
+            "desmina" | "sh" => Ok(Boss::SoullessHorror),
+            "dhuum" => Ok(Boss::Dhuum),
+
+            "ca" | "conjured almagamate" => Ok(Boss::ConjuredAmalgamate),
+            "largos" | "twins" => Ok(Boss::LargosTwins),
+            "qadim" => Ok(Boss::Qadim),
+
+            "skorvald" => Ok(Boss::Skorvald),
+            "artsariiv" => Ok(Boss::Artsariiv),
+            "arkk" => Ok(Boss::Arkk),
+
+            "mama" => Ok(Boss::MAMA),
+            "siax" => Ok(Boss::Siax),
+            "ensolyss" => Ok(Boss::Ensolyss),
+
+            _ => Err(ParseBossError(s.to_owned()))
+        }
+    }
+}
+
 
 /// ID for Xera in the second phase.
 ///
@@ -198,4 +254,18 @@ pub static MECHANICS: &[Mechanic] = mechanics! {
 /// Get all mechanics that belong to the given boss.
 pub fn get_mechanics(boss_id: u16) -> Vec<&'static Mechanic> {
     MECHANICS.iter().filter(|m| m.0 == boss_id).collect()
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn test_parsing() {
+        assert_eq!("vg".parse(), Ok(Boss::ValeGuardian));
+        assert_eq!("VG".parse(), Ok(Boss::ValeGuardian));
+
+        assert!("vga".parse::<Boss>().is_err());
+    }
 }
