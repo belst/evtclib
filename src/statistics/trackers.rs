@@ -64,12 +64,12 @@ pub trait Tracker {
 /// if you plan on getting any data.
 pub trait RunnableTracker {
     /// See `Tracker.feed()`. Renamed to avoid conflicts.
-    fn run_feed(&mut self, event: &Event) -> Result<(), Box<Error>>;
+    fn run_feed(&mut self, event: &Event) -> Result<(), Box<dyn Error>>;
 }
 
 impl<S, E: Error + 'static, T: Tracker<Stat = S, Error = E>> RunnableTracker for T {
-    fn run_feed(&mut self, event: &Event) -> Result<(), Box<Error>> {
-        self.feed(event).map_err(|e| Box::new(e) as Box<Error>)
+    fn run_feed(&mut self, event: &Event) -> Result<(), Box<dyn Error>> {
+        self.feed(event).map_err(|e| Box::new(e) as Box<dyn Error>)
     }
 }
 

@@ -20,7 +20,7 @@ pub type StatResult<T> = Result<T, StatError>;
 quick_error! {
     #[derive(Debug)]
     pub enum StatError {
-        TrackerError(err: Box<Error>) {
+        TrackerError(err: Box<dyn Error>) {
             description("tracker error")
             display("tracker returned an error: {}", err)
             cause(&**err)
@@ -76,9 +76,9 @@ impl AgentStats {
 ///
 /// This method returns "nothing", as the statistics are saved in the trackers.
 /// It's the job of the caller to extract them appropriately.
-pub fn run_trackers(log: &Log, trackers: &mut [&mut RunnableTracker]) -> StatResult<()> {
+pub fn run_trackers(log: &Log, trackers: &mut [&mut dyn RunnableTracker]) -> StatResult<()> {
     for event in log.events() {
-        for mut tracker in trackers.iter_mut() {
+        for tracker in trackers.iter_mut() {
             try_tracker!((*tracker).run_feed(event));
         }
     }
