@@ -25,7 +25,8 @@ pub trait Monoid: Semigroup {
 }
 
 #[derive(Debug, Clone)]
-struct Record<X, T, D> {
+#[doc(hidden)]
+pub struct Record<X, T, D> {
     x: X,
     tag: T,
     data: D,
@@ -61,6 +62,11 @@ where
     /// Create a new `RecordFunc`.
     pub fn new() -> Self {
         RecordFunc { data: Vec::new() }
+    }
+
+    #[doc(hidden)]
+    pub fn data(&self) -> &[Record<X, T, D>] {
+        &self.data
     }
 
     /// Insert a data point into the record func.

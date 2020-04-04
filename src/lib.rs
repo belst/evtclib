@@ -18,11 +18,12 @@
 //! module](raw/parser/index.html#buffering))
 #![feature(try_trait, stmt_expr_attributes, never_type)]
 #[macro_use]
-extern crate quick_error;
-#[macro_use]
 extern crate num_derive;
 #[macro_use]
 extern crate getset;
+
+use thiserror::Error;
+
 pub mod raw;
 
 mod event;
@@ -55,19 +56,12 @@ macro_rules! matches {
     );
 }
 
-quick_error! {
-    #[derive(Debug)]
-    pub enum EvtcError {
-        InvalidData {
-            description("invalid data has been provided")
-        }
-        Utf8Error(err: ::std::string::FromUtf8Error) {
-            from()
-            description("utf8 decoding error")
-            display("UTF-8 decoding error: {}", err)
-            cause(err)
-        }
-    }
+#[derive(Error, Debug)]
+pub enum EvtcError {
+    #[error("invalid data has been provided")]
+    InvalidData,
+    #[error("utf8 decoding error: {0}")]
+    Utf8Error(#[from] std::string::FromUtf8Error),
 }
 
 /// The type of an agent.

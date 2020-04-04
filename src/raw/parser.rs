@@ -65,6 +65,7 @@
 
 use byteorder::{LittleEndian, ReadBytesExt, LE};
 use num_traits::FromPrimitive;
+use thiserror::Error;
 use std::io::{self, ErrorKind, Read};
 
 use super::*;
@@ -107,38 +108,25 @@ pub struct PartialEvtc {
     pub skills: Vec<Skill>,
 }
 
-quick_error! {
-    #[derive(Debug)]
-    pub enum ParseError {
-        Io(err: io::Error) {
-            from()
-            description("io error")
-            display("I/O error: {}", err)
-            cause(err)
-        }
-        Utf8Error(err: ::std::string::FromUtf8Error) {
-            from()
-            description("utf8 decoding error")
-            display("UTF-8 decoding error: {}", err)
-            cause(err)
-        }
-        InvalidData {
-            from(::std::option::NoneError)
-            description("invalid data")
-        }
-        MalformedHeader {
-            description("malformed header")
-        }
-        UnknownRevision(rev: u8) {
-            description("unknown revision")
-            display("revision number not known: {}", rev)
-        }
-        InvalidZip(err: ::zip::result::ZipError) {
-            from()
-            description("zip error")
-            display("Archive error: {}", err)
-            cause(err)
-        }
+#[derive(Error, Debug)]
+pub enum ParseError {
+    #[error("IO error: {0}")]
+    Io(#[from] io::Error),
+    #[error("utf8 decoding error: {0}")]
+    Utf8Error(#[from] std::string::FromUtf8Error),
+    #[error("invalid data")]
+    InvalidData,
+    #[error("malformed header")]
+    MalformedHeader,
+    #[error("unknown revision: {0}")]
+    UnknownRevision(u8),
+    #[error("invalid archive: {0}")]
+    InvalidZip(#[from] zip::result::ZipError),
+}
+
+impl From<std::option::NoneError> for ParseError {
+    fn from(_: std::option::NoneError) -> Self {
+        ParseError::InvalidData
     }
 }
 

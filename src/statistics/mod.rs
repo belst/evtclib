@@ -1,7 +1,7 @@
 //! This module aids in the creation of actual boss statistics.
 use super::*;
 use std::collections::HashMap;
-use std::error::Error;
+use thiserror::Error;
 
 pub mod boon;
 pub mod damage;
@@ -17,15 +17,10 @@ use self::trackers::{RunnableTracker, Tracker};
 
 pub type StatResult<T> = Result<T, StatError>;
 
-quick_error! {
-    #[derive(Debug)]
-    pub enum StatError {
-        TrackerError(err: Box<dyn Error>) {
-            description("tracker error")
-            display("tracker returned an error: {}", err)
-            cause(&**err)
-        }
-    }
+#[derive(Error, Debug)]
+pub enum StatError {
+    #[error("tracker returned an error: {0}")]
+    TrackerError(#[from] Box<dyn std::error::Error>),
 }
 
 macro_rules! try_tracker {
