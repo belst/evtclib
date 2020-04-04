@@ -104,6 +104,10 @@ impl FromStr for Boss {
             "largos" | "twins" => Ok(Boss::LargosTwins),
             "qadim" => Ok(Boss::Qadim),
 
+            "adina" | "cardinal adina" => Ok(Boss::CardinalAdina),
+            "sabir" | "cardinal sabir" => Ok(Boss::CardinalSabir),
+            "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Boss::QadimThePeerless),
+
             "skorvald" => Ok(Boss::Skorvald),
             "artsariiv" => Ok(Boss::Artsariiv),
             "arkk" => Ok(Boss::Arkk),
@@ -111,6 +115,12 @@ impl FromStr for Boss {
             "mama" => Ok(Boss::MAMA),
             "siax" => Ok(Boss::Siax),
             "ensolyss" => Ok(Boss::Ensolyss),
+
+            "icebrood" | "icebrood construct" => Ok(Boss::IcebroodConstruct),
+            "super kodan brothers" => Ok(Boss::VoiceOfTheFallen),
+            "fraenir" | "fraenir of jormag" => Ok(Boss::FraenirOfJormag),
+            "boneskinner" => Ok(Boss::Boneskinner),
+            "whisper" | "whisper of jormag" => Ok(Boss::WhisperOfJormag),
 
             _ => Err(ParseBossError(s.to_owned()))
         }
