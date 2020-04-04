@@ -23,11 +23,6 @@ extern crate quick_error;
 extern crate num_derive;
 #[macro_use]
 extern crate getset;
-extern crate byteorder;
-extern crate fnv;
-extern crate num_traits;
-extern crate zip;
-
 pub mod raw;
 
 mod event;
