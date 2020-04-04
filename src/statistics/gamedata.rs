@@ -40,6 +40,11 @@ pub enum Boss {
     LargosTwins = 0x5271,
     Qadim = 0x51C6,
 
+    // Wing 7
+    CardinalAdina = 0x55F6,
+    CardinalSabir = 0x55CC,
+    QadimThePeerless = 0x55F0,
+
     // 100 CM
     Skorvald = 0x44E0,
     Artsariiv = 0x461D,
