@@ -2,6 +2,7 @@
 //! some statistics.
 use std::{fmt, str::FromStr};
 use super::boon::{BoonQueue, BoonType};
+use num_derive::FromPrimitive;
 
 /// Enum containing all bosses with their IDs.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]

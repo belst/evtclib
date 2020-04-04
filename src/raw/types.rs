@@ -1,4 +1,5 @@
 use std::{self, fmt};
+use num_derive::FromPrimitive;
 
 /// The "friend or foe" enum.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]

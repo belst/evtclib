@@ -18,8 +18,6 @@
 //! module](raw/parser/index.html#buffering))
 #![feature(try_trait, stmt_expr_attributes, never_type)]
 #[macro_use]
-extern crate num_derive;
-#[macro_use]
 extern crate getset;
 
 use thiserror::Error;
