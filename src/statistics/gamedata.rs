@@ -54,6 +54,13 @@ pub enum Boss {
     MAMA = 0x427D,
     Siax = 0x4284,
     Ensolyss = 0x4234,
+
+    // Strike missions
+    IcebroodConstruct = 0x568A,
+    VoiceOfTheFallen = 0x5747,
+    FraenirOfJormag = 0x57DC,
+    Boneskinner = 0x57F9,
+    WhisperOfJormag = 0x58B7,
 }
 
 
