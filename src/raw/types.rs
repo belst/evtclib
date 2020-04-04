@@ -148,6 +148,14 @@ pub enum CbtStateChange {
     StackReset,
     /// src_agent is agent, dst_agent through buff_dmg is 16 byte guid (client form, needs minor rearrange for api form)
     Guild,
+    /// is_flanking = probably invuln, is_shields = probably invert, is_offcycle = category, pad61 = stacking type, src_master_instid = max stacks (not in realtime)
+    BuffInfo,
+    /// (float*)&time [9]: type attr1 attr2 param1 param2 param3 trait_src trait_self, is_flanking = !npc, is_shields = !player, is_offcycle = break (not in realtime, one per formula)
+    BuffFormula,
+    /// (float*)&time [9]: recharge range0 range1 tooltiptime (not in realtime)
+    SkillInfo,
+    /// src_agent = action, dst_agent = at millisecond (not in realtime, one per timing)
+    SkillTiming,
 }
 
 /// Combat buff remove type

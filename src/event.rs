@@ -215,7 +215,7 @@ impl Event {
                 api_guild_id: get_api_guild_string(&get_guild_id_bytes(raw_event)),
             },
             // XXX: implement proper handling of those events!
-            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity | CbtStateChange::Facing | CbtStateChange::TeamChange | CbtStateChange::AttackTarget | CbtStateChange::Targetable | CbtStateChange::MapId | CbtStateChange::ReplInfo | CbtStateChange::StackActive | CbtStateChange::StackReset => {
+            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity | CbtStateChange::Facing | CbtStateChange::TeamChange | CbtStateChange::AttackTarget | CbtStateChange::Targetable | CbtStateChange::MapId | CbtStateChange::ReplInfo | CbtStateChange::StackActive | CbtStateChange::StackReset | CbtStateChange::BuffInfo | CbtStateChange::BuffFormula | CbtStateChange::SkillInfo | CbtStateChange::SkillTiming => {
                 return None
             }
 
