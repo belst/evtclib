@@ -3,6 +3,11 @@ name = "evtclib"
 version = "0.1.0"
 authors = ["Daniel"]
 edition = "2018"
+description = "An evtc parsing library"
+readme = "README.md"
+repository = "https://gitlab.com/dunj3/evtclib"
+license = "MIT"
+license-file = "LICENSE"
 
 [dependencies]
 num-traits = "0.2"
