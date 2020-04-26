@@ -219,11 +219,7 @@ impl Event {
                 return None
             }
 
-            CbtStateChange::None => if let Some(kind) = check_activation(raw_event) {
-                kind
-            } else {
-                return None;
-            },
+            CbtStateChange::None => check_activation(raw_event)?,
         };
         Some(Event {
             time: raw_event.time,
