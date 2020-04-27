@@ -65,8 +65,8 @@
 
 use byteorder::{LittleEndian, ReadBytesExt, LE};
 use num_traits::FromPrimitive;
-use thiserror::Error;
 use std::io::{self, ErrorKind, Read};
+use thiserror::Error;
 
 use super::*;
 
@@ -122,12 +122,6 @@ pub enum ParseError {
     UnknownRevision(u8),
     #[error("invalid archive: {0}")]
     InvalidZip(#[from] zip::result::ZipError),
-}
-
-impl From<std::option::NoneError> for ParseError {
-    fn from(_: std::option::NoneError) -> Self {
-        ParseError::InvalidData
-    }
 }
 
 /// A type indicating the parse result.
@@ -254,13 +248,18 @@ pub fn parse_skill<T: Read>(input: &mut T) -> ParseResult<Skill> {
 ///
 /// * `input` - Input stream.
 /// * `parser` - The parse function to use.
-pub fn parse_events<T: Read>(input: &mut T, parser: fn(&mut T) -> ParseResult<CbtEvent>) -> ParseResult<Vec<CbtEvent>> {
+pub fn parse_events<T: Read>(
+    input: &mut T,
+    parser: fn(&mut T) -> ParseResult<CbtEvent>,
+) -> ParseResult<Vec<CbtEvent>> {
     let mut result = Vec::new();
     loop {
         let event = parser(input);
         match event {
             Ok(x) => result.push(x),
-            Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => return Ok(result),
+            Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => {
+                return Ok(result)
+            }
             Err(e) => return Err(e),
         }
     }
@@ -295,7 +294,8 @@ pub fn parse_event_rev0<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
     let is_ninety = input.read_u8()? != 0;
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
-    let is_statechange = CbtStateChange::from_u8(input.read_u8()?)?;
+    let is_statechange =
+        CbtStateChange::from_u8(input.read_u8()?).ok_or(ParseError::InvalidData)?;
     let is_flanking = input.read_u8()? != 0;
     let is_shields = input.read_u8()? != 0;
 
@@ -355,7 +355,8 @@ pub fn parse_event_rev1<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
     let is_ninety = input.read_u8()? != 0;
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
-    let is_statechange = CbtStateChange::from_u8(input.read_u8()?)?;
+    let is_statechange =
+        CbtStateChange::from_u8(input.read_u8()?).ok_or(ParseError::InvalidData)?;
     let is_flanking = input.read_u8()? != 0;
     let is_shields = input.read_u8()? != 0;
     let is_offcycle = input.read_u8()? != 0;
@@ -390,8 +391,6 @@ pub fn parse_event_rev1<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
     })
 }
 
-
-
 /// Parse a partial EVTC file.
 ///
 /// * `input` - Input stream.
@@ -408,8 +407,6 @@ pub fn parse_partial_file<T: Read>(input: &mut T) -> ParseResult<PartialEvtc> {
         skills,
     })
 }
-
-
 
 /// Finish a partial EVTC by reading the events.
 ///
@@ -430,8 +427,6 @@ pub fn finish_parsing<T: Read>(partial: PartialEvtc, input: &mut T) -> ParseResu
         events,
     })
 }
-
-
 
 /// Parse a complete EVTC file.
 ///
