@@ -28,27 +28,6 @@ pub use event::{Event, EventKind};
 pub mod gamedata;
 pub use gamedata::Boss;
 
-/// A macro that returns `true` when the given expression matches the pattern.
-///
-/// ```rust
-/// assert!(matches!(Some(4), Some(_)));
-/// assert!(!matches!(Some(2), None));
-/// ```
-macro_rules! matches {
-    ($expression:expr, $($pattern:pat)|*) => (
-        match $expression {
-            $($pattern)|+ => true,
-            _ => false,
-        }
-    );
-    ($expression:expr, $pattern:pat if $condi:expr) => (
-        match $expression {
-            $pattern if $condi => true,
-            _ => false,
-        }
-    );
-}
-
 #[derive(Error, Debug)]
 pub enum EvtcError {
     #[error("invalid data has been provided")]
@@ -57,18 +36,79 @@ pub enum EvtcError {
     Utf8Error(#[from] std::string::FromUtf8Error),
 }
 
+/// Player-specific agent data.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Player {
+    profession: u32,
+    elite: u32,
+    character_name: String,
+    account_name: String,
+    subgroup: u8,
+}
+
+/// Gadget-specific agent data.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Gadget {
+    id: u16,
+    name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Character {
+    id: u16,
+    name: String,
+}
+
 /// The type of an agent.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AgentKind {
-    Player {
-        profession: u32,
-        elite: u32,
-        character_name: String,
-        account_name: String,
-        subgroup: u8,
-    },
-    Gadget(u16, String),
-    Character(u16, String),
+    Player(Player),
+    Gadget(Gadget),
+    Character(Character),
+}
+
+impl AgentKind {
+    /// Accesses the inner [`Player`][Player] struct, if available.
+    pub fn as_player(&self) -> Option<&Player> {
+        if let AgentKind::Player(ref player) = *self {
+            Some(player)
+        } else {
+            None
+        }
+    }
+
+    /// Determines whether this `AgentKind` contains a player.
+    pub fn is_player(&self) -> bool {
+        self.as_player().is_some()
+    }
+
+    /// Accesses the inner [`Gadget`][Gadget] struct, if available.
+    pub fn as_gadget(&self) -> Option<&Gadget> {
+        if let AgentKind::Gadget(ref gadget) = *self {
+            Some(gadget)
+        } else {
+            None
+        }
+    }
+
+    /// Determines whether this `AgentKind` contains a gadget.
+    pub fn is_gadget(&self) -> bool {
+        self.as_gadget().is_some()
+    }
+
+    /// Accesses the inner [`Character`][Character] struct, if available.
+    pub fn as_character(&self) -> Option<&Character> {
+        if let AgentKind::Character(ref character) = *self {
+            Some(character)
+        } else {
+            None
+        }
+    }
+
+    /// Determines whether this `AgentKind` contains a player.
+    pub fn is_character(&self) -> bool {
+        self.as_character().is_some()
+    }
 }
 
 /// An agent.
@@ -107,9 +147,15 @@ impl Agent {
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>())?;
             if raw_agent.is_character() {
-                AgentKind::Character(raw_agent.prof as u16, name)
+                AgentKind::Character(Character {
+                    id: raw_agent.prof as u16,
+                    name,
+                })
             } else {
-                AgentKind::Gadget(raw_agent.prof as u16, name)
+                AgentKind::Gadget(Gadget {
+                    id: raw_agent.prof as u16,
+                    name,
+                })
             }
         } else if raw_agent.is_player() {
             let first = raw_agent
@@ -126,13 +172,13 @@ impl Agent {
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>();
             let third = raw_agent.name[first.len() + second.len() + 2] - b'0';
-            AgentKind::Player {
+            AgentKind::Player(Player {
                 profession: raw_agent.prof,
                 elite: raw_agent.is_elite,
                 character_name: String::from_utf8(first)?,
                 account_name: String::from_utf8(second)?,
                 subgroup: third,
-            }
+            })
         } else {
             return Err(EvtcError::InvalidData);
         };
@@ -186,17 +232,17 @@ impl Log {
     }
 
     /// Return an iterator over all agents that represent player characters.
-    pub fn players(&self) -> impl Iterator<Item = &Agent> {
+    pub fn players(&self) -> impl Iterator<Item = (&Agent, &Player)> {
         self.agents
             .iter()
-            .filter(|a| matches!(a.kind, AgentKind::Player { .. }))
+            .filter_map(|a| a.kind().as_player().map(|p| (a, p)))
     }
 
     /// Return an iterator over all agents that are NPCs.
-    pub fn npcs(&self) -> impl Iterator<Item = &Agent> {
+    pub fn npcs(&self) -> impl Iterator<Item = (&Agent, &Character)> {
         self.agents
             .iter()
-            .filter(|a| matches!(a.kind, AgentKind::Character(..)))
+            .filter_map(|a| a.kind().as_character().map(|c| (a, c)))
     }
 
     /// Return the boss agent.
@@ -205,7 +251,8 @@ impl Log {
     /// and Xera.
     pub fn boss(&self) -> &Agent {
         self.npcs()
-            .find(|n| matches!(n.kind, AgentKind::Character(x, _) if x == self.boss_id))
+            .find(|(_, c)| c.id == self.boss_id)
+            .map(|t| t.0)
             .expect("Boss has no agent!")
     }
 
@@ -220,7 +267,8 @@ impl Log {
             vec![self.boss_id]
         };
         self.npcs()
-            .filter(|a| matches!(a.kind, AgentKind::Character(x, _) if boss_ids.contains(&x)))
+            .filter(|(_, c)| boss_ids.contains(&c.id))
+            .map(|t| t.0)
             .collect()
     }
 
