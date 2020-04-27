@@ -28,8 +28,6 @@ pub use event::{Event, EventKind};
 pub mod gamedata;
 pub use gamedata::Boss;
 
-use std::fmt;
-
 /// A macro that returns `true` when the given expression matches the pattern.
 ///
 /// ```rust
@@ -60,34 +58,17 @@ pub enum EvtcError {
 }
 
 /// The type of an agent.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AgentKind {
-    Player { profession: u32, elite: u32 },
-    Gadget(u16),
-    Character(u16),
-}
-
-/// Name of an agent.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AgentName {
-    Single(String),
+pub enum AgentKind {
     Player {
+        profession: u32,
+        elite: u32,
         character_name: String,
         account_name: String,
         subgroup: u8,
     },
-}
-
-impl fmt::Display for AgentName {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = match *self {
-            AgentName::Single(ref name) => name,
-            AgentName::Player {
-                ref character_name, ..
-            } => character_name,
-        };
-        f.write_str(name)
-    }
+    Gadget(u16, String),
+    Character(u16, String),
 }
 
 /// An agent.
@@ -105,8 +86,6 @@ pub struct Agent {
     healing: i16,
     #[get_copy = "pub"]
     condition: i16,
-    #[get = "pub"]
-    name: AgentName,
     #[get_copy = "pub"]
     instance_id: u16,
     #[get_copy = "pub"]
@@ -120,20 +99,19 @@ pub struct Agent {
 impl Agent {
     /// Parse a raw agent.
     pub fn from_raw(raw_agent: &raw::Agent) -> Result<Agent, EvtcError> {
-        let kind = if raw_agent.is_character() {
-            AgentKind::Character(raw_agent.prof as u16)
-        } else if raw_agent.is_gadget() {
-            AgentKind::Gadget(raw_agent.prof as u16)
-        } else if raw_agent.is_player() {
-            AgentKind::Player {
-                profession: raw_agent.prof,
-                elite: raw_agent.is_elite,
+        let kind = if raw_agent.is_character() || raw_agent.is_gadget() {
+            let name = String::from_utf8(raw_agent
+                .name
+                .iter()
+                .cloned()
+                .take_while(|c| *c != 0)
+                .collect::<Vec<_>>())?;
+            if raw_agent.is_character() {
+                AgentKind::Character(raw_agent.prof as u16, name)
+            } else {
+                AgentKind::Gadget(raw_agent.prof as u16, name)
             }
-        } else {
-            return Err(EvtcError::InvalidData);
-        };
-
-        let name = if raw_agent.is_player() {
+        } else if raw_agent.is_player() {
             let first = raw_agent
                 .name
                 .iter()
@@ -148,19 +126,15 @@ impl Agent {
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>();
             let third = raw_agent.name[first.len() + second.len() + 2] - b'0';
-            AgentName::Player {
+            AgentKind::Player {
+                profession: raw_agent.prof,
+                elite: raw_agent.is_elite,
                 character_name: String::from_utf8(first)?,
                 account_name: String::from_utf8(second)?,
                 subgroup: third,
             }
         } else {
-            let name = raw_agent
-                .name
-                .iter()
-                .cloned()
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>();
-            AgentName::Single(String::from_utf8(name)?)
+            return Err(EvtcError::InvalidData);
         };
 
         Ok(Agent {
@@ -170,7 +144,6 @@ impl Agent {
             concentration: raw_agent.concentration,
             healing: raw_agent.healing,
             condition: raw_agent.condition,
-            name,
             instance_id: 0,
             first_aware: 0,
             last_aware: u64::max_value(),
@@ -223,7 +196,7 @@ impl Log {
     pub fn npcs(&self) -> impl Iterator<Item = &Agent> {
         self.agents
             .iter()
-            .filter(|a| matches!(a.kind, AgentKind::Character(_)))
+            .filter(|a| matches!(a.kind, AgentKind::Character(..)))
     }
 
     /// Return the boss agent.
@@ -232,7 +205,7 @@ impl Log {
     /// and Xera.
     pub fn boss(&self) -> &Agent {
         self.npcs()
-            .find(|n| matches!(n.kind, AgentKind::Character(x) if x == self.boss_id))
+            .find(|n| matches!(n.kind, AgentKind::Character(x, _) if x == self.boss_id))
             .expect("Boss has no agent!")
     }
 
@@ -247,7 +220,7 @@ impl Log {
             vec![self.boss_id]
         };
         self.npcs()
-            .filter(|a| matches!(a.kind, AgentKind::Character(x) if boss_ids.contains(&x)))
+            .filter(|a| matches!(a.kind, AgentKind::Character(x, _) if boss_ids.contains(&x)))
             .collect()
     }
 
