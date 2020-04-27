@@ -16,7 +16,7 @@
 //!
 //! (Look at the note on "Buffering" in the [parser
 //! module](raw/parser/index.html#buffering))
-#![feature(try_trait, stmt_expr_attributes, never_type)]
+#![feature(try_trait)]
 
 use thiserror::Error;
 use getset::Getters;
