@@ -26,9 +26,8 @@ pub mod raw;
 mod event;
 pub use event::{Event, EventKind};
 
-pub mod statistics;
-
-use statistics::gamedata::{self, Boss};
+pub mod gamedata;
+pub use gamedata::Boss;
 
 use std::fmt;
 

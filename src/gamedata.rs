@@ -1,0 +1,149 @@
+//! This module contains some low-level game data, such as different boss IDs.
+use std::{fmt, str::FromStr};
+use num_derive::FromPrimitive;
+
+/// Enum containing all bosses with their IDs.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
+pub enum Boss {
+    // Wing 1
+    ValeGuardian = 0x3C4E,
+    Gorseval = 0x3C45,
+    Sabetha = 0x3C0F,
+
+    // Wing 2
+    Slothasor = 0x3EFB,
+    Matthias = 0x3EF3,
+
+    // Wing 3
+    KeepConstruct = 0x3F6B,
+    /// Xera ID for phase 1.
+    ///
+    /// This is only half of Xera's ID, as there will be a second agent for the
+    /// second phase. This agent will have another ID, see
+    /// [`XERA_PHASE2_ID`](constant.XERA_PHASE2_ID.html).
+    Xera = 0x3F76,
+
+    // Wing 4
+    Cairn = 0x432A,
+    MursaatOverseer = 0x4314,
+    Samarog = 0x4324,
+    Deimos = 0x4302,
+
+    // Wing 5
+    SoullessHorror = 0x4D37,
+    Dhuum = 0x4BFA,
+
+    // Wing 6
+    ConjuredAmalgamate = 0xABC6,
+    LargosTwins = 0x5271,
+    Qadim = 0x51C6,
+
+    // Wing 7
+    CardinalAdina = 0x55F6,
+    CardinalSabir = 0x55CC,
+    QadimThePeerless = 0x55F0,
+
+    // 100 CM
+    Skorvald = 0x44E0,
+    Artsariiv = 0x461D,
+    Arkk = 0x455F,
+
+    // 99 CM
+    MAMA = 0x427D,
+    Siax = 0x4284,
+    Ensolyss = 0x4234,
+
+    // Strike missions
+    IcebroodConstruct = 0x568A,
+    VoiceOfTheFallen = 0x5747,
+    FraenirOfJormag = 0x57DC,
+    Boneskinner = 0x57F9,
+    WhisperOfJormag = 0x58B7,
+}
+
+
+/// Error for when converting a string to the boss fails.
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct ParseBossError(String);
+
+
+impl fmt::Display for ParseBossError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Invalid boss identifier: {}", self.0)
+    }
+}
+
+
+impl FromStr for Boss {
+    type Err = ParseBossError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let lower = s.to_lowercase();
+        match &lower as &str {
+            "vg" | "vale guardian" => Ok(Boss::ValeGuardian),
+            "gorse" | "gorseval" => Ok(Boss::Gorseval),
+            "sab" | "sabetha" => Ok(Boss::Sabetha),
+
+            "sloth" | "slothasor" => Ok(Boss::Slothasor),
+            "matthias" => Ok(Boss::Matthias),
+
+            "kc" | "keep construct" => Ok(Boss::KeepConstruct),
+            "xera" => Ok(Boss::Xera),
+
+            "cairn" => Ok(Boss::Cairn),
+            "mo" | "mursaat overseer" => Ok(Boss::MursaatOverseer),
+            "sam" | "sama" | "samarog" => Ok(Boss::Samarog),
+            "deimos" => Ok(Boss::Deimos),
+
+            "desmina" | "sh" => Ok(Boss::SoullessHorror),
+            "dhuum" => Ok(Boss::Dhuum),
+
+            "ca" | "conjured almagamate" => Ok(Boss::ConjuredAmalgamate),
+            "largos" | "twins" => Ok(Boss::LargosTwins),
+            "qadim" => Ok(Boss::Qadim),
+
+            "adina" | "cardinal adina" => Ok(Boss::CardinalAdina),
+            "sabir" | "cardinal sabir" => Ok(Boss::CardinalSabir),
+            "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Boss::QadimThePeerless),
+
+            "skorvald" => Ok(Boss::Skorvald),
+            "artsariiv" => Ok(Boss::Artsariiv),
+            "arkk" => Ok(Boss::Arkk),
+
+            "mama" => Ok(Boss::MAMA),
+            "siax" => Ok(Boss::Siax),
+            "ensolyss" => Ok(Boss::Ensolyss),
+
+            "icebrood" | "icebrood construct" => Ok(Boss::IcebroodConstruct),
+            "super kodan brothers" => Ok(Boss::VoiceOfTheFallen),
+            "fraenir" | "fraenir of jormag" => Ok(Boss::FraenirOfJormag),
+            "boneskinner" => Ok(Boss::Boneskinner),
+            "whisper" | "whisper of jormag" => Ok(Boss::WhisperOfJormag),
+
+            _ => Err(ParseBossError(s.to_owned()))
+        }
+    }
+}
+
+
+/// ID for Xera in the second phase.
+///
+/// The original Xera will despawn, and after the tower phase, a separate spawn
+/// will take over. This new Xera will have this ID. Care needs to be taken when
+/// calculating boss damage on this encounter, as both Xeras have to be taken
+/// into account.
+pub const XERA_PHASE2_ID: u16 = 0x3F9E;
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn test_parsing() {
+        assert_eq!("vg".parse(), Ok(Boss::ValeGuardian));
+        assert_eq!("VG".parse(), Ok(Boss::ValeGuardian));
+
+        assert!("vga".parse::<Boss>().is_err());
+    }
+}
