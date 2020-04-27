@@ -1,6 +1,7 @@
 //! This module contains some low-level game data, such as different boss IDs.
 use num_derive::FromPrimitive;
-use std::{fmt, str::FromStr};
+use thiserror::Error;
+use std::str::FromStr;
 
 /// Enum containing all bosses with their IDs.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
@@ -62,14 +63,9 @@ pub enum Boss {
 }
 
 /// Error for when converting a string to the boss fails.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Error)]
+#[error("Invalid boss identifier: {0}")]
 pub struct ParseBossError(String);
-
-impl fmt::Display for ParseBossError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Invalid boss identifier: {}", self.0)
-    }
-}
 
 impl FromStr for Boss {
     type Err = ParseBossError;
