@@ -1,6 +1,6 @@
 //! This module contains some low-level game data, such as different boss IDs.
-use std::{fmt, str::FromStr};
 use num_derive::FromPrimitive;
+use std::{fmt, str::FromStr};
 
 /// Enum containing all bosses with their IDs.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
@@ -61,18 +61,15 @@ pub enum Boss {
     WhisperOfJormag = 0x58B7,
 }
 
-
 /// Error for when converting a string to the boss fails.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct ParseBossError(String);
-
 
 impl fmt::Display for ParseBossError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Invalid boss identifier: {}", self.0)
     }
 }
-
 
 impl FromStr for Boss {
     type Err = ParseBossError;
@@ -95,11 +92,11 @@ impl FromStr for Boss {
             "sam" | "sama" | "samarog" => Ok(Boss::Samarog),
             "deimos" => Ok(Boss::Deimos),
 
-            "desmina" | "sh" => Ok(Boss::SoullessHorror),
+            "desmina" | "sh" | "soulless horror" => Ok(Boss::SoullessHorror),
             "dhuum" => Ok(Boss::Dhuum),
 
-            "ca" | "conjured almagamate" => Ok(Boss::ConjuredAmalgamate),
-            "largos" | "twins" => Ok(Boss::LargosTwins),
+            "ca" | "conjured amalgamate" => Ok(Boss::ConjuredAmalgamate),
+            "largos" | "twins" | "largos twins" => Ok(Boss::LargosTwins),
             "qadim" => Ok(Boss::Qadim),
 
             "adina" | "cardinal adina" => Ok(Boss::CardinalAdina),
@@ -112,19 +109,18 @@ impl FromStr for Boss {
 
             "mama" => Ok(Boss::MAMA),
             "siax" => Ok(Boss::Siax),
-            "ensolyss" => Ok(Boss::Ensolyss),
+            "ensolyss" | "ensolyss of the endless torment" => Ok(Boss::Ensolyss),
 
             "icebrood" | "icebrood construct" => Ok(Boss::IcebroodConstruct),
-            "super kodan brothers" => Ok(Boss::VoiceOfTheFallen),
+            "kodans" | "super kodan brothers" => Ok(Boss::VoiceOfTheFallen),
             "fraenir" | "fraenir of jormag" => Ok(Boss::FraenirOfJormag),
             "boneskinner" => Ok(Boss::Boneskinner),
             "whisper" | "whisper of jormag" => Ok(Boss::WhisperOfJormag),
 
-            _ => Err(ParseBossError(s.to_owned()))
+            _ => Err(ParseBossError(s.to_owned())),
         }
     }
 }
-
 
 /// ID for Xera in the second phase.
 ///
@@ -134,16 +130,113 @@ impl FromStr for Boss {
 /// into account.
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    pub fn test_parsing() {
-        assert_eq!("vg".parse(), Ok(Boss::ValeGuardian));
-        assert_eq!("VG".parse(), Ok(Boss::ValeGuardian));
+    fn test_boss_parsing_ok() {
+        use Boss::*;
+        let tests: &[(&'static str, Boss)] = &[
+            ("vg", ValeGuardian),
+            ("VG", ValeGuardian),
+            ("vale guardian", ValeGuardian),
+            ("Vale Guardian", ValeGuardian),
+            ("gorse", Gorseval),
+            ("Gorse", Gorseval),
+            ("gorseval", Gorseval),
+            ("Gorseval", Gorseval),
+            ("sab", Sabetha),
+            ("sabetha", Sabetha),
+            ("Sabetha", Sabetha),
+            ("sloth", Slothasor),
+            ("slothasor", Slothasor),
+            ("Slothasor", Slothasor),
+            ("matthias", Matthias),
+            ("Matthias", Matthias),
+            ("kc", KeepConstruct),
+            ("KC", KeepConstruct),
+            ("keep construct", KeepConstruct),
+            ("Keep Construct", KeepConstruct),
+            ("xera", Xera),
+            ("Xera", Xera),
+            ("cairn", Cairn),
+            ("Cairn", Cairn),
+            ("mo", MursaatOverseer),
+            ("MO", MursaatOverseer),
+            ("mursaat overseer", MursaatOverseer),
+            ("Mursaat Overseer", MursaatOverseer),
+            ("samarog", Samarog),
+            ("Samarog", Samarog),
+            ("deimos", Deimos),
+            ("Deimos", Deimos),
+            ("sh", SoullessHorror),
+            ("soulless horror", SoullessHorror),
+            ("desmina", SoullessHorror),
+            ("Desmina", SoullessHorror),
+            ("dhuum", Dhuum),
+            ("Dhuum", Dhuum),
+            ("ca", ConjuredAmalgamate),
+            ("conjured amalgamate", ConjuredAmalgamate),
+            ("Conjured Amalgamate", ConjuredAmalgamate),
+            ("largos", LargosTwins),
+            ("twins", LargosTwins),
+            ("largos twins", LargosTwins),
+            ("qadim", Qadim),
+            ("Qadim", Qadim),
+            ("adina", CardinalAdina),
+            ("cardinal adina", CardinalAdina),
+            ("Cardinal Adina", CardinalAdina),
+            ("sabir", CardinalSabir),
+            ("cardinal sabir", CardinalSabir),
+            ("Cardinal Sabir", CardinalSabir),
+            ("qadimp", QadimThePeerless),
+            ("qadim the peerless", QadimThePeerless),
+            ("Qadim The Peerless", QadimThePeerless),
+            ("skorvald", Skorvald),
+            ("Skorvald", Skorvald),
+            ("artsariiv", Artsariiv),
+            ("Artsariiv", Artsariiv),
+            ("arkk", Arkk),
+            ("Arkk", Arkk),
+            ("mama", MAMA),
+            ("MAMA", MAMA),
+            ("siax", Siax),
+            ("SIAX", Siax),
+            ("ensolyss", Ensolyss),
+            ("Ensolyss", Ensolyss),
+            ("Ensolyss of the Endless Torment", Ensolyss),
+            ("icebrood", IcebroodConstruct),
+            ("Icebrood Construct", IcebroodConstruct),
+            ("fraenir", FraenirOfJormag),
+            ("Fraenir of Jormag", FraenirOfJormag),
+            ("boneskinner", Boneskinner),
+            ("kodans", VoiceOfTheFallen),
+            ("whisper", WhisperOfJormag),
+            ("Whisper of Jormag", WhisperOfJormag),
+        ];
 
-        assert!("vga".parse::<Boss>().is_err());
+        for (input, expected) in tests {
+            assert_eq!(input.parse(), Ok(*expected));
+        }
+    }
+
+    #[test]
+    fn test_boss_parsing_err() {
+        let tests = &[
+            "",
+            "vga",
+            "VGA",
+            "foovg",
+            "valeguardian",
+            "ValeGuardian",
+            "slotha",
+            "slot",
+            "slothasora",
+            "cardinal",
+        ];
+        for test in tests {
+            assert!(test.parse::<Boss>().is_err());
+        }
     }
 }
