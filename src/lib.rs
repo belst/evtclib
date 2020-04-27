@@ -18,7 +18,7 @@
 //! module](raw/parser/index.html#buffering))
 
 use thiserror::Error;
-use getset::Getters;
+use getset::{CopyGetters, Getters};
 
 pub mod raw;
 
@@ -91,29 +91,29 @@ impl fmt::Display for AgentName {
 }
 
 /// An agent.
-#[derive(Debug, Clone, Getters)]
+#[derive(Debug, Clone, Getters, CopyGetters)]
 pub struct Agent {
-    #[get = "pub"]
+    #[get_copy = "pub"]
     addr: u64,
     #[get = "pub"]
     kind: AgentKind,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     toughness: i16,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     concentration: i16,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     healing: i16,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     condition: i16,
     #[get = "pub"]
     name: AgentName,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     instance_id: u16,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     first_aware: u64,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     last_aware: u64,
-    #[get = "pub"]
+    #[get_copy = "pub"]
     master_agent: Option<u64>,
 }
 
@@ -253,7 +253,7 @@ impl Log {
 
     /// Check whether the given address is a boss agent.
     pub fn is_boss(&self, addr: u64) -> bool {
-        self.boss_agents().into_iter().any(|a| *a.addr() == addr)
+        self.boss_agents().into_iter().any(|a| a.addr() == addr)
     }
 
     /// Returns the boss/encounter id.
