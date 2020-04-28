@@ -506,9 +506,18 @@ impl Log {
         self.boss_agents().into_iter().any(|a| a.addr() == addr)
     }
 
-    /// Returns the boss/encounter id.
-    pub fn boss_id(&self) -> u16 {
+    /// Returns the encounter id.
+    pub fn encounter_id(&self) -> u16 {
         self.boss_id
+    }
+
+    /// Returns the encounter, if present.
+    ///
+    /// Some logs don't have an encounter set or have an ID that is unknown to us (for example, if
+    /// people set up arcdps with custom IDs). Therefore, this method can only return the encounter
+    /// if we know about it in [`Boss`][Boss].
+    pub fn encounter(&self) -> Option<Boss> {
+        Boss::from_u16(self.boss_id)
     }
 
     /// Return all events present in this log.
