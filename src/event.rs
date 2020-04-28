@@ -2,13 +2,13 @@ use super::raw;
 
 use std::io;
 
-use num_traits::FromPrimitive;
 use byteorder::{BigEndian, WriteBytesExt};
+use num_traits::FromPrimitive;
 
 /// A rusty enum for all possible combat events.
 ///
 /// This makes dealing with `CbtEvent` a bit saner (and safer).
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EventKind {
     // State change events
     /// The agent has entered combat.
@@ -106,6 +106,32 @@ pub enum EventKind {
         removal: raw::CbtBuffRemove,
     },
 
+    /// Position of the agent has changed.
+    Position {
+        source_agent_addr: u64,
+        x: f32,
+        y: f32,
+        z: f32,
+    },
+
+    /// Velocity of the agent has changed.
+    Velocity {
+        source_agent_addr: u64,
+        x: f32,
+        y: f32,
+        z: f32,
+    },
+
+    /// The agent is facing in the given direction.
+    Facing {
+        source_agent_addr: u64,
+        x: f32,
+        y: f32,
+    },
+
+    /// Information about the map id.
+    MapId { map_id: u64 },
+
     /// Guild identification
     Guild {
         source_agent_addr: u64,
@@ -115,7 +141,7 @@ pub enum EventKind {
 }
 
 /// A higher-level representation of a combat event.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Event {
     /// The time when the event happened.
     ///
@@ -214,10 +240,38 @@ impl Event {
                 raw_bytes: get_guild_id_bytes(raw_event),
                 api_guild_id: get_api_guild_string(&get_guild_id_bytes(raw_event)),
             },
+            CbtStateChange::Position => EventKind::Position {
+                source_agent_addr: raw_event.src_agent,
+                x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
+                y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
+                z: f32::from_bits(raw_event.value as u32),
+            },
+            CbtStateChange::Velocity => EventKind::Velocity {
+                source_agent_addr: raw_event.src_agent,
+                x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
+                y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
+                z: f32::from_bits(raw_event.value as u32),
+            },
+            CbtStateChange::Facing => EventKind::Facing {
+                source_agent_addr: raw_event.src_agent,
+                x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
+                y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
+            },
+            CbtStateChange::MapId => EventKind::MapId {
+                map_id: raw_event.src_agent,
+            },
             // XXX: implement proper handling of those events!
-            CbtStateChange::BuffInitial | CbtStateChange::Position | CbtStateChange::Velocity | CbtStateChange::Facing | CbtStateChange::TeamChange | CbtStateChange::AttackTarget | CbtStateChange::Targetable | CbtStateChange::MapId | CbtStateChange::ReplInfo | CbtStateChange::StackActive | CbtStateChange::StackReset | CbtStateChange::BuffInfo | CbtStateChange::BuffFormula | CbtStateChange::SkillInfo | CbtStateChange::SkillTiming => {
-                return None
-            }
+            CbtStateChange::BuffInitial
+            | CbtStateChange::TeamChange
+            | CbtStateChange::AttackTarget
+            | CbtStateChange::Targetable
+            | CbtStateChange::ReplInfo
+            | CbtStateChange::StackActive
+            | CbtStateChange::StackReset
+            | CbtStateChange::BuffInfo
+            | CbtStateChange::BuffFormula
+            | CbtStateChange::SkillInfo
+            | CbtStateChange::SkillTiming => return None,
 
             CbtStateChange::None => check_activation(raw_event)?,
         };
