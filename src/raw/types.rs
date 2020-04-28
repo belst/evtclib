@@ -125,36 +125,52 @@ pub enum CbtStateChange {
     /// Combat event that will appear once per buff per agent on logging start (zero duration,
     /// buff==18)
     BuffInitial,
-    /// src_agent changed, cast float* p = (float*)&dst_agent, access as x/y/z (float[3])
+    /// `src_agent` changed position.
+    ///
+    /// * `dst_agent` is a 2-element float array (x, y).
+    /// * `value` is a single float (z).
     Position,
-    /// src_agent changed, cast float* v = (float*)&dst_agent, access as x/y/z (float[3])
+    /// `src_agent` changed velocity.
+    ///
+    /// * `dst_agent` is a 2-element float array (x, y).
+    /// * `value` is a single float (z).
     Velocity,
-    /// src_agent changed, cast float* f = (float*)&dst_agent, access as x/y (float[2])
+    /// `src_agent` changed the direction that they're facing.
+    ///
+    /// * `dst_agent` is a 2-element float array (x, y).
     Facing,
-    /// src_agent change, dst_agent new team id
+    /// `src_agent` changed team.
+    ///
+    /// * `dst_agent` is the new team id
     TeamChange,
-    /// src_agent is an attacktarget, dst_agent is the parent agent (gadget type), value is the current targetable state
+    /// `src_agent` is an attacktarget, `dst_agent` is the parent agent (gadget type), `value` is the current targetable state
     AttackTarget,
-    /// dst_agent is the new target-able state (0 = no, 1 = yes. default yes)
+    /// `dst_agent` is the new target-able state (0 = no, 1 = yes. default yes)
     Targetable,
-    /// src_agent is map id
+    /// Information about the map that the log was done on.
+    ///
+    /// * `src_agent` is map id
     MapId,
     /// internal use by arcDPS, won't see anywhere
     ReplInfo,
-    /// src_agent is agent with buff, dst_agent is the stackid marked active
+    /// `src_agent` is agent with buff, `dst_agent` is the stackid marked active
     StackActive,
-    /// src_agent is agent with buff, value is the duration to reset to (also marks inactive),
-    /// pad61- is the stackid
+    /// `src_agent` is agent with buff, `value` is the duration to reset to (also marks inactive),
+    /// `pad61-` is the stackid
     StackReset,
-    /// src_agent is agent, dst_agent through buff_dmg is 16 byte guid (client form, needs minor rearrange for api form)
+    /// Information about the guild.
+    ///
+    /// * `src_agent` is the agent
+    /// * `dst_agent` through `buff_dmg` is 16 byte guild id (client form, needs minor rearrange
+    ///   for api form)
     Guild,
-    /// is_flanking = probably invuln, is_shields = probably invert, is_offcycle = category, pad61 = stacking type, src_master_instid = max stacks (not in realtime)
+    /// `is_flanking` = probably invuln, `is_shields` = probably invert, `is_offcycle` = category, `pad61` = stacking type, `src_master_instid` = max stacks (not in realtime)
     BuffInfo,
-    /// (float*)&time [9]: type attr1 attr2 param1 param2 param3 trait_src trait_self, is_flanking = !npc, is_shields = !player, is_offcycle = break (not in realtime, one per formula)
+    /// `(float*)&time [9]`: type attr1 attr2 param1 param2 param3 trait_src trait_self, `is_flanking` = !npc, `is_shields` = !player, `is_offcycle` = break (not in realtime, one per formula)
     BuffFormula,
-    /// (float*)&time [9]: recharge range0 range1 tooltiptime (not in realtime)
+    /// `(float*)&time [9]`: recharge range0 range1 tooltiptime (not in realtime)
     SkillInfo,
-    /// src_agent = action, dst_agent = at millisecond (not in realtime, one per timing)
+    /// `src_agent` = action, `dst_agent` = at millisecond (not in realtime, one per timing)
     SkillTiming,
 }
 
