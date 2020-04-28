@@ -370,6 +370,7 @@ impl Agent {
 
 impl<Kind> Agent<Kind> {
     /// Unconditionally change the tagged type.
+    #[inline]
     fn transmute<T>(&self) -> &Agent<T> {
         // Beware, unsafe code ahead!
         //
@@ -405,11 +406,13 @@ impl<Kind> Agent<Kind> {
     }
 
     /// Erase any extra information about the contained agent kind.
+    #[inline]
     pub fn erase(&self) -> &Agent {
         self.transmute()
     }
 
     /// Try to convert this `Agent` to an `Agent` representing a `Player`.
+    #[inline]
     pub fn as_player(&self) -> Option<&Agent<Player>> {
         if self.kind.is_player() {
             Some(self.transmute())
@@ -419,6 +422,7 @@ impl<Kind> Agent<Kind> {
     }
 
     /// Try to convert this `Agent` to an `Agent` representing a `Gadget`.
+    #[inline]
     pub fn as_gadget(&self) -> Option<&Agent<Gadget>> {
         if self.kind.is_gadget() {
             Some(self.transmute())
@@ -428,6 +432,7 @@ impl<Kind> Agent<Kind> {
     }
 
     /// Try to convert this `Agent` to an `Agent` representing a `Character`.
+    #[inline]
     pub fn as_character(&self) -> Option<&Agent<Character>> {
         if self.kind.is_character() {
             Some(self.transmute())
@@ -439,31 +444,37 @@ impl<Kind> Agent<Kind> {
 
 impl Agent<Player> {
     /// Directly access the underlying player data.
+    #[inline]
     pub fn player(&self) -> &Player {
         self.kind.as_player().expect("Agent<Player> had no player!")
     }
 
     /// Shorthand to get the player's account name.
+    #[inline]
     pub fn account_name(&self) -> &str {
         self.player().account_name()
     }
 
     /// Shorthand to get the player's character name.
+    #[inline]
     pub fn character_name(&self) -> &str {
         self.player().character_name()
     }
 
     /// Shorthand to get the player's elite specialization.
+    #[inline]
     pub fn elite(&self) -> Option<EliteSpec> {
         self.player().elite()
     }
 
     /// Shorthand to get the player's profession.
+    #[inline]
     pub fn profession(&self) -> Profession {
         self.player().profession()
     }
 
     /// Shorthand to get the player's subgroup.
+    #[inline]
     pub fn subgroup(&self) -> u8 {
         self.player().subgroup()
     }
@@ -471,16 +482,19 @@ impl Agent<Player> {
 
 impl Agent<Gadget> {
     /// Directly access the underlying gadget data.
+    #[inline]
     pub fn gadget(&self) -> &Gadget {
         self.kind.as_gadget().expect("Agent<Gadget> had no gadget!")
     }
 
     /// Shorthand to get the gadget's id.
+    #[inline]
     pub fn id(&self) -> u16 {
         self.gadget().id()
     }
 
     /// Shorthand to get the gadget's name.
+    #[inline]
     pub fn name(&self) -> &str {
         self.gadget().name()
     }
@@ -488,6 +502,7 @@ impl Agent<Gadget> {
 
 impl Agent<Character> {
     /// Directly access the underlying character data.
+    #[inline]
     pub fn character(&self) -> &Character {
         self.kind
             .as_character()
@@ -495,11 +510,13 @@ impl Agent<Character> {
     }
 
     /// Shorthand to get the character's id.
+    #[inline]
     pub fn id(&self) -> u16 {
         self.character().id()
     }
 
     /// Shorthand to get the character's name.
+    #[inline]
     pub fn name(&self) -> &str {
         self.character().name()
     }
@@ -515,6 +532,7 @@ pub struct Log {
 
 impl Log {
     /// Return all agents present in this log.
+    #[inline]
     pub fn agents(&self) -> &[Agent] {
         &self.agents
     }
@@ -581,6 +599,7 @@ impl Log {
     }
 
     /// Returns the encounter id.
+    #[inline]
     pub fn encounter_id(&self) -> u16 {
         self.boss_id
     }
@@ -590,11 +609,13 @@ impl Log {
     /// Some logs don't have an encounter set or have an ID that is unknown to us (for example, if
     /// people set up arcdps with custom IDs). Therefore, this method can only return the encounter
     /// if we know about it in [`Boss`][Boss].
+    #[inline]
     pub fn encounter(&self) -> Option<Boss> {
         Boss::from_u16(self.boss_id)
     }
 
     /// Return all events present in this log.
+    #[inline]
     pub fn events(&self) -> &[Event] {
         &self.events
     }
