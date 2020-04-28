@@ -44,6 +44,13 @@ pub enum EvtcError {
 }
 
 /// Player-specific agent data.
+///
+/// Player agents are characters controlled by a player and as such, they contain data about the
+/// account and character used (name, profession), as well as the squad composition.
+///
+/// Note that a `Player` is only the player character itself. Any additional entities that are
+/// spawned by the player (clones, illusions, banners, ...) are either a [`Character`][Character]
+/// or a [`Gadget`][Gadget].
 #[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Player {
     /// The player's profession.
@@ -78,6 +85,13 @@ impl Player {
 }
 
 /// Gadget-specific agent data.
+///
+/// Gadgets are entities that are spawned by certain skills. They are mostly inanimate objects that
+/// only exist to achieve a certain skill effect.
+///
+/// Examples of this include the [banners](https://wiki.guildwars2.com/wiki/Banner) spawned by
+/// Warriors, but also skill effects like the roots created by
+/// [Entangle](https://wiki.guildwars2.com/wiki/Entangle) or the other objects in the arena.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Gadget {
     #[get_copy = "pub"]
@@ -91,6 +105,10 @@ impl Gadget {
     }
 }
 
+/// Character-specific agent data.
+///
+/// Characters are NPCs such as the bosses themselves, additional mobs that they spawn, but also
+/// friendly characters like Mesmer's clones and illusions, Necromancer minions, and so on.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Character {
     #[get_copy = "pub"]
