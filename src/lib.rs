@@ -442,12 +442,47 @@ impl Agent<Player> {
     pub fn player(&self) -> &Player {
         self.kind.as_player().expect("Agent<Player> had no player!")
     }
+
+    /// Shorthand to get the player's account name.
+    pub fn account_name(&self) -> &str {
+        self.player().account_name()
+    }
+
+    /// Shorthand to get the player's character name.
+    pub fn character_name(&self) -> &str {
+        self.player().character_name()
+    }
+
+    /// Shorthand to get the player's elite specialization.
+    pub fn elite(&self) -> Option<EliteSpec> {
+        self.player().elite()
+    }
+
+    /// Shorthand to get the player's profession.
+    pub fn profession(&self) -> Profession {
+        self.player().profession()
+    }
+
+    /// Shorthand to get the player's subgroup.
+    pub fn subgroup(&self) -> u8 {
+        self.player().subgroup()
+    }
 }
 
 impl Agent<Gadget> {
     /// Directly access the underlying gadget data.
     pub fn gadget(&self) -> &Gadget {
         self.kind.as_gadget().expect("Agent<Gadget> had no gadget!")
+    }
+
+    /// Shorthand to get the gadget's id.
+    pub fn id(&self) -> u16 {
+        self.gadget().id()
+    }
+
+    /// Shorthand to get the gadget's name.
+    pub fn name(&self) -> &str {
+        self.gadget().name()
     }
 }
 
@@ -457,6 +492,16 @@ impl Agent<Character> {
         self.kind
             .as_character()
             .expect("Agent<Character> had no character!")
+    }
+
+    /// Shorthand to get the character's id.
+    pub fn id(&self) -> u16 {
+        self.character().id()
+    }
+
+    /// Shorthand to get the character's name.
+    pub fn name(&self) -> &str {
+        self.character().name()
     }
 }
 
