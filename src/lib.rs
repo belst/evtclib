@@ -17,8 +17,10 @@
 //! (Look at the note on "Buffering" in the [parser
 //! module](raw/parser/index.html#buffering))
 
-use thiserror::Error;
+use std::marker::PhantomData;
+
 use getset::{CopyGetters, Getters};
+use thiserror::Error;
 
 pub mod raw;
 
@@ -105,7 +107,7 @@ impl AgentKind {
         }
     }
 
-    /// Determines whether this `AgentKind` contains a player.
+    /// Determines whether this `AgentKind` contains a character.
     pub fn is_character(&self) -> bool {
         self.as_character().is_some()
     }
@@ -113,7 +115,8 @@ impl AgentKind {
 
 /// An agent.
 #[derive(Debug, Clone, Getters, CopyGetters)]
-pub struct Agent {
+#[repr(C)]
+pub struct Agent<Kind = ()> {
     #[get_copy = "pub"]
     addr: u64,
     #[get = "pub"]
@@ -134,18 +137,21 @@ pub struct Agent {
     last_aware: u64,
     #[get_copy = "pub"]
     master_agent: Option<u64>,
+    phantom_data: PhantomData<Kind>,
 }
 
 impl Agent {
     /// Parse a raw agent.
     pub fn from_raw(raw_agent: &raw::Agent) -> Result<Agent, EvtcError> {
         let kind = if raw_agent.is_character() || raw_agent.is_gadget() {
-            let name = String::from_utf8(raw_agent
-                .name
-                .iter()
-                .cloned()
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>())?;
+            let name = String::from_utf8(
+                raw_agent
+                    .name
+                    .iter()
+                    .cloned()
+                    .take_while(|c| *c != 0)
+                    .collect::<Vec<_>>(),
+            )?;
             if raw_agent.is_character() {
                 AgentKind::Character(Character {
                     id: raw_agent.prof as u16,
@@ -194,7 +200,100 @@ impl Agent {
             first_aware: 0,
             last_aware: u64::max_value(),
             master_agent: None,
+            phantom_data: PhantomData,
         })
+    }
+}
+
+impl<Kind> Agent<Kind> {
+    /// Unconditionally change the tagged type.
+    fn transmute<T>(&self) -> &Agent<T> {
+        // Beware, unsafe code ahead!
+        //
+        // What are we doing here?
+        // In Agent<T>, T is a marker type that only exists at the type level. There is no actual
+        // value of type T being held, instead, we use PhantomData under the hood. This is so we
+        // can implement special methods on Agent<Player>, Agent<Gadget> and Agent<Character>,
+        // which allows us in some cases to avoid the "second check" (e.g. Log::players() can
+        // return Agent<Player>, as the function already makes sure all returned agents are
+        // players). This makes the interface more ergonomical, as we can prove to the type checker
+        // at compile time that a given Agent has a certain AgentKind.
+        //
+        // Why is this safe?
+        // PhantomData<T> (which is what Agent<T> boils down to) is a zero-sized type, which means
+        // it does not actually change the layout of the struct. There is some discussion in [1],
+        // which suggests that this is true for #[repr(C)] structs (which Agent is). We can
+        // therefore safely transmute from Agent<U> to Agent<T>, for any U and T.
+        //
+        // Can this lead to unsafety?
+        // No, the actual data access is still done through safe rust and a if-let. In the worst
+        // case it can lead to an unexpected panic, but the "guarantee" made by T is rather weak in
+        // that regard.
+        //
+        // What are the alternatives?
+        // None, as far as I'm aware. Going from Agent<U> to Agent<T> is possible in safe Rust by
+        // destructuring the struct, or alternatively by [2] (if it would be implemented). However,
+        // when dealing with references, there seems to be no way to safely go from Agent<U> to
+        // Agent<T>, even if they share the same layout.
+        //
+        // [1]: https://www.reddit.com/r/rust/comments/avrbvc/is_it_safe_to_transmute_foox_to_fooy_if_the/
+        // [2]: https://github.com/rust-lang/rfcs/pull/2528
+        unsafe { &*(self as *const Agent<Kind> as *const Agent<T>) }
+    }
+
+    /// Erase any extra information about the contained agent kind.
+    pub fn erase(&self) -> &Agent {
+        self.transmute()
+    }
+
+    /// Try to convert this `Agent` to an `Agent` representing a `Player`.
+    pub fn as_player(&self) -> Option<&Agent<Player>> {
+        if self.kind.is_player() {
+            Some(self.transmute())
+        } else {
+            None
+        }
+    }
+
+    /// Try to convert this `Agent` to an `Agent` representing a `Gadget`.
+    pub fn as_gadget(&self) -> Option<&Agent<Gadget>> {
+        if self.kind.is_gadget() {
+            Some(self.transmute())
+        } else {
+            None
+        }
+    }
+
+    /// Try to convert this `Agent` to an `Agent` representing a `Character`.
+    pub fn as_character(&self) -> Option<&Agent<Character>> {
+        if self.kind.is_character() {
+            Some(self.transmute())
+        } else {
+            None
+        }
+    }
+}
+
+impl Agent<Player> {
+    /// Directly access the underlying player data.
+    pub fn player(&self) -> &Player {
+        self.kind.as_player().expect("Agent<Player> had no player!")
+    }
+}
+
+impl Agent<Gadget> {
+    /// Directly access the underlying gadget data.
+    pub fn gadget(&self) -> &Gadget {
+        self.kind.as_gadget().expect("Agent<Gadget> had no gadget!")
+    }
+}
+
+impl Agent<Character> {
+    /// Directly access the underlying character data.
+    pub fn character(&self) -> &Character {
+        self.kind
+            .as_character()
+            .expect("Agent<Character> had no character!")
     }
 }
 
@@ -232,17 +331,13 @@ impl Log {
     }
 
     /// Return an iterator over all agents that represent player characters.
-    pub fn players(&self) -> impl Iterator<Item = (&Agent, &Player)> {
-        self.agents
-            .iter()
-            .filter_map(|a| a.kind().as_player().map(|p| (a, p)))
+    pub fn players(&self) -> impl Iterator<Item = &Agent<Player>> {
+        self.agents.iter().filter_map(|a| a.as_player())
     }
 
     /// Return an iterator over all agents that are NPCs.
-    pub fn npcs(&self) -> impl Iterator<Item = (&Agent, &Character)> {
-        self.agents
-            .iter()
-            .filter_map(|a| a.kind().as_character().map(|c| (a, c)))
+    pub fn npcs(&self) -> impl Iterator<Item = &Agent<Character>> {
+        self.agents.iter().filter_map(|a| a.as_character())
     }
 
     /// Return the boss agent.
@@ -251,8 +346,8 @@ impl Log {
     /// and Xera.
     pub fn boss(&self) -> &Agent {
         self.npcs()
-            .find(|(_, c)| c.id == self.boss_id)
-            .map(|t| t.0)
+            .find(|c| c.character().id == self.boss_id)
+            .map(Agent::erase)
             .expect("Boss has no agent!")
     }
 
@@ -267,8 +362,8 @@ impl Log {
             vec![self.boss_id]
         };
         self.npcs()
-            .filter(|(_, c)| boss_ids.contains(&c.id))
-            .map(|t| t.0)
+            .filter(|c| boss_ids.contains(&c.character().id))
+            .map(Agent::erase)
             .collect()
     }
 
