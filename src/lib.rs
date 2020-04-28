@@ -20,6 +20,7 @@
 use std::marker::PhantomData;
 
 use getset::{CopyGetters, Getters};
+use num_traits::FromPrimitive;
 use thiserror::Error;
 
 pub mod raw;
@@ -28,12 +29,16 @@ mod event;
 pub use event::{Event, EventKind};
 
 pub mod gamedata;
-pub use gamedata::Boss;
+pub use gamedata::{Boss, EliteSpec, Profession};
 
 #[derive(Error, Debug)]
 pub enum EvtcError {
     #[error("invalid data has been provided")]
     InvalidData,
+    #[error("invalid profession id: {0}")]
+    InvalidProfession(u32),
+    #[error("invalid elite specialization id: {0}")]
+    InvalidEliteSpec(u32),
     #[error("utf8 decoding error: {0}")]
     Utf8Error(#[from] std::string::FromUtf8Error),
 }
@@ -43,11 +48,11 @@ pub enum EvtcError {
 pub struct Player {
     /// The player's profession.
     #[get_copy = "pub"]
-    profession: u32,
+    profession: Profession,
 
-    /// The player's elite specialization.
+    /// The player's elite specialization, if any is equipped.
     #[get_copy = "pub"]
-    elite: u32,
+    elite: Option<EliteSpec>,
 
     character_name: String,
 
@@ -298,9 +303,18 @@ impl Agent {
                 .take_while(|c| *c != 0)
                 .collect::<Vec<_>>();
             let third = raw_agent.name[first.len() + second.len() + 2] - b'0';
+            let elite = if raw_agent.is_elite == 0 {
+                None
+            } else {
+                Some(
+                    EliteSpec::from_u32(raw_agent.is_elite)
+                        .ok_or(EvtcError::InvalidEliteSpec(raw_agent.is_elite))?,
+                )
+            };
             AgentKind::Player(Player {
-                profession: raw_agent.prof,
-                elite: raw_agent.is_elite,
+                profession: Profession::from_u32(raw_agent.prof)
+                    .ok_or(EvtcError::InvalidProfession(raw_agent.prof))?,
+                elite,
                 character_name: String::from_utf8(first)?,
                 account_name: String::from_utf8(second)?,
                 subgroup: third,

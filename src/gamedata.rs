@@ -126,6 +126,74 @@ impl FromStr for Boss {
 /// into account.
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 
+/// An in-game profession.
+///
+/// This only contains the 9 base professions. For elite specializations, see
+/// [`EliteSpec`][EliteSpec].
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive)]
+pub enum Profession {
+    Guardian = 1,
+    Warrior = 2,
+    Engineer = 3,
+    Ranger = 4,
+    Thief = 5,
+    Elementalist = 6,
+    Mesmer = 7,
+    Necromancer = 8,
+    Revenant = 9,
+}
+
+/// All possible elite specializations.
+///
+/// Note that the numeric value of the enum variants correspond to the specialization ID in the API
+/// as well. See [the official wiki](https://wiki.guildwars2.com/wiki/API:2/specializations) for
+/// more information regarding the API usage.
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive)]
+pub enum EliteSpec {
+    // Heart of Thorns elites:
+    Dragonhunter = 27,
+    Berserker = 18,
+    Scrapper = 43,
+    Druid = 5,
+    Daredevil = 7,
+    Tempest = 48,
+    Chronomancer = 40,
+    Reaper = 34,
+    Herald = 52,
+
+    // Path of Fire elites:
+    Firebrand = 62,
+    Spellbreaker = 61,
+    Holosmith = 57,
+    Soulbeast = 55,
+    Deadeye = 58,
+    Weaver = 56,
+    Mirage = 59,
+    Scourge = 60,
+    Renegade = 63,
+}
+
+impl EliteSpec {
+    /// Return the profession that this elite specialization belongs to.
+    ///
+    /// This value is hardcoded (and not expected to change), and does not require a network
+    /// connection or API access.
+    pub fn profession(self) -> Profession {
+        use EliteSpec::*;
+        match self {
+            Dragonhunter | Firebrand => Profession::Guardian,
+            Berserker | Spellbreaker => Profession::Warrior,
+            Scrapper | Holosmith => Profession::Engineer,
+            Druid | Soulbeast => Profession::Ranger,
+            Daredevil | Deadeye => Profession::Thief,
+            Tempest | Weaver => Profession::Elementalist,
+            Chronomancer | Mirage => Profession::Mesmer,
+            Reaper | Scourge => Profession::Necromancer,
+            Herald | Renegade => Profession::Revenant,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
