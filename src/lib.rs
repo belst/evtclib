@@ -39,7 +39,7 @@ pub enum EvtcError {
 }
 
 /// Player-specific agent data.
-#[derive(Debug, Clone, PartialEq, Eq, CopyGetters)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Player {
     /// The player's profession.
     #[get_copy = "pub"]
@@ -73,7 +73,7 @@ impl Player {
 }
 
 /// Gadget-specific agent data.
-#[derive(Debug, Clone, PartialEq, Eq, CopyGetters)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Gadget {
     #[get_copy = "pub"]
     id: u16,
@@ -86,7 +86,7 @@ impl Gadget {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, CopyGetters)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Character {
     #[get_copy = "pub"]
     id: u16,
@@ -100,7 +100,7 @@ impl Character {
 }
 
 /// The type of an agent.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum AgentKind {
     Player(Player),
     Gadget(Gadget),
@@ -189,7 +189,7 @@ impl AgentKind {
 /// `Kind`. An escape hatch is the method [`.erase()`][Agent::erase], which erases the kind
 /// information and produces the default `Agent<()>`. Functions/methods that only take `Agent<()>`
 /// can therefore be used by any other agent as well.
-#[derive(Debug, Clone, Getters, CopyGetters)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Getters, CopyGetters)]
 // For the reasoning of #[repr(C)] see Agent::transmute.
 #[repr(C)]
 pub struct Agent<Kind = ()> {
