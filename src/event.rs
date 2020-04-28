@@ -392,7 +392,7 @@ fn get_api_guild_string(bytes: &[u8; 16]) -> Option<String> {
 }
 
 /// The different weapon-sets in game.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WeaponSet {
     /// First water weapon set.
     Water0,
@@ -426,7 +426,7 @@ impl WeaponSet {
 /// The different types to activate a skill.
 ///
 /// The parameter is the animation time in milliseconds.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Activation {
     /// The skill was activated with quickness.
     Quickness(i32),
