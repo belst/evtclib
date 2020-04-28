@@ -41,10 +41,21 @@ pub enum EvtcError {
 /// Player-specific agent data.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Player {
+    /// The player's profession.
     profession: u32,
+
+    /// The player's elite specialization.
     elite: u32,
+
+    /// The player's character name.
     character_name: String,
+
+    /// The player's account name.
+    ///
+    /// This includes the leading colon and the 4-digit denominator.
     account_name: String,
+
+    /// The subgroup the player was in.
     subgroup: u8,
 }
 
@@ -114,29 +125,111 @@ impl AgentKind {
 }
 
 /// An agent.
+///
+/// Agents in arcdps are very versatile, as a lot of things end up being an "agent". This includes:
+/// * Players
+/// * Bosses
+/// * Any additional mobs that spawn
+/// * Mesmer illusions
+/// * Ranger spirits, pets
+/// * Guardian spirit weapons
+/// * ...
+///
+/// Generally, you can divide them into three kinds ([`AgentKind`][AgentKind]):
+/// * [`Player`][Player]: All players themselves.
+/// * [`Character`][Character]: Non-player mobs, including most bosses, "adds" and player-generated
+///   characters.
+/// * [`Gadget`][Gadget]: Some additional gadgets, such as ley rifts, continuum split, ...
+///
+/// All of these agents share some common fields, which are the ones accessible in `Agent<Kind>`.
+/// The kind can be retrieved using [`.kind()`][Agent::kind], which can be matched on.
+///
+/// # The `Kind` parameter
+///
+/// The type parameter is not actually used and only exists at the type level. It can be used to
+/// tag `Agent`s containing a known kind. For example, `Agent<Player>` implements
+/// [`.player()`][Agent::player], which returns a `&Player` directly (instead of a
+/// `Option<&Player>`). This works because such tagged `Agent`s can only be constructed (safely)
+/// using [`.as_player()`][Agent::as_player], [`.as_gadget()`][Agent::as_gadget] or
+/// [`.as_character()`][Agent::as_character]. This is useful since functions like
+/// [`Log::players`][Log::players], which already filter only players, don't require the consumer
+/// to do another check/pattern match for the right agent kind.
+///
+/// The unit type `()` is used to tag `Agent`s which contain an undetermined type, and it is the
+/// default if you write `Agent` without any parameters.
+///
+/// The downside is that methods which work on `Agent`s theoretically should be generic over
+/// `Kind`. An escape hatch is the method [`.erase()`][Agent::erase], which erases the kind
+/// information and produces the default `Agent<()>`. Functions/methods that only take `Agent<()>`
+/// can therefore be used by any other agent as well.
 #[derive(Debug, Clone, Getters, CopyGetters)]
+// For the reasoning of #[repr(C)] see Agent::transmute.
 #[repr(C)]
 pub struct Agent<Kind = ()> {
+    /// The address of this agent.
+    ///
+    /// This is not actually the address of the in-memory Rust object, but rather a serialization
+    /// detail of arcdps. You should consider this as an opaque number and only compare it to other
+    /// agent addresses.
     #[get_copy = "pub"]
     addr: u64,
+
+    /// The kind of this agent.
     #[get = "pub"]
     kind: AgentKind,
+
+    /// The toughness of this agent.
+    ///
+    /// This is not an absolute number, but a relative indicator that indicates this agent's
+    /// toughness relative to the other people in the squad.
+    ///
+    /// 0 means lowest toughness, 10 means highest toughness.
     #[get_copy = "pub"]
     toughness: i16,
+
+    /// The concentration of this agent.
+    ///
+    /// This is not an absolute number, but a relative indicator that indicates this agent's
+    /// concentration relative to the other people in the squad.
+    ///
+    /// 0 means lowest concentration, 10 means highest concentration.
     #[get_copy = "pub"]
     concentration: i16,
+
+    /// The healing power of this agent.
+    ///
+    /// This is not an absolute number, but a relative indicator that indicates this agent's
+    /// healing power relative to the other people in the squad.
+    ///
+    /// 0 means lowest healing power, 10 means highest healing power.
     #[get_copy = "pub"]
     healing: i16,
+
+    /// The condition damage of this agent.
+    ///
+    /// This is not an absolute number, but a relative indicator that indicates this agent's
+    /// condition damage relative to the other people in the squad.
+    ///
+    /// 0 means lowest condition damage, 10 means highest condition damage.
     #[get_copy = "pub"]
     condition: i16,
+
+    /// The instance ID of this agent.
     #[get_copy = "pub"]
     instance_id: u16,
+
+    /// The timestamp of the first event entry with this agent.
     #[get_copy = "pub"]
     first_aware: u64,
+
+    /// The timestamp of the last event entry with this agent.
     #[get_copy = "pub"]
     last_aware: u64,
+
+    /// The master agent's address.
     #[get_copy = "pub"]
     master_agent: Option<u64>,
+
     phantom_data: PhantomData<Kind>,
 }
 
