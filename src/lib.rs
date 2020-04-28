@@ -39,37 +39,64 @@ pub enum EvtcError {
 }
 
 /// Player-specific agent data.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, CopyGetters)]
 pub struct Player {
     /// The player's profession.
+    #[get_copy = "pub"]
     profession: u32,
 
     /// The player's elite specialization.
+    #[get_copy = "pub"]
     elite: u32,
 
-    /// The player's character name.
     character_name: String,
+
+    account_name: String,
+
+    /// The subgroup the player was in.
+    #[get_copy = "pub"]
+    subgroup: u8,
+}
+
+impl Player {
+    /// The player's character name.
+    pub fn character_name(&self) -> &str {
+        &self.character_name
+    }
 
     /// The player's account name.
     ///
     /// This includes the leading colon and the 4-digit denominator.
-    account_name: String,
-
-    /// The subgroup the player was in.
-    subgroup: u8,
+    pub fn account_name(&self) -> &str {
+        &self.account_name
+    }
 }
 
 /// Gadget-specific agent data.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, CopyGetters)]
 pub struct Gadget {
+    #[get_copy = "pub"]
     id: u16,
     name: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl Gadget {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, CopyGetters)]
 pub struct Character {
+    #[get_copy = "pub"]
     id: u16,
     name: String,
+}
+
+impl Character {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
 
 /// The type of an agent.
