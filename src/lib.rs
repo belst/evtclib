@@ -40,7 +40,7 @@ pub enum EvtcError {
     #[error("invalid elite specialization id: {0}")]
     InvalidEliteSpec(u32),
     #[error("utf8 decoding error: {0}")]
-    Utf8Error(#[from] std::string::FromUtf8Error),
+    Utf8Error(#[from] std::str::Utf8Error),
 }
 
 /// Player-specific agent data.
@@ -113,6 +113,71 @@ pub enum AgentKind {
 }
 
 impl AgentKind {
+    fn from_raw_character(raw_agent: &raw::Agent) -> Result<Character, EvtcError> {
+        assert!(raw_agent.is_character());
+        let name = raw::cstr_up_to_nul(&raw_agent.name).ok_or(EvtcError::InvalidData)?;
+        Ok(Character {
+            id: raw_agent.prof as u16,
+            name: name.to_str()?.to_owned(),
+        })
+    }
+
+    fn from_raw_gadget(raw_agent: &raw::Agent) -> Result<Gadget, EvtcError> {
+        assert!(raw_agent.is_gadget());
+        let name = raw::cstr_up_to_nul(&raw_agent.name).ok_or(EvtcError::InvalidData)?;
+        Ok(Gadget {
+            id: raw_agent.prof as u16,
+            name: name.to_str()?.to_owned(),
+        })
+    }
+
+    fn from_raw_player(raw_agent: &raw::Agent) -> Result<Player, EvtcError> {
+        assert!(raw_agent.is_player());
+        let character_name = raw::cstr_up_to_nul(&raw_agent.name)
+            .ok_or(EvtcError::InvalidData)?
+            .to_str()?;
+        let account_name = raw::cstr_up_to_nul(&raw_agent.name[character_name.len() + 1..])
+            .ok_or(EvtcError::InvalidData)?
+            .to_str()?;
+        let subgroup = raw_agent.name[character_name.len() + account_name.len() + 2] - b'0';
+        let elite = if raw_agent.is_elite == 0 {
+            None
+        } else {
+            Some(
+                EliteSpec::from_u32(raw_agent.is_elite)
+                    .ok_or(EvtcError::InvalidEliteSpec(raw_agent.is_elite))?,
+            )
+        };
+        Ok(Player {
+            profession: Profession::from_u32(raw_agent.prof)
+                .ok_or(EvtcError::InvalidProfession(raw_agent.prof))?,
+            elite,
+            character_name: character_name.to_owned(),
+            account_name: account_name.to_owned(),
+            subgroup,
+        })
+    }
+
+    /// Extract the correct `AgentKind` from the given [raw agent][raw::Agent].
+    ///
+    /// This automatically discerns between player, gadget and characters.
+    ///
+    /// Note that in most cases, you probably want to use [`Agent::from_raw`][Agent::from_raw] or
+    /// even [`process`][process] instead of this function.
+    pub fn from_raw(raw_agent: &raw::Agent) -> Result<AgentKind, EvtcError> {
+        if raw_agent.is_character() {
+            Ok(AgentKind::Character(AgentKind::from_raw_character(
+                raw_agent,
+            )?))
+        } else if raw_agent.is_gadget() {
+            Ok(AgentKind::Gadget(AgentKind::from_raw_gadget(raw_agent)?))
+        } else if raw_agent.is_player() {
+            Ok(AgentKind::Player(AgentKind::from_raw_player(raw_agent)?))
+        } else {
+            Err(EvtcError::InvalidData)
+        }
+    }
+
     /// Accesses the inner [`Player`][Player] struct, if available.
     pub fn as_player(&self) -> Option<&Player> {
         if let AgentKind::Player(ref player) = *self {
@@ -268,61 +333,7 @@ pub struct Agent<Kind = ()> {
 impl Agent {
     /// Parse a raw agent.
     pub fn from_raw(raw_agent: &raw::Agent) -> Result<Agent, EvtcError> {
-        let kind = if raw_agent.is_character() || raw_agent.is_gadget() {
-            let name = String::from_utf8(
-                raw_agent
-                    .name
-                    .iter()
-                    .cloned()
-                    .take_while(|c| *c != 0)
-                    .collect::<Vec<_>>(),
-            )?;
-            if raw_agent.is_character() {
-                AgentKind::Character(Character {
-                    id: raw_agent.prof as u16,
-                    name,
-                })
-            } else {
-                AgentKind::Gadget(Gadget {
-                    id: raw_agent.prof as u16,
-                    name,
-                })
-            }
-        } else if raw_agent.is_player() {
-            let first = raw_agent
-                .name
-                .iter()
-                .cloned()
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>();
-            let second = raw_agent
-                .name
-                .iter()
-                .cloned()
-                .skip(first.len() + 1)
-                .take_while(|c| *c != 0)
-                .collect::<Vec<_>>();
-            let third = raw_agent.name[first.len() + second.len() + 2] - b'0';
-            let elite = if raw_agent.is_elite == 0 {
-                None
-            } else {
-                Some(
-                    EliteSpec::from_u32(raw_agent.is_elite)
-                        .ok_or(EvtcError::InvalidEliteSpec(raw_agent.is_elite))?,
-                )
-            };
-            AgentKind::Player(Player {
-                profession: Profession::from_u32(raw_agent.prof)
-                    .ok_or(EvtcError::InvalidProfession(raw_agent.prof))?,
-                elite,
-                character_name: String::from_utf8(first)?,
-                account_name: String::from_utf8(second)?,
-                subgroup: third,
-            })
-        } else {
-            return Err(EvtcError::InvalidData);
-        };
-
+        let kind = AgentKind::from_raw(raw_agent)?;
         Ok(Agent {
             addr: raw_agent.addr,
             kind,
