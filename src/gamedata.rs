@@ -1,7 +1,7 @@
 //! This module contains some low-level game data, such as different boss IDs.
 use num_derive::FromPrimitive;
-use thiserror::Error;
 use std::str::FromStr;
+use thiserror::Error;
 
 /// Enum containing all bosses with their IDs.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]

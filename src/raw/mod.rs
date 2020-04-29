@@ -17,8 +17,8 @@ pub mod parser;
 
 pub use self::parser::{parse_file, Evtc, ParseError, ParseResult};
 
-use std::io::{Read, Seek, BufReader};
 use std::ffi::CStr;
+use std::io::{BufReader, Read, Seek};
 
 /// Parse a complete log that was compressed as a zip file.
 pub fn parse_zip<T: Read + Seek>(input: &mut T) -> ParseResult<Evtc> {
