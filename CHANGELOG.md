@@ -12,8 +12,10 @@ All notable changes to this project will be documented in this file.
   `Boss`.
 - `evtclib::raw::cstr_up_to_nul` to make dealing with the embedded strings
   easier.
-- Handling for `CBTS_VELOCITY`, `CBTS_POSITION`, `CBTS_FACING` and `CBTS_MAPID`
-  events.
+- Handling for `CBTS_VELOCITY`, `CBTS_POSITION`, `CBTS_FACING`, `CBTS_MAPID`,
+  `CBTS_ATTACKTARGET` and `CBTS_TARGETABLE` events.
+- Convenience methods to `Log`: `local_start_timestamp`, `local_end_timestamp`,
+  `was_rewarded`.
 
 ### Changed
 - `evtclib::statistics::gamedata` is now called `evtclib::gamedata`, and the
@@ -30,6 +32,9 @@ All notable changes to this project will be documented in this file.
 - `evtclib::Log::boss_id()` has been renamed `encounter_id`.
 - `evtclib::EvtcError::Utf8Error` has changed the inner type from
   `FromUtf8Error` to `Utf8Error`.
+- The submodule `evtclib::event` is now publicly accessible.
+- Structs are now converted using `TryFrom` instead of our custom `from_raw`
+  method.
 
 ### Fixed
 - Fixes for parsing `evtclib::gamedata::Boss`:
@@ -46,6 +51,7 @@ All notable changes to this project will be documented in this file.
 - Removed `evtclib::statistics` submodule, see `08465ea` for the rationale.
 - Removed all feature flags, so the crate can now be used on stable.
 - Removed `Eq` from `evtclib::Event` & `evtclib::EventKind`.
+- `main.rs` is gone.
 
 ### Unsafe
 - An unsafe one-liner has been added in `Agent::transmute`. Rationale and a
