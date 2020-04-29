@@ -1,9 +1,21 @@
 use super::raw;
 
+use std::convert::TryFrom;
 use std::io;
 
 use byteorder::{BigEndian, WriteBytesExt};
 use num_traits::FromPrimitive;
+use thiserror::Error;
+
+/// Any error that can occur when trying to convert a raw [`CbtEvent`][raw::CbtEvent] to a
+/// [`Event`][Event].
+#[derive(Clone, Debug, Error)]
+pub enum FromRawEventError {
+    #[error("event contains an unknown state change: {0:?}")]
+    UnknownStateChange(raw::CbtStateChange),
+    #[error("event contains an unknown damage event")]
+    UnknownDamageEvent,
+}
 
 /// A rusty enum for all possible combat events.
 ///
@@ -123,17 +135,10 @@ pub enum EventKind {
     },
 
     /// The agent is facing in the given direction.
-    Facing {
-        agent_addr: u64,
-        x: f32,
-        y: f32,
-    },
+    Facing { agent_addr: u64, x: f32, y: f32 },
 
     /// The given agent changed their team.
-    TeamChange {
-        agent_addr: u64,
-        team_id: u64,
-    },
+    TeamChange { agent_addr: u64, team_id: u64 },
 
     /// Establishes an "attack target" relationship between two agents.
     ///
@@ -157,10 +162,7 @@ pub enum EventKind {
     },
 
     /// Updates the targetable state for the given agent.
-    Targetable {
-        agent_addr: u64,
-        targetable: bool,
-    },
+    Targetable { agent_addr: u64, targetable: bool },
 
     /// Information about the map id.
     MapId { map_id: u64 },
@@ -199,14 +201,16 @@ pub struct Event {
     pub is_shields: bool,
 }
 
-impl Event {
+impl TryFrom<&raw::CbtEvent> for Event {
+    type Error = FromRawEventError;
+
     /// Transform a raw event to a "high-level" event.
     ///
     /// If the event is not known, or some other error occured, `None` is
     /// returned.
     ///
     /// * `raw_event` - the raw event to transform.
-    pub fn from_raw(raw_event: &raw::CbtEvent) -> Option<Event> {
+    fn try_from(raw_event: &raw::CbtEvent) -> Result<Self, Self::Error> {
         use raw::CbtStateChange;
         let kind = match raw_event.is_statechange {
             // Check for state change events first.
@@ -314,11 +318,15 @@ impl Event {
             | CbtStateChange::BuffInfo
             | CbtStateChange::BuffFormula
             | CbtStateChange::SkillInfo
-            | CbtStateChange::SkillTiming => return None,
+            | CbtStateChange::SkillTiming => {
+                return Err(FromRawEventError::UnknownStateChange(
+                    raw_event.is_statechange,
+                ))
+            }
 
             CbtStateChange::None => check_activation(raw_event)?,
         };
-        Some(Event {
+        Ok(Event {
             time: raw_event.time,
             kind,
             is_ninety: raw_event.is_ninety,
@@ -330,12 +338,12 @@ impl Event {
     }
 }
 
-fn check_activation(raw_event: &raw::CbtEvent) -> Option<EventKind> {
+fn check_activation(raw_event: &raw::CbtEvent) -> Result<EventKind, FromRawEventError> {
     use raw::CbtActivation;
     match raw_event.is_activation {
         CbtActivation::None => check_buffremove(raw_event),
 
-        activation => Some(EventKind::SkillUse {
+        activation => Ok(EventKind::SkillUse {
             source_agent_addr: raw_event.src_agent,
             skill_id: raw_event.skillid,
             activation: match activation {
@@ -351,12 +359,12 @@ fn check_activation(raw_event: &raw::CbtEvent) -> Option<EventKind> {
     }
 }
 
-fn check_buffremove(raw_event: &raw::CbtEvent) -> Option<EventKind> {
+fn check_buffremove(raw_event: &raw::CbtEvent) -> Result<EventKind, FromRawEventError> {
     use raw::CbtBuffRemove;
     match raw_event.is_buffremove {
         CbtBuffRemove::None => check_damage(raw_event),
 
-        removal => Some(EventKind::BuffRemove {
+        removal => Ok(EventKind::BuffRemove {
             source_agent_addr: raw_event.src_agent,
             destination_agent_addr: raw_event.dst_agent,
             buff_id: raw_event.skillid,
@@ -367,9 +375,9 @@ fn check_buffremove(raw_event: &raw::CbtEvent) -> Option<EventKind> {
     }
 }
 
-fn check_damage(raw_event: &raw::CbtEvent) -> Option<EventKind> {
+fn check_damage(raw_event: &raw::CbtEvent) -> Result<EventKind, FromRawEventError> {
     if raw_event.buff == 0 && raw_event.iff == raw::IFF::Foe && raw_event.dst_agent != 0 {
-        Some(EventKind::Physical {
+        Ok(EventKind::Physical {
             source_agent_addr: raw_event.src_agent,
             destination_agent_addr: raw_event.dst_agent,
             skill_id: raw_event.skillid,
@@ -381,14 +389,14 @@ fn check_damage(raw_event: &raw::CbtEvent) -> Option<EventKind> {
         && raw_event.dst_agent != 0
         && raw_event.value == 0
     {
-        Some(EventKind::ConditionTick {
+        Ok(EventKind::ConditionTick {
             source_agent_addr: raw_event.src_agent,
             destination_agent_addr: raw_event.dst_agent,
             condition_id: raw_event.skillid,
             damage: raw_event.buff_dmg,
         })
     } else if raw_event.buff == 1 && raw_event.buff_dmg == 0 && raw_event.value != 0 {
-        Some(EventKind::BuffApplication {
+        Ok(EventKind::BuffApplication {
             source_agent_addr: raw_event.src_agent,
             destination_agent_addr: raw_event.dst_agent,
             buff_id: raw_event.skillid,
@@ -396,13 +404,13 @@ fn check_damage(raw_event: &raw::CbtEvent) -> Option<EventKind> {
             overstack: raw_event.overstack_value,
         })
     } else if raw_event.buff == 1 && raw_event.buff_dmg == 0 && raw_event.value == 0 {
-        Some(EventKind::InvulnTick {
+        Ok(EventKind::InvulnTick {
             source_agent_addr: raw_event.src_agent,
             destination_agent_addr: raw_event.dst_agent,
             condition_id: raw_event.skillid,
         })
     } else {
-        None
+        Err(FromRawEventError::UnknownDamageEvent)
     }
 }
 

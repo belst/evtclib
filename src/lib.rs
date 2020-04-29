@@ -17,6 +17,7 @@
 //! (Look at the note on "Buffering" in the [parser
 //! module](raw/parser/index.html#buffering))
 
+use std::convert::TryFrom;
 use std::marker::PhantomData;
 
 use getset::{CopyGetters, Getters};
@@ -176,26 +177,6 @@ impl AgentKind {
         })
     }
 
-    /// Extract the correct `AgentKind` from the given [raw agent][raw::Agent].
-    ///
-    /// This automatically discerns between player, gadget and characters.
-    ///
-    /// Note that in most cases, you probably want to use [`Agent::from_raw`][Agent::from_raw] or
-    /// even [`process`][process] instead of this function.
-    pub fn from_raw(raw_agent: &raw::Agent) -> Result<AgentKind, EvtcError> {
-        if raw_agent.is_character() {
-            Ok(AgentKind::Character(AgentKind::from_raw_character(
-                raw_agent,
-            )?))
-        } else if raw_agent.is_gadget() {
-            Ok(AgentKind::Gadget(AgentKind::from_raw_gadget(raw_agent)?))
-        } else if raw_agent.is_player() {
-            Ok(AgentKind::Player(AgentKind::from_raw_player(raw_agent)?))
-        } else {
-            Err(EvtcError::InvalidData)
-        }
-    }
-
     /// Accesses the inner [`Player`][Player] struct, if available.
     pub fn as_player(&self) -> Option<&Player> {
         if let AgentKind::Player(ref player) = *self {
@@ -236,6 +217,30 @@ impl AgentKind {
     /// Determines whether this `AgentKind` contains a character.
     pub fn is_character(&self) -> bool {
         self.as_character().is_some()
+    }
+}
+
+impl TryFrom<&raw::Agent> for AgentKind {
+    type Error = EvtcError;
+
+    /// Extract the correct `AgentKind` from the given [raw agent][raw::Agent].
+    ///
+    /// This automatically discerns between player, gadget and characters.
+    ///
+    /// Note that in most cases, you probably want to use `Agent::try_from` or even
+    /// [`process`][process] instead of this function.
+    fn try_from(raw_agent: &raw::Agent) -> Result<Self, Self::Error> {
+        if raw_agent.is_character() {
+            Ok(AgentKind::Character(AgentKind::from_raw_character(
+                raw_agent,
+            )?))
+        } else if raw_agent.is_gadget() {
+            Ok(AgentKind::Gadget(AgentKind::from_raw_gadget(raw_agent)?))
+        } else if raw_agent.is_player() {
+            Ok(AgentKind::Player(AgentKind::from_raw_player(raw_agent)?))
+        } else {
+            Err(EvtcError::InvalidData)
+        }
     }
 }
 
@@ -348,10 +353,12 @@ pub struct Agent<Kind = ()> {
     phantom_data: PhantomData<Kind>,
 }
 
-impl Agent {
+impl TryFrom<&raw::Agent> for Agent {
+    type Error = EvtcError;
+
     /// Parse a raw agent.
-    pub fn from_raw(raw_agent: &raw::Agent) -> Result<Agent, EvtcError> {
-        let kind = AgentKind::from_raw(raw_agent)?;
+    fn try_from(raw_agent: &raw::Agent) -> Result<Self, Self::Error> {
+        let kind = AgentKind::try_from(raw_agent)?;
         Ok(Agent {
             addr: raw_agent.addr,
             kind,
@@ -630,7 +637,11 @@ pub fn process(data: &raw::Evtc) -> Result<Log, EvtcError> {
     // Set the master addr field
     set_agent_masters(data, &mut agents)?;
 
-    let events = data.events.iter().filter_map(Event::from_raw).collect();
+    let events = data
+        .events
+        .iter()
+        .filter_map(|e| Event::try_from(e).ok())
+        .collect();
 
     Ok(Log {
         agents,
@@ -643,7 +654,7 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
     let mut agents = Vec::with_capacity(data.agents.len());
 
     for raw_agent in &data.agents {
-        agents.push(Agent::from_raw(raw_agent)?);
+        agents.push(Agent::try_from(raw_agent)?);
     }
     Ok(agents)
 }
