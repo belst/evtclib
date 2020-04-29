@@ -689,6 +689,70 @@ impl Log {
     }
 }
 
+/// Convenience data accessing funtions for [`Log`][Log]s.
+///
+/// The information that is gathered by those functions is "expensive" to compute, as we have to
+/// loop through every event. They are not saved in the header, and instead are implemented using
+/// special [`EventKind`][EventKind]s. This is not a limitation of `evtclib`, but rather a result
+/// of how arcdps stores the data.
+///
+/// This also means that those functions are fallible because we cannot guarantee that the special
+/// events that we're looking for is actually present in every log file.
+///
+/// Use those functions only if necessary, and prefer to cache the result if it will be reused!
+impl Log {
+    /// Get the timestamp of when the log was started.
+    ///
+    /// The returned value is a unix timestamp in the local time zone.
+    ///
+    /// If the [`LogStart`][EventKind::LogStart] event cannot be found, this function returns
+    /// `None`.
+    pub fn local_start_timestamp(&self) -> Option<u32> {
+        self.events().iter().find_map(|e| {
+            if let EventKind::LogStart {
+                local_timestamp, ..
+            } = e.kind
+            {
+                Some(local_timestamp)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Get the timestamp of when the log was ended.
+    ///
+    /// The returned value is a unix timestamp in the local time zone.
+    ///
+    /// If the [`LogEnd`][EventKind::LogEnd] event cannot be found, this function returns `None`.
+    pub fn local_end_timestamp(&self) -> Option<u32> {
+        self.events().iter().find_map(|e| {
+            if let EventKind::LogEnd {
+                local_timestamp, ..
+            } = e.kind
+            {
+                Some(local_timestamp)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Check if rewards for this fight have been given out.
+    ///
+    /// This can be used as an indication whether the fight was successful (`true`) or not
+    /// (`false`).
+    pub fn was_rewarded(&self) -> bool {
+        self.events().iter().any(|e| {
+            if let EventKind::Reward { .. } = e.kind {
+                true
+            } else {
+                false
+            }
+        })
+    }
+}
+
 pub fn process(data: &raw::Evtc) -> Result<Log, EvtcError> {
     // Prepare "augmented" agents
     let mut agents = setup_agents(data)?;
