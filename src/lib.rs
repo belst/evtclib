@@ -25,7 +25,7 @@ use thiserror::Error;
 
 pub mod raw;
 
-mod event;
+pub mod event;
 pub use event::{Event, EventKind};
 
 pub mod gamedata;
