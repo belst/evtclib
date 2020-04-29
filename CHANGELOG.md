@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.2.0 - 2020-04-29
 ### Added
 - `Hash`, `PartialEq` and `Eq` implementations for `Agent`.
 - `Hash` implementation for `WeaponSet` and `Activation`.
