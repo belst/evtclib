@@ -313,19 +313,19 @@ impl TryFrom<&raw::CbtEvent> for Event {
             CbtStateChange::Position => EventKind::Position {
                 agent_addr: raw_event.src_agent,
                 x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
-                y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
+                y: f32::from_bits((raw_event.dst_agent & 0xffff_ffff) as u32),
                 z: f32::from_bits(raw_event.value as u32),
             },
             CbtStateChange::Velocity => EventKind::Velocity {
                 agent_addr: raw_event.src_agent,
                 x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
-                y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
+                y: f32::from_bits((raw_event.dst_agent & 0xffff_ffff) as u32),
                 z: f32::from_bits(raw_event.value as u32),
             },
             CbtStateChange::Facing => EventKind::Facing {
                 agent_addr: raw_event.src_agent,
                 x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
-                y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
+                y: f32::from_bits((raw_event.dst_agent & 0xffff_ffff) as u32),
             },
             CbtStateChange::MapId => EventKind::MapId {
                 map_id: raw_event.src_agent,
