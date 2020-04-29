@@ -1,0 +1,17 @@
+image: "rust"
+
+tests:
+  script:
+    - cargo test
+
+format:
+  before_script:
+    - rustup component add rustfmt
+  script:
+    - cargo fmt -- --check
+
+clippy:
+  before_script:
+    - rustup component add clippy
+  script:
+    - cargo clippy
