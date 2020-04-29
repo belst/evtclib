@@ -124,6 +124,24 @@ impl Character {
 }
 
 /// The type of an agent.
+///
+/// arcdps differentiates between three types of agents: [`Player`][Player],
+/// [`Character`][Character] and [`Gadget`][Gadget]. This enum unifies handling between them by
+/// allowing you to pattern match or use one of the accessor methods.
+///
+/// The main way to obtain a `AgentKind` is by using the [`.kind()`][Agent::kind] method on an
+/// [`Agent`][Agent]. In cases where you already have a [`raw::Agent`][raw::Agent] available, you
+/// can also use the [`TryFrom`][TryFrom]/[`TryInto`][std::convert::TryInto] traits to convert a
+/// `raw::Agent` or `&raw::Agent` to a `AgentKind`:
+///
+/// ```no_run
+/// # use evtclib::{AgentKind, raw};
+/// use std::convert::TryInto;
+/// // Get a raw::Agent from somewhere
+/// let raw_agent: raw::Agent = panic!();
+/// // Convert it
+/// let agent: AgentKind = raw_agent.try_into().unwrap();
+/// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum AgentKind {
     Player(Player),
@@ -220,6 +238,17 @@ impl AgentKind {
     }
 }
 
+impl TryFrom<raw::Agent> for AgentKind {
+    type Error = EvtcError;
+    /// Convenience method to avoid manual borrowing.
+    ///
+    /// Note that this conversion will consume the agent, so if you plan on re-using it, use the
+    /// `TryFrom<&raw::Agent>` implementation that works with a reference.
+    fn try_from(raw_agent: raw::Agent) -> Result<Self, Self::Error> {
+        Self::try_from(&raw_agent)
+    }
+}
+
 impl TryFrom<&raw::Agent> for AgentKind {
     type Error = EvtcError;
 
@@ -263,6 +292,26 @@ impl TryFrom<&raw::Agent> for AgentKind {
 ///
 /// All of these agents share some common fields, which are the ones accessible in `Agent<Kind>`.
 /// The kind can be retrieved using [`.kind()`][Agent::kind], which can be matched on.
+///
+/// # Obtaining an agent
+///
+/// The normal way to obtain the agents is to use the [`.agents()`](Log::agents) method on a
+/// [`Log`][Log], or one of the other accessor methods (like [`.players()`][Log::players] or
+/// [`.agent_by_addr()`][Log::agent_by_addr]).
+///
+/// In the cases where you already have a [`raw::Agent`][raw::Agent] available, you can also
+/// convert it to an [`Agent`][Agent] by using the standard
+/// [`TryFrom`][TryFrom]/[`TryInto`][std::convert::TryInto] traits:
+///
+/// ```no_run
+/// # use evtclib::{Agent, raw};
+/// use std::convert::TryInto;
+/// let raw_agent: raw::Agent = panic!();
+/// let agent: Agent = raw_agent.try_into().unwrap();
+/// ```
+///
+/// Note that you can convert references as well, so if you plan on re-using the raw agent
+/// afterwards, you should opt for `Agent::try_from(&raw_agent)` instead.
 ///
 /// # The `Kind` parameter
 ///
@@ -372,6 +421,18 @@ impl TryFrom<&raw::Agent> for Agent {
             master_agent: None,
             phantom_data: PhantomData,
         })
+    }
+}
+
+impl TryFrom<raw::Agent> for Agent {
+    type Error = EvtcError;
+
+    /// Convenience method to avoid manual borrowing.
+    ///
+    /// Note that this conversion will consume the agent, so if you plan on re-using it, use the
+    /// `TryFrom<&raw::Agent>` implementation that works with a reference.
+    fn try_from(raw_agent: raw::Agent) -> Result<Self, Self::Error> {
+        Agent::try_from(&raw_agent)
     }
 }
 

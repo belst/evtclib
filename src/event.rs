@@ -176,6 +176,28 @@ pub enum EventKind {
 }
 
 /// A higher-level representation of a combat event.
+///
+/// Events can be many things, from damage events to general status messages (e.g. there's
+/// [`EventKind::MapId`][EventKind::MapId] to give information about the current map). The main way
+/// to use events is to match on the [`EventKind`][EventKind] stored in [`.kind`][Event::kind] and
+/// then decide how to proceed. Note that all [`Event`][Event]s have certain fields that are always
+/// present, but they might not always be useful or contain sensible information. This is just an
+/// artifact of how arcdps saves the events.
+///
+/// The main way to deal with events is to iterate/use the [`.events()`][super::Log::events]
+/// provided by a parsed [`Log`][super::Log]. However, if you end up working with raw events
+/// ([`CbtEvent`][raw::CbtEvent]), then you can convert them to a "high-level" event using the
+/// standard [`TryFrom`][TryFrom]/[`TryInto`][std::convert::TryInto] mechanisms:
+///
+/// ```no_run
+/// # use evtclib::{raw, Event};
+/// use std::convert::TryInto;
+/// let raw_event: raw::CbtEvent = panic!();
+/// let event: Event = raw_event.try_into().unwrap();
+/// ```
+///
+/// Note that if you plan on re-using the raw event afterwards, you should use the implementation
+/// that works on a reference instead: `Event::try_from(&raw_event)`.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Event {
     /// The time when the event happened.
@@ -199,6 +221,17 @@ pub struct Event {
     pub is_flanking: bool,
     /// Whether some (or all) damage was mitigated by shields.
     pub is_shields: bool,
+}
+
+impl TryFrom<raw::CbtEvent> for Event {
+    type Error = FromRawEventError;
+    /// Convenience method to avoid manual borrowing.
+    ///
+    /// Note that this conversion will consume the event, so if you plan on re-using it, use the
+    /// `TryFrom<&raw::CbtEvent>` implementation that works with a reference.
+    fn try_from(raw_event: raw::CbtEvent) -> Result<Self, Self::Error> {
+        Event::try_from(&raw_event)
+    }
 }
 
 impl TryFrom<&raw::CbtEvent> for Event {
