@@ -108,7 +108,7 @@ pub enum EventKind {
 
     /// Position of the agent has changed.
     Position {
-        source_agent_addr: u64,
+        agent_addr: u64,
         x: f32,
         y: f32,
         z: f32,
@@ -116,7 +116,7 @@ pub enum EventKind {
 
     /// Velocity of the agent has changed.
     Velocity {
-        source_agent_addr: u64,
+        agent_addr: u64,
         x: f32,
         y: f32,
         z: f32,
@@ -124,9 +124,42 @@ pub enum EventKind {
 
     /// The agent is facing in the given direction.
     Facing {
-        source_agent_addr: u64,
+        agent_addr: u64,
         x: f32,
         y: f32,
+    },
+
+    /// The given agent changed their team.
+    TeamChange {
+        agent_addr: u64,
+        team_id: u64,
+    },
+
+    /// Establishes an "attack target" relationship between two agents.
+    ///
+    /// Attack targets are somewhat not really documented, but the gist seems to be that some
+    /// agents act as an "attack target" for other agents. This is mainly for the purpose of some
+    /// status update events, such as [`Targetable`][EventKind::Targetable] or
+    /// [`MaxHealthUpdate`][EventKind::MaxHealthUpdate].
+    ///
+    /// Damage events seem to not have attack targets as their target, so if your only goal is to
+    /// calculate the damage dealt, you should be fine ignoring attack targets.
+    ///
+    /// Further sources:
+    /// * [AttackTargetEvent.cs](https://github.com/baaron4/GW2-Elite-Insights-Parser/blob/8a0ccd381be8680d53a5840c569d0b8a111cea41/GW2EIParser/Parser/ParsedData/CombatEvents/StatusEvents/AttackTargetEvent.cs)
+    /// * [Deimos.cs](https://github.com/baaron4/GW2-Elite-Insights-Parser/blob/8a0ccd381be8680d53a5840c569d0b8a111cea41/GW2EIParser/FightLogic/Raids/W4/Deimos.cs)
+    /// * [ConjuredAmalgamate.cs](https://github.com/baaron4/GW2-Elite-Insights-Parser/blob/8a0ccd381be8680d53a5840c569d0b8a111cea41/GW2EIParser/FightLogic/Raids/W6/ConjuredAmalgamate.cs)
+    /// * [Adina.cs](https://github.com/baaron4/GW2-Elite-Insights-Parser/blob/8a0ccd381be8680d53a5840c569d0b8a111cea41/GW2EIParser/FightLogic/Raids/W7/Adina.cs)
+    AttackTarget {
+        agent_addr: u64,
+        parent_agent_addr: u64,
+        targetable: bool,
+    },
+
+    /// Updates the targetable state for the given agent.
+    Targetable {
+        agent_addr: u64,
+        targetable: bool,
     },
 
     /// Information about the map id.
@@ -241,30 +274,40 @@ impl Event {
                 api_guild_id: get_api_guild_string(&get_guild_id_bytes(raw_event)),
             },
             CbtStateChange::Position => EventKind::Position {
-                source_agent_addr: raw_event.src_agent,
+                agent_addr: raw_event.src_agent,
                 x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
                 y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
                 z: f32::from_bits(raw_event.value as u32),
             },
             CbtStateChange::Velocity => EventKind::Velocity {
-                source_agent_addr: raw_event.src_agent,
+                agent_addr: raw_event.src_agent,
                 x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
                 y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
                 z: f32::from_bits(raw_event.value as u32),
             },
             CbtStateChange::Facing => EventKind::Facing {
-                source_agent_addr: raw_event.src_agent,
+                agent_addr: raw_event.src_agent,
                 x: f32::from_bits((raw_event.dst_agent >> 32) as u32),
                 y: f32::from_bits((raw_event.dst_agent & 0xffffffff) as u32),
             },
             CbtStateChange::MapId => EventKind::MapId {
                 map_id: raw_event.src_agent,
             },
+            CbtStateChange::TeamChange => EventKind::TeamChange {
+                agent_addr: raw_event.src_agent,
+                team_id: raw_event.dst_agent,
+            },
+            CbtStateChange::AttackTarget => EventKind::AttackTarget {
+                agent_addr: raw_event.src_agent,
+                parent_agent_addr: raw_event.dst_agent,
+                targetable: raw_event.value != 0,
+            },
+            CbtStateChange::Targetable => EventKind::Targetable {
+                agent_addr: raw_event.src_agent,
+                targetable: raw_event.dst_agent != 0,
+            },
             // XXX: implement proper handling of those events!
             CbtStateChange::BuffInitial
-            | CbtStateChange::TeamChange
-            | CbtStateChange::AttackTarget
-            | CbtStateChange::Targetable
             | CbtStateChange::ReplInfo
             | CbtStateChange::StackActive
             | CbtStateChange::StackReset
