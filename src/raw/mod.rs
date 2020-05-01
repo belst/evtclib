@@ -21,7 +21,7 @@ use std::ffi::CStr;
 use std::io::{BufReader, Read, Seek};
 
 /// Parse a complete log that was compressed as a zip file.
-pub fn parse_zip<T: Read + Seek>(input: &mut T) -> ParseResult<Evtc> {
+pub fn parse_zip<R: Read + Seek>(input: R) -> ParseResult<Evtc> {
     let mut archive = ZipArchive::new(input)?;
     let mut file = BufReader::new(archive.by_index(0)?);
     parse_file(&mut file)

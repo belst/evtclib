@@ -132,7 +132,7 @@ pub type ParseResult<T> = Result<T, ParseError>;
 /// It is expected that the file cursor is at the very first byte of the file.
 ///
 /// * `input` - Input stream.
-pub fn parse_header<T: Read>(input: &mut T) -> ParseResult<Header> {
+pub fn parse_header<R: Read>(mut input: R) -> ParseResult<Header> {
     // Make sure the magic number matches
     let mut magic_number = [0; 4];
     input.read_exact(&mut magic_number)?;
@@ -178,10 +178,10 @@ pub fn parse_header<T: Read>(input: &mut T) -> ParseResult<Header> {
 ///
 /// * `input` - Input stream.
 /// * `count` - Number of agents (found in the header).
-pub fn parse_agents<T: Read>(input: &mut T, count: u32) -> ParseResult<Vec<Agent>> {
+pub fn parse_agents<R: Read>(mut input: R, count: u32) -> ParseResult<Vec<Agent>> {
     let mut result = Vec::with_capacity(count as usize);
     for _ in 0..count {
-        result.push(parse_agent(input)?);
+        result.push(parse_agent(&mut input)?);
     }
     Ok(result)
 }
@@ -189,7 +189,7 @@ pub fn parse_agents<T: Read>(input: &mut T, count: u32) -> ParseResult<Vec<Agent
 /// Parse a single agent.
 ///
 /// * `input` - Input stream.
-pub fn parse_agent<T: Read>(input: &mut T) -> ParseResult<Agent> {
+pub fn parse_agent<R: Read>(mut input: R) -> ParseResult<Agent> {
     let addr = input.read_u64::<LittleEndian>()?;
     let prof = input.read_u32::<LittleEndian>()?;
     let is_elite = input.read_u32::<LittleEndian>()?;
@@ -226,10 +226,10 @@ pub fn parse_agent<T: Read>(input: &mut T) -> ParseResult<Agent> {
 ///
 /// * `input` - Input stream.
 /// * `count` - Number of skills to parse.
-pub fn parse_skills<T: Read>(input: &mut T, count: u32) -> ParseResult<Vec<Skill>> {
+pub fn parse_skills<R: Read>(mut input: R, count: u32) -> ParseResult<Vec<Skill>> {
     let mut result = Vec::with_capacity(count as usize);
     for _ in 0..count {
-        result.push(parse_skill(input)?);
+        result.push(parse_skill(&mut input)?);
     }
     Ok(result)
 }
@@ -237,7 +237,7 @@ pub fn parse_skills<T: Read>(input: &mut T, count: u32) -> ParseResult<Vec<Skill
 /// Parse a single skill.
 ///
 /// * `input` - Input stream.
-pub fn parse_skill<T: Read>(input: &mut T) -> ParseResult<Skill> {
+pub fn parse_skill<R: Read>(mut input: R) -> ParseResult<Skill> {
     let id = input.read_i32::<LittleEndian>()?;
     let mut name = [0; 64];
     input.read_exact(&mut name)?;
@@ -248,13 +248,13 @@ pub fn parse_skill<T: Read>(input: &mut T) -> ParseResult<Skill> {
 ///
 /// * `input` - Input stream.
 /// * `parser` - The parse function to use.
-pub fn parse_events<T: Read>(
-    input: &mut T,
-    parser: fn(&mut T) -> ParseResult<CbtEvent>,
+pub fn parse_events<R: Read>(
+    mut input: R,
+    parser: fn(&mut R) -> ParseResult<CbtEvent>,
 ) -> ParseResult<Vec<CbtEvent>> {
     let mut result = Vec::new();
     loop {
-        let event = parser(input);
+        let event = parser(&mut input);
         match event {
             Ok(x) => result.push(x),
             Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => {
@@ -270,7 +270,7 @@ pub fn parse_events<T: Read>(
 /// This works for old combat events, i.e. files with revision == 0.
 ///
 /// * `input` - Input stream.
-pub fn parse_event_rev0<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
+pub fn parse_event_rev0<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let time = input.read_u64::<LittleEndian>()?;
     let src_agent = input.read_u64::<LE>()?;
     let dst_agent = input.read_u64::<LE>()?;
@@ -334,7 +334,7 @@ pub fn parse_event_rev0<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
 /// This works for new combat events, i.e. files with revision == 1.
 ///
 /// * `input` - Input stream.
-pub fn parse_event_rev1<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
+pub fn parse_event_rev1<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let time = input.read_u64::<LittleEndian>()?;
     let src_agent = input.read_u64::<LE>()?;
     let dst_agent = input.read_u64::<LE>()?;
@@ -394,9 +394,9 @@ pub fn parse_event_rev1<T: Read>(input: &mut T) -> ParseResult<CbtEvent> {
 /// Parse a partial EVTC file.
 ///
 /// * `input` - Input stream.
-pub fn parse_partial_file<T: Read>(input: &mut T) -> ParseResult<PartialEvtc> {
-    let header = parse_header(input)?;
-    let agents = parse_agents(input, header.agent_count)?;
+pub fn parse_partial_file<R: Read>(mut input: R) -> ParseResult<PartialEvtc> {
+    let header = parse_header(&mut input)?;
+    let agents = parse_agents(&mut input, header.agent_count)?;
     let skill_count = input.read_u32::<LittleEndian>()?;
     let skills = parse_skills(input, skill_count)?;
 
@@ -412,10 +412,10 @@ pub fn parse_partial_file<T: Read>(input: &mut T) -> ParseResult<PartialEvtc> {
 ///
 /// * `partial` - The partial EVTC.
 /// * `input` - The input stream.
-pub fn finish_parsing<T: Read>(partial: PartialEvtc, input: &mut T) -> ParseResult<Evtc> {
+pub fn finish_parsing<R: Read>(partial: PartialEvtc, input: R) -> ParseResult<Evtc> {
     let events = match partial.header.revision {
-        0 => parse_events(input, parse_event_rev0)?,
-        1 => parse_events(input, parse_event_rev1)?,
+        0 => parse_events(input, |r| parse_event_rev0(r))?,
+        1 => parse_events(input, |r| parse_event_rev1(r))?,
         x => return Err(ParseError::UnknownRevision(x)),
     };
 
@@ -431,7 +431,7 @@ pub fn finish_parsing<T: Read>(partial: PartialEvtc, input: &mut T) -> ParseResu
 /// Parse a complete EVTC file.
 ///
 /// * `input` - Input stream.
-pub fn parse_file<T: Read>(input: &mut T) -> ParseResult<Evtc> {
-    let partial = parse_partial_file(input)?;
+pub fn parse_file<R: Read>(mut input: R) -> ParseResult<Evtc> {
+    let partial = parse_partial_file(&mut input)?;
     finish_parsing(partial, input)
 }
