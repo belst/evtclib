@@ -412,7 +412,12 @@ pub fn parse_partial_file<R: Read>(mut input: R) -> ParseResult<PartialEvtc> {
 ///
 /// * `partial` - The partial EVTC.
 /// * `input` - The input stream.
+#[allow(clippy::redundant_closure)]
 pub fn finish_parsing<R: Read>(partial: PartialEvtc, input: R) -> ParseResult<Evtc> {
+    // The following closures seem redundant, but they are needed to convice Rust that we can
+    // actually use parse_event_rev* here. That is because we require a lifetime bound of
+    //   for<'r> fn(&'r mut R) -> ParseResult
+    // which we cannot get by just plugging in parse_event_rev*.
     let events = match partial.header.revision {
         0 => parse_events(input, |r| parse_event_rev0(r))?,
         1 => parse_events(input, |r| parse_event_rev1(r))?,
