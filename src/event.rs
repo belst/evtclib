@@ -7,6 +7,7 @@ use std::convert::TryFrom;
 use std::io;
 
 use byteorder::{BigEndian, WriteBytesExt};
+use getset::{CopyGetters, Getters};
 use num_traits::FromPrimitive;
 use thiserror::Error;
 
@@ -201,29 +202,36 @@ pub enum EventKind {
 ///
 /// Note that if you plan on re-using the raw event afterwards, you should use the implementation
 /// that works on a reference instead: `Event::try_from(&raw_event)`.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, CopyGetters, Getters)]
 pub struct Event {
     /// The time when the event happened.
     ///
     /// This are the milliseconds since Windows has been started (`timeGetTime()`).
-    pub time: u64,
+    #[get_copy = "pub"]
+    time: u64,
     /// The kind of the event.
-    pub kind: EventKind,
+    #[get = "pub"]
+    kind: EventKind,
     /// Whether the agent had more than 90% of its health.
     ///
     /// This is the scholar threshold.
-    pub is_ninety: bool,
+    #[get_copy = "pub"]
+    is_ninety: bool,
     /// Whether the target health was below 50%.
     ///
     /// This is the threshold for many runes and trait damage modifiers (e.g.
     /// *Bolt to the Heart*).
-    pub is_fifty: bool,
+    #[get_copy = "pub"]
+    is_fifty: bool,
     /// Whether the source agent was moving.
-    pub is_moving: bool,
+    #[get_copy = "pub"]
+    is_moving: bool,
     /// Whether the source agent was flanking the target.
-    pub is_flanking: bool,
+    #[get_copy = "pub"]
+    is_flanking: bool,
     /// Whether some (or all) damage was mitigated by shields.
-    pub is_shields: bool,
+    #[get_copy = "pub"]
+    is_shields: bool,
 }
 
 impl TryFrom<raw::CbtEvent> for Event {

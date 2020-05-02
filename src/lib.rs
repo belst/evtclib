@@ -773,9 +773,9 @@ impl Log {
         self.events().iter().find_map(|e| {
             if let EventKind::LogStart {
                 local_timestamp, ..
-            } = e.kind
+            } = e.kind()
             {
-                Some(local_timestamp)
+                Some(*local_timestamp)
             } else {
                 None
             }
@@ -791,9 +791,9 @@ impl Log {
         self.events().iter().find_map(|e| {
             if let EventKind::LogEnd {
                 local_timestamp, ..
-            } = e.kind
+            } = e.kind()
             {
-                Some(local_timestamp)
+                Some(*local_timestamp)
             } else {
                 None
             }
@@ -806,7 +806,7 @@ impl Log {
     /// (`false`).
     pub fn was_rewarded(&self) -> bool {
         self.events().iter().any(|e| {
-            if let EventKind::Reward { .. } = e.kind {
+            if let EventKind::Reward { .. } = e.kind() {
                 true
             } else {
                 false
