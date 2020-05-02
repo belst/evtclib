@@ -53,6 +53,18 @@
 //!
 //! Make sure to take a look at the note on "Buffering" in the [parser
 //! module](raw/parser/index.html#buffering) in order to increase the speed of your application.
+//!
+//! # Writing evtc Files
+//!
+//! Currently, `evtclib` does not provide a way to output or modify evtc files. This is for two
+//! reasons:
+//!
+//! * The only sensible source for logs is the arcdps addon itself, most applications only consume
+//! them.
+//! * The library was needed for reading support, and writing support has never been a priority.
+//!
+//! While there are legitimate use cases for writing/modification support, they are currently not
+//! implemented (but might be in a future version).
 
 use std::convert::TryFrom;
 use std::marker::PhantomData;
