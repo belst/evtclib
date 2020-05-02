@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.3.0 - 2020-05-02
 ### Added
 - Implement standard traits `Debug`, `Default`, `PartialEq`, `Eq` and `Hash`
   for raw types in `evtclib::raw`.
