@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Implement standard traits `Debug`, `Default`, `PartialEq`, `Eq` and `Hash`
+  for raw types in `evtclib::raw`.
+- Implement `From<Evtc>` for `PartialEvtc`.
+
+### Changed
+- Parsing functions now take their input by-value.
+- `evtclib::Event` now provides getters instead of public fields.
 
 ## 0.2.0 - 2020-04-29
 ### Added
