@@ -122,6 +122,17 @@ pub struct PartialEvtc {
     pub skills: Vec<Skill>,
 }
 
+impl From<Evtc> for PartialEvtc {
+    fn from(evtc: Evtc) -> Self {
+        Self {
+            header: evtc.header,
+            skill_count: evtc.skill_count,
+            agents: evtc.agents,
+            skills: evtc.skills,
+        }
+    }
+}
+
 /// Any error that can occur during parsing.
 #[derive(Error, Debug)]
 pub enum ParseError {
