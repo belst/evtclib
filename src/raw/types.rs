@@ -4,8 +4,10 @@
 use num_derive::FromPrimitive;
 use std::{self, fmt};
 
+use std::hash::{Hash, Hasher};
+
 /// The "friend or foe" enum.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum IFF {
     /// Green vs green, red vs red.
     Friend,
@@ -17,8 +19,14 @@ pub enum IFF {
     None,
 }
 
+impl Default for IFF {
+    fn default() -> Self {
+        IFF::None
+    }
+}
+
 /// Combat result (physical)
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtResult {
     /// Good physical hit
     Normal,
@@ -44,8 +52,14 @@ pub enum CbtResult {
     None,
 }
 
+impl Default for CbtResult {
+    fn default() -> Self {
+        CbtResult::None
+    }
+}
+
 /// Combat activation
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtActivation {
     /// Field is not used in this kind of event.
     None,
@@ -61,11 +75,17 @@ pub enum CbtActivation {
     Reset,
 }
 
+impl Default for CbtActivation {
+    fn default() -> Self {
+        CbtActivation::None
+    }
+}
+
 /// Combat state change
 ///
 /// The referenced fields are of the [`CbtEvent`](struct.CbtEvent.html)
 /// struct.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtStateChange {
     /// Field is not used in this kind of event.
     None,
@@ -177,8 +197,14 @@ pub enum CbtStateChange {
     SkillTiming,
 }
 
+impl Default for CbtStateChange {
+    fn default() -> Self {
+        CbtStateChange::None
+    }
+}
+
 /// Combat buff remove type
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtBuffRemove {
     /// Field is not used in this kind of event.
     None,
@@ -194,8 +220,14 @@ pub enum CbtBuffRemove {
     Manual,
 }
 
+impl Default for CbtBuffRemove {
+    fn default() -> Self {
+        CbtBuffRemove::None
+    }
+}
+
 /// Custom skill ids
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtCustomSkill {
     /// Not custom but important and unnamed.
     Resurrect = 1066,
@@ -206,7 +238,7 @@ pub enum CbtCustomSkill {
 }
 
 /// Language
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum Language {
     /// English.
     Eng = 0,
@@ -218,6 +250,12 @@ pub enum Language {
     Spa = 4,
 }
 
+impl Default for Language {
+    fn default() -> Self {
+        Language::Eng
+    }
+}
+
 /// A combat event.
 ///
 /// This event combines both the old structure and the new structure. Fields not
@@ -225,7 +263,7 @@ pub enum Language {
 /// to check the header.revision tag.
 ///
 /// For conflicting data types, the bigger one is chosen (e.g. u32 over u16).
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct CbtEvent {
     /// System time since Windows was started, in milliseconds.
     pub time: u64,
@@ -314,22 +352,63 @@ impl Agent {
     }
 }
 
+// We need to implement this manually, as our array is bigger than 32.
+
 impl fmt::Debug for Agent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Agent {{ addr: {}, \
-             prof: {}, is_elite: {}, toughness: {}, concentration: {}, \
-             healing: {}, condition: {}, name: {} }}",
-            self.addr,
-            self.prof,
-            self.is_elite,
-            self.toughness,
-            self.concentration,
-            self.healing,
-            self.condition,
-            String::from_utf8_lossy(&self.name)
-        )
+        f.debug_struct("Agent")
+            .field("addr", &self.addr)
+            .field("prof", &self.prof)
+            .field("is_elite", &self.is_elite)
+            .field("toughness", &self.toughness)
+            .field("concentration", &self.concentration)
+            .field("healing", &self.healing)
+            .field("condition", &self.condition)
+            .field("name", &(&self.name as &[u8]))
+            .finish()
+    }
+}
+
+impl PartialEq for Agent {
+    fn eq(&self, other: &Self) -> bool {
+        self.addr == other.addr &&
+            self.prof == other.prof &&
+            self.is_elite == other.is_elite &&
+            self.toughness == other.toughness &&
+            self.concentration == other.concentration &&
+            self.healing == other.healing &&
+            self.condition == other.condition &&
+            &self.name as &[u8] == &other.name as &[u8]
+    }
+}
+
+impl Eq for Agent {}
+
+impl Hash for Agent {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.addr.hash(state);
+        self.prof.hash(state);
+        self.is_elite.hash(state);
+        self.toughness.hash(state);
+        self.concentration.hash(state);
+        self.healing.hash(state);
+        self.condition.hash(state);
+        self.name.hash(state);
+    }
+}
+
+impl Default for Agent {
+    fn default() -> Self {
+        Self {
+            addr: Default::default(),
+            prof: Default::default(),
+            is_elite: Default::default(),
+            toughness: Default::default(),
+            concentration: Default::default(),
+            healing: Default::default(),
+            condition: Default::default(),
+            name: [0; 64],
+        }
     }
 }
 
@@ -359,11 +438,33 @@ impl Skill {
 
 impl fmt::Debug for Skill {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Skill {{ id: {}, name: {:?} }}",
-            self.id,
-            self.name_string()
-        )
+        f.debug_struct("Skill")
+            .field("id", &self.id)
+            .field("name", &(&self.name as &[u8]))
+            .finish()
+    }
+}
+
+impl PartialEq for Skill {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && &self.name as &[u8] == &other.name as &[u8]
+    }
+}
+
+impl Eq for Skill {}
+
+impl Hash for Skill {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+        self.name.hash(state);
+    }
+}
+
+impl Default for Skill {
+    fn default() -> Self {
+        Self {
+            id: Default::default(),
+            name: [0; 64],
+        }
     }
 }

@@ -76,7 +76,7 @@ use thiserror::Error;
 use super::*;
 
 /// EVTC file header.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Header {
     /// arcpds build date, as `yyyymmdd` string.
     pub arcdps_build: String,
@@ -92,7 +92,7 @@ pub struct Header {
 ///
 /// Note that this struct does not yet do any preprocessing of the events. It is simply a
 /// representation of the input file as a structured object.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Evtc {
     /// The file header values.
     pub header: Header,
@@ -110,7 +110,7 @@ pub struct Evtc {
 ///
 /// This can speed up parsing for applications which can work with the header, as the event stream
 /// is the largest chunk of data that has to be parsed.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct PartialEvtc {
     /// The file header values.
     pub header: Header,
