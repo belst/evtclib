@@ -371,14 +371,14 @@ impl fmt::Debug for Agent {
 
 impl PartialEq for Agent {
     fn eq(&self, other: &Self) -> bool {
-        self.addr == other.addr &&
-            self.prof == other.prof &&
-            self.is_elite == other.is_elite &&
-            self.toughness == other.toughness &&
-            self.concentration == other.concentration &&
-            self.healing == other.healing &&
-            self.condition == other.condition &&
-            &self.name as &[u8] == &other.name as &[u8]
+        self.addr == other.addr
+            && self.prof == other.prof
+            && self.is_elite == other.is_elite
+            && self.toughness == other.toughness
+            && self.concentration == other.concentration
+            && self.healing == other.healing
+            && self.condition == other.condition
+            && &self.name as &[u8] == &other.name as &[u8]
     }
 }
 
