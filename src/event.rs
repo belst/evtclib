@@ -1,3 +1,6 @@
+//! Event definitions.
+//!
+//! This module contains the different types of events in their high-level form.
 use super::raw;
 
 use std::convert::TryFrom;
@@ -19,7 +22,7 @@ pub enum FromRawEventError {
 
 /// A rusty enum for all possible combat events.
 ///
-/// This makes dealing with `CbtEvent` a bit saner (and safer).
+/// This makes dealing with [`CbtEvent`][raw::CbtEvent] a bit saner (and safer).
 #[derive(Clone, Debug, PartialEq)]
 pub enum EventKind {
     // State change events

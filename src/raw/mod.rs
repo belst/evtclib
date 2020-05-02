@@ -33,6 +33,15 @@ pub fn parse_zip<R: Read + Seek>(input: R) -> ParseResult<Evtc> {
 /// at the first nul byte instead of raising an error.
 ///
 /// If the slice does not end with a nul byte, this function returns `None`.
+///
+/// ```
+/// # use evtclib::raw::cstr_up_to_nul;
+/// # fn doctest() -> Option<()> {
+/// assert_eq!(cstr_up_to_nul(b"foo\0bar\0")?.to_bytes(), b"foo");
+/// # Some(())
+/// # }
+/// # doctest().unwrap();
+/// ```
 pub fn cstr_up_to_nul(bytes: &[u8]) -> Option<&CStr> {
     let index = bytes.iter().position(|c| *c == 0)?;
     CStr::from_bytes_with_nul(&bytes[..index + 1]).ok()

@@ -1,3 +1,6 @@
+//! Raw evtc structs.
+//!
+//! This module contains the translated definitions from arcdps's C structs.
 use num_derive::FromPrimitive;
 use std::{self, fmt};
 

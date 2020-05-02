@@ -62,6 +62,11 @@
 //! buffered: cargo run --release  0.22s user 0.04s system 94% cpu 0.275 total
 //! raw file: cargo run --release  0.79s user 1.47s system 98% cpu 2.279 total
 //! ```
+//!
+//! # Resources
+//!
+//! * [evtc readme](https://www.deltaconnected.com/arcdps/evtc/README.txt)
+//! * [C++ output code](https://www.deltaconnected.com/arcdps/evtc/writeencounter.cpp)
 
 use byteorder::{LittleEndian, ReadBytesExt, LE};
 use num_traits::FromPrimitive;
@@ -84,9 +89,12 @@ pub struct Header {
 }
 
 /// A completely parsed (raw) EVTC file.
+///
+/// Note that this struct does not yet do any preprocessing of the events. It is simply a
+/// representation of the input file as a structured object.
 #[derive(Clone, Debug)]
 pub struct Evtc {
-    /// The file header values
+    /// The file header values.
     pub header: Header,
     /// The skill count.
     pub skill_count: u32,
@@ -99,27 +107,44 @@ pub struct Evtc {
 }
 
 /// A partially-parsed EVTC file, containing everything but the events.
-/// This can speed up parsing for applications which can work with the header.
+///
+/// This can speed up parsing for applications which can work with the header, as the event stream
+/// is the largest chunk of data that has to be parsed.
 #[derive(Clone, Debug)]
 pub struct PartialEvtc {
+    /// The file header values.
     pub header: Header,
+    /// The skill count.
     pub skill_count: u32,
+    /// The actual agents.
     pub agents: Vec<Agent>,
+    /// The skills.
     pub skills: Vec<Skill>,
 }
 
+/// Any error that can occur during parsing.
 #[derive(Error, Debug)]
 pub enum ParseError {
+    /// The error stems from an underlying input/output error.
     #[error("IO error: {0}")]
     Io(#[from] io::Error),
+    /// The error is caused by invalid UTF-8 data in the file.
+    ///
+    /// Names in the evtc are expected to be encoded with UTF-8.
     #[error("utf8 decoding error: {0}")]
     Utf8Error(#[from] std::string::FromUtf8Error),
+    /// A generic error to signal invalid data has been encountered.
     #[error("invalid data")]
     InvalidData,
+    /// The header is malformed.
+    ///
+    /// This is the error that you get when you try to parse a non-evtc file.
     #[error("malformed header")]
     MalformedHeader,
+    /// The revision used by the file is not known.
     #[error("unknown revision: {0}")]
     UnknownRevision(u8),
+    /// The given ZIP archive is invalid.
     #[error("invalid archive: {0}")]
     InvalidZip(#[from] zip::result::ZipError),
 }
