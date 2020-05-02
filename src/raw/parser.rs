@@ -284,6 +284,25 @@ pub fn parse_skill<R: Read>(mut input: R) -> ParseResult<Skill> {
 ///
 /// * `input` - Input stream.
 /// * `parser` - The parse function to use.
+///
+/// The `parser` should be one of [`parse_event_rev0`][parse_event_rev0] or
+/// [`parse_event_rev1`][parse_event_rev1], depending on the revision of the file you are dealing
+/// with. Note that you might have to pass them as a closure, otherwise the type conversion might
+/// not succeed:
+///
+/// ```no_run
+/// # use evtclib::raw::parser::{parse_events, parse_event_rev0};
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// use std::fs::File;
+/// let file = File::open("the-log.evtc")?;
+/// // other parsing here
+/// let events = parse_events(file, |i| parse_event_rev0(i))?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// If you use one of the higher-level functions, such as [`parse_file`][parse_file] or
+/// [`finish_parsing`][finish_parsing], you do not have to concern yourself with that detail.
 pub fn parse_events<R: Read>(
     mut input: R,
     parser: fn(&mut R) -> ParseResult<CbtEvent>,
