@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Implement `FromStr` for `Profession` and `EliteSpec`.
+
+### Changed
+- Removed dependency on `fnv`.
 
 ## 0.3.0 - 2020-05-02
 ### Added
