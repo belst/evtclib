@@ -1,6 +1,6 @@
 [package]
 name = "evtclib"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Daniel"]
 edition = "2018"
 description = "An evtc parsing library"
