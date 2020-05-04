@@ -126,6 +126,11 @@ impl FromStr for Boss {
 /// into account.
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 
+/// Error for when converting a string to a profession fails.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
+#[error("Invalid profession identifier: {0}")]
+pub struct ParseProfessionError(String);
+
 /// An in-game profession.
 ///
 /// This only contains the 9 base professions. For elite specializations, see
@@ -142,6 +147,31 @@ pub enum Profession {
     Necromancer = 8,
     Revenant = 9,
 }
+
+impl FromStr for Profession {
+    type Err = ParseProfessionError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match &s.to_lowercase() as &str {
+            "guardian" => Ok(Profession::Guardian),
+            "warrior" => Ok(Profession::Warrior),
+            "engineer" => Ok(Profession::Engineer),
+            "ranger" => Ok(Profession::Ranger),
+            "thief" => Ok(Profession::Thief),
+            "elementalist" => Ok(Profession::Elementalist),
+            "mesmer" => Ok(Profession::Mesmer),
+            "necromancer" => Ok(Profession::Necromancer),
+            "revenant" => Ok(Profession::Revenant),
+
+            _ => Err(ParseProfessionError(s.to_owned())),
+        }
+    }
+}
+
+/// Error for when converting a string to an elite specialization fails.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
+#[error("Invalid elite specialization identifier: {0}")]
+pub struct ParseEliteSpecError(String);
 
 /// All possible elite specializations.
 ///
@@ -171,6 +201,36 @@ pub enum EliteSpec {
     Mirage = 59,
     Scourge = 60,
     Renegade = 63,
+}
+
+impl FromStr for EliteSpec {
+    type Err = ParseEliteSpecError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match &s.to_lowercase() as &str {
+            "dragonhunter" => Ok(EliteSpec::Dragonhunter),
+            "berserker" => Ok(EliteSpec::Berserker),
+            "scrapper" => Ok(EliteSpec::Scrapper),
+            "druid" => Ok(EliteSpec::Druid),
+            "daredevil" => Ok(EliteSpec::Daredevil),
+            "tempest" => Ok(EliteSpec::Tempest),
+            "chronomancer" => Ok(EliteSpec::Chronomancer),
+            "reaper" => Ok(EliteSpec::Reaper),
+            "herald" => Ok(EliteSpec::Herald),
+
+            "firebrand" => Ok(EliteSpec::Firebrand),
+            "spellbreaker" => Ok(EliteSpec::Spellbreaker),
+            "holosmith" => Ok(EliteSpec::Holosmith),
+            "soulbeast" => Ok(EliteSpec::Soulbeast),
+            "deadeye" => Ok(EliteSpec::Deadeye),
+            "weaver" => Ok(EliteSpec::Weaver),
+            "mirage" => Ok(EliteSpec::Mirage),
+            "scourge" => Ok(EliteSpec::Scourge),
+            "renegade" => Ok(EliteSpec::Renegade),
+
+            _ => Err(ParseEliteSpecError(s.to_owned())),
+        }
+    }
 }
 
 impl EliteSpec {
@@ -281,7 +341,12 @@ mod tests {
         ];
 
         for (input, expected) in tests {
-            assert_eq!(input.parse(), Ok(*expected));
+            assert_eq!(
+                input.parse(),
+                Ok(*expected),
+                "parsing input {:?} failed",
+                input
+            );
         }
     }
 
@@ -301,6 +366,114 @@ mod tests {
         ];
         for test in tests {
             assert!(test.parse::<Boss>().is_err());
+        }
+    }
+
+    #[test]
+    fn test_profession_parsing_ok() {
+        use Profession::*;
+        let tests: &[(&'static str, Profession)] = &[
+            ("guardian", Guardian),
+            ("Guardian", Guardian),
+            ("warrior", Warrior),
+            ("Warrior", Warrior),
+            ("revenant", Revenant),
+            ("Revenant", Revenant),
+            ("thief", Thief),
+            ("Thief", Thief),
+            ("engineer", Engineer),
+            ("Engineer", Engineer),
+            ("ranger", Ranger),
+            ("Ranger", Ranger),
+            ("mesmer", Mesmer),
+            ("Mesmer", Mesmer),
+            ("elementalist", Elementalist),
+            ("Elementalist", Elementalist),
+            ("necromancer", Necromancer),
+            ("Necromancer", Necromancer),
+        ];
+
+        for (input, expected) in tests {
+            assert_eq!(
+                input.parse(),
+                Ok(*expected),
+                "parsing input {:?} failed",
+                input
+            );
+        }
+    }
+
+    #[test]
+    fn test_profession_parsing_err() {
+        let tests = &["", "guardiann", "gu", "thiefthief"];
+        for test in tests {
+            assert!(test.parse::<Profession>().is_err());
+        }
+    }
+
+    #[test]
+    fn test_elite_spec_parsing_ok() {
+        use EliteSpec::*;
+        let tests: &[(&'static str, EliteSpec)] = &[
+            ("dragonhunter", Dragonhunter),
+            ("Dragonhunter", Dragonhunter),
+            ("firebrand", Firebrand),
+            ("Firebrand", Firebrand),
+            ("berserker", Berserker),
+            ("Berserker", Berserker),
+            ("spellbreaker", Spellbreaker),
+            ("Spellbreaker", Spellbreaker),
+            ("herald", Herald),
+            ("Herald", Herald),
+            ("renegade", Renegade),
+            ("Renegade", Renegade),
+            ("daredevil", Daredevil),
+            ("Daredevil", Daredevil),
+            ("deadeye", Deadeye),
+            ("Deadeye", Deadeye),
+            ("scrapper", Scrapper),
+            ("Scrapper", Scrapper),
+            ("holosmith", Holosmith),
+            ("Holosmith", Holosmith),
+            ("druid", Druid),
+            ("Druid", Druid),
+            ("soulbeast", Soulbeast),
+            ("Soulbeast", Soulbeast),
+            ("tempest", Tempest),
+            ("Tempest", Tempest),
+            ("weaver", Weaver),
+            ("Weaver", Weaver),
+            ("chronomancer", Chronomancer),
+            ("Chronomancer", Chronomancer),
+            ("mirage", Mirage),
+            ("Mirage", Mirage),
+            ("reaper", Reaper),
+            ("Reaper", Reaper),
+            ("scourge", Scourge),
+            ("Scourge", Scourge),
+        ];
+
+        for (input, expected) in tests {
+            assert_eq!(
+                input.parse(),
+                Ok(*expected),
+                "parsing input {:?} failed",
+                input
+            );
+        }
+    }
+
+    #[test]
+    fn test_elite_spec_parsing_err() {
+        let tests = &[
+            "",
+            "dragonhunterr",
+            "dragonhunt",
+            "berserkerberserker",
+            "berserk",
+        ];
+        for test in tests {
+            assert!(test.parse::<EliteSpec>().is_err());
         }
     }
 }
