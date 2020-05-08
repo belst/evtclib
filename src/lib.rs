@@ -66,6 +66,7 @@
 //! While there are legitimate use cases for writing/modification support, they are currently not
 //! implemented (but might be in a future version).
 
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::marker::PhantomData;
 
@@ -79,6 +80,7 @@ pub mod event;
 pub use event::{Event, EventKind};
 
 pub mod gamedata;
+use gamedata::CmTrigger;
 pub use gamedata::{Boss, EliteSpec, Profession};
 
 /// Any error that can occur during the processing of evtc files.
@@ -775,6 +777,56 @@ impl Log {
 ///
 /// Use those functions only if necessary, and prefer to cache the result if it will be reused!
 impl Log {
+    /// Check whether the fight was done with challenge mote activated.
+    ///
+    /// This function always returns `false` if
+    /// * The fight was done without CM
+    /// * The fight does not have a CM
+    /// * We cannot determine whether the CM was active
+    /// * The boss is not known
+    pub fn is_cm(&self) -> bool {
+        let trigger = self
+            .encounter()
+            .map(Boss::cm_trigger)
+            .unwrap_or(CmTrigger::Unknown);
+        match trigger {
+            CmTrigger::HpThreshold(hp_threshold) => {
+                for event in self.events() {
+                    if let EventKind::MaxHealthUpdate {
+                        agent_addr,
+                        max_health,
+                    } = *event.kind()
+                    {
+                        if self.is_boss(agent_addr) && max_health >= hp_threshold as u64 {
+                            return true;
+                        }
+                    }
+                }
+                false
+            }
+
+            CmTrigger::BuffPresent(wanted_buff_id) => {
+                for event in self.events() {
+                    if let EventKind::BuffApplication { buff_id, .. } = *event.kind() {
+                        if buff_id == wanted_buff_id {
+                            return true;
+                        }
+                    }
+                }
+                false
+            }
+
+            CmTrigger::TimeBetweenBuffs(buff_id, threshold) => {
+                let tbb = time_between_buffs(&self.events, buff_id);
+                tbb != 0 && tbb <= threshold
+            }
+
+            CmTrigger::Always => true,
+
+            CmTrigger::None | CmTrigger::Unknown => false,
+        }
+    }
+
     /// Get the timestamp of when the log was started.
     ///
     /// The returned value is a unix timestamp in the local time zone.
@@ -914,4 +966,36 @@ fn set_agent_masters(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcE
         }
     }
     Ok(())
+}
+
+fn time_between_buffs(events: &[Event], wanted_buff_id: u32) -> u64 {
+    let mut time_maps: HashMap<u64, Vec<u64>> = HashMap::new();
+    for event in events {
+        if let EventKind::BuffApplication {
+            destination_agent_addr,
+            buff_id,
+            ..
+        } = event.kind()
+        {
+            if *buff_id == wanted_buff_id {
+                time_maps
+                    .entry(*destination_agent_addr)
+                    .or_default()
+                    .push(event.time());
+            }
+        }
+    }
+    let timestamps = if let Some(ts) = time_maps.values().max_by_key(|v| v.len()) {
+        ts
+    } else {
+        return 0;
+    };
+    timestamps
+        .iter()
+        .zip(timestamps.iter().skip(1))
+        .map(|(a, b)| b - a)
+        // Arbitrary limit to filter out duplicated buff application events
+        .filter(|x| *x > 50)
+        .min()
+        .unwrap_or(0)
 }
