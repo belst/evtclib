@@ -68,7 +68,10 @@
 
 use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::fs::File;
+use std::io::{BufReader, Read, Seek};
 use std::marker::PhantomData;
+use std::path::Path;
 
 use getset::{CopyGetters, Getters};
 use num_traits::FromPrimitive;
@@ -86,6 +89,12 @@ pub use gamedata::{Boss, EliteSpec, Profession};
 /// Any error that can occur during the processing of evtc files.
 #[derive(Error, Debug)]
 pub enum EvtcError {
+    /// Error for underlying parser errors.
+    ///
+    /// This should never be returned from [`process`][process], only from
+    /// [`process_stream`][process_stream] and [`process_file`][process_file].
+    #[error("the file could not be parsed: {0}")]
+    ParseError(#[from] raw::ParseError),
     /// Generic error for invalid data in the evtc file.
     #[error("invalid data has been provided")]
     InvalidData,
@@ -910,6 +919,63 @@ pub fn process(data: &raw::Evtc) -> Result<Log, EvtcError> {
         events,
         boss_id: data.header.combat_id,
     })
+}
+
+/// Indicates the given compression method for the file.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum Compression {
+    /// No compression was used.
+    None,
+    /// The file is wrapped in a zip archive.
+    Zip,
+}
+
+/// Convenience function to process a given stream directly.
+///
+/// This is a shorthand for using [`raw::parse_file`][raw::parse_file] followed by
+/// [`process`][process].
+///
+/// The [`Seek`][Seek] bound is needed for zip compressed archives. If you have a reader that does
+/// not support seeking, you can use [`raw::parse_file`][raw::parse_file] directly instead.
+///
+/// ```no_run
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// use std::io::Cursor;
+/// use evtclib::Compression;
+/// let data = Cursor::new(vec![]);
+/// let log = evtclib::process_stream(data, Compression::None)?;
+/// # Ok(()) }
+/// ```
+pub fn process_stream<R: Read + Seek>(
+    input: R,
+    compression: Compression,
+) -> Result<Log, EvtcError> {
+    let evtc = match compression {
+        Compression::None => raw::parse_file(input)?,
+        Compression::Zip => raw::parse_zip(input)?,
+    };
+    process(&evtc)
+}
+
+/// Convenience function to process a given file directly.
+///
+/// This is a shorthand for opening the file and then using [`process_stream`][process_stream] with
+/// it. This function automatically wraps the raw file in a buffered reader, to ensure the bext
+/// reading performance.
+///
+/// If you need more fine-grained control, consider using [`process_stream`][process_stream] or
+/// [`raw::parse_file`][raw::parse_file] followed by [`process`][process] instead.
+///
+/// ```no_run
+/// # use evtclib::Compression;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let log = evtclib::process_file("logfile.zevtc", Compression::Zip)?;
+/// # Ok(()) }
+/// ```
+pub fn process_file<P: AsRef<Path>>(path: P, compression: Compression) -> Result<Log, EvtcError> {
+    let file = File::open(path).map_err(Into::<raw::ParseError>::into)?;
+    let buffered = BufReader::new(file);
+    process_stream(buffered, compression)
 }
 
 fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
