@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Support for determining Challenge Motes.
+  - `evtclib::gamedata::CmTrigger` along with
+    `evtclib::gamedata::Boss::cm_trigger`.
+  - `evtclib::Log::is_cm`.
+- Convenience methods `evtclib::process_stream` and `evtclib::process_file`.
 
 ## 0.3.1 - 2020-05-04
 ### Added
