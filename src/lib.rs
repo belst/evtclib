@@ -30,20 +30,41 @@
 //!
 //! # Workflow
 //!
-//! Currently, there is no convenience function to turn a file into a [`Log`][Log] directly, so you
-//! have to use the [`raw`][raw] submodule to obtain a low-level [`Evtc`][raw::Evtc], and then
-//! convert it to the high-level [`Log`][Log].
+//! `evtclib` provides two convenience functions to obtain a [`Log`][Log]:
+//!
+//! If you have a stream (that is, something that is [`Read`][Read] + [`Seek`][Seek]), you can use
+//! [`process_stream`][process_stream] to obtain a [`Log`][Log] by reading from the stream.
+//!
+//! If your evtc is saved in a file, you can use [`process_file`][process_file] to obtain a [`Log`]
+//! from it. This will also ensure that the buffering is set up correctly, to avoid unnecessary
+//! system calls.
+//!
+//! Both of those functions require the reader to be seekable, as that is what we need for zip
+//! archive support. If you cannot provide that, or if you need finer grained control for other
+//! reasons, you can use either [`raw::parse_file`][raw::parse_file] or
+//! [`raw::parse_zip`][raw::parse_zip] to obtain the low-level [`Evtc`][raw::Evtc] structure, and
+//! then turn it into a [`Log`][Log] by using [`process`][process]:
 //!
 //! ```no_run
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! use evtclib::{Compression, Log};
 //! use std::fs::File;
+//! // Preferred:
+//! let log: Log = evtclib::process_file("my_log.evtc", Compression::None)?;
+//!
+//! // If you have a stream:
+//! let file = File::open("my_log.evtc")?;
+//! let log: Log = evtclib::process_stream(file, Compression::None)?;
+//!
+//! // If you really need to do it manually:
 //! // Open a file for processing
-//! let mut file = File::open("my_log.evtc")?;
+//! let file = File::open("my_log.evtc")?;
 //! // Parse the raw content of the file
-//! let raw_log = evtclib::raw::parse_file(&mut file)?;
+//! let raw_log = evtclib::raw::parse_file(file)?;
 //! // Process the file to do the nitty-gritty low-level stuff done
-//! let log = evtclib::process(&raw_log)?;
-//! // Do work on the log
+//! let log: Log = evtclib::process(&raw_log)?;
+//!
+//! // In all cases, you can now do work with the log
 //! for player in log.players() {
 //!     println!("Player {} participated!", player.account_name());
 //! }
