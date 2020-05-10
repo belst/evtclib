@@ -68,6 +68,7 @@ impl Boss {
         match self {
             Boss::KeepConstruct => CmTrigger::Unknown,
 
+            Boss::Cairn => CmTrigger::BuffPresent(38_098),
             Boss::MursaatOverseer => CmTrigger::HpThreshold(30_000_000),
             Boss::Samarog => CmTrigger::HpThreshold(40_000_000),
             Boss::Deimos => CmTrigger::HpThreshold(42_000_000),
@@ -180,7 +181,7 @@ pub enum CmTrigger {
     BuffPresent(u32),
     /// The time between buff applications falls below the given threshold.
     ///
-    /// The first number is the buff id, the second number is the time threshold.
+    /// The first number is the buff id, the second number is the time threshold in milliseconds.
     TimeBetweenBuffs(u32, u64),
 }
 
