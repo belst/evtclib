@@ -102,7 +102,7 @@ pub mod event;
 pub use event::{Event, EventKind};
 
 mod processing;
-pub use processing::{Compression, process, process_file, process_stream};
+pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
 use gamedata::CmTrigger;

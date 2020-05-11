@@ -3,11 +3,11 @@
 use std::{
     convert::TryFrom,
     fs::File,
-    io::{Read, Seek, BufReader},
+    io::{BufReader, Read, Seek},
     path::Path,
 };
 
-use super::{Agent, Event, EvtcError, Log, raw};
+use super::{raw, Agent, Event, EvtcError, Log};
 
 /// Main function to turn a low-level [`Evtc`][raw::Evtc] to a high-level [`Log`][Log].
 ///
