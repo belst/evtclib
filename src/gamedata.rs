@@ -1,6 +1,9 @@
 //! This module contains some low-level game data, such as different boss IDs.
 use num_derive::FromPrimitive;
-use std::str::FromStr;
+use std::{
+    fmt::{self, Display, Formatter},
+    str::FromStr,
+};
 use thiserror::Error;
 
 /// Enum containing all bosses with their IDs.
@@ -154,6 +157,44 @@ impl FromStr for Boss {
     }
 }
 
+impl Display for Boss {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let name = match *self {
+            Boss::ValeGuardian => "Vale Guardian",
+            Boss::Gorseval => "Gorseval",
+            Boss::Sabetha => "Sabetha",
+            Boss::Slothasor => "Slothasor",
+            Boss::Matthias => "Matthias Gabrel",
+            Boss::KeepConstruct => "Keep Construct",
+            Boss::Xera => "Xera",
+            Boss::Cairn => "Cairn the Indomitable",
+            Boss::MursaatOverseer => "Mursaat Overseer",
+            Boss::Samarog => "Samarog",
+            Boss::Deimos => "Deimos",
+            Boss::SoullessHorror => "Soulless Horror",
+            Boss::Dhuum => "Dhuum",
+            Boss::ConjuredAmalgamate => "Conjured Amalgamate",
+            Boss::LargosTwins => "Twin Largos",
+            Boss::Qadim => "Qadim",
+            Boss::CardinalAdina => "Cardinal Adina",
+            Boss::CardinalSabir => "Cardinal Sabir",
+            Boss::QadimThePeerless => "Qadim the Peerless",
+            Boss::Skorvald => "Skorvald the Shattered",
+            Boss::Artsariiv => "Artsariiv",
+            Boss::Arkk => "Arkk",
+            Boss::MAMA => "MAMA",
+            Boss::Siax => "Siax the Corrupted",
+            Boss::Ensolyss => "Ensolyss of the Endless Torment",
+            Boss::IcebroodConstruct => "Icebrood Construct",
+            Boss::VoiceOfTheFallen => "Super Kodan Brothers",
+            Boss::FraenirOfJormag => "Fraenir of Jormag",
+            Boss::Boneskinner => "Boneskinner",
+            Boss::WhisperOfJormag => "Whisper of Jormag",
+        };
+        write!(f, "{}", name)
+    }
+}
+
 /// ID for Xera in the second phase.
 ///
 /// The original Xera will despawn, and after the tower phase, a separate spawn
@@ -227,6 +268,23 @@ impl FromStr for Profession {
     }
 }
 
+impl Display for Profession {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let name = match *self {
+            Profession::Guardian => "Guardian",
+            Profession::Warrior => "Warrior",
+            Profession::Engineer => "Engineer",
+            Profession::Ranger => "Ranger",
+            Profession::Thief => "Thief",
+            Profession::Elementalist => "Elementalist",
+            Profession::Mesmer => "Mesmer",
+            Profession::Necromancer => "Necromancer",
+            Profession::Revenant => "Revenant",
+        };
+        write!(f, "{}", name)
+    }
+}
+
 /// Error for when converting a string to an elite specialization fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
 #[error("Invalid elite specialization identifier: {0}")]
@@ -289,6 +347,32 @@ impl FromStr for EliteSpec {
 
             _ => Err(ParseEliteSpecError(s.to_owned())),
         }
+    }
+}
+
+impl Display for EliteSpec {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let name = match *self {
+            EliteSpec::Dragonhunter => "Dragonhunter",
+            EliteSpec::Berserker => "Berserker",
+            EliteSpec::Scrapper => "Scrapper",
+            EliteSpec::Druid => "Druid",
+            EliteSpec::Daredevil => "Daredevil",
+            EliteSpec::Tempest => "Tempest",
+            EliteSpec::Chronomancer => "Chronomancer",
+            EliteSpec::Reaper => "Reaper",
+            EliteSpec::Herald => "Herald",
+            EliteSpec::Firebrand => "Firebrand",
+            EliteSpec::Spellbreaker => "Spellbreaker",
+            EliteSpec::Holosmith => "Holosmith",
+            EliteSpec::Soulbeast => "Soulbeast",
+            EliteSpec::Deadeye => "Deadeye",
+            EliteSpec::Weaver => "Weaver",
+            EliteSpec::Mirage => "Mirage",
+            EliteSpec::Scourge => "Scourge",
+            EliteSpec::Renegade => "Renegade",
+        };
+        write!(f, "{}", name)
     }
 }
 
