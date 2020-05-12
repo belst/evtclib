@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.3.2 - 2020-05-12
 ### Added
 - Support for determining Challenge Motes.
   - `evtclib::gamedata::CmTrigger` along with
