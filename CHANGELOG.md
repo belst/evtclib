@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
     `evtclib::gamedata::Boss::cm_trigger`.
   - `evtclib::Log::is_cm`.
 - Convenience methods `evtclib::process_stream` and `evtclib::process_file`.
+- `Display` implementation for `Boss`, `Profession` and `EliteSpec`.
 
 ## 0.3.1 - 2020-05-04
 ### Added
