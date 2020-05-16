@@ -35,6 +35,7 @@ test!(test_largos_cm, "logs/cms/largos.zevtc");
 test!(test_qadim_cm, "logs/cms/qadim.zevtc");
 
 test!(test_adina_cm, "logs/cms/adina.zevtc");
+test!(test_sabir_cm, "logs/cms/sabir.zevtc");
 test!(test_qadimp_cm, "logs/cms/qadimp.zevtc");
 
 test!(test_skorvald_cm, "logs/skorvald-20200427.zevtc");
