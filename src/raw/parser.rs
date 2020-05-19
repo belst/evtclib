@@ -350,7 +350,7 @@ pub fn parse_event_rev0<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
     let is_statechange =
-        CbtStateChange::from_u8(input.read_u8()?).ok_or(ParseError::InvalidData)?;
+        CbtStateChange::from_u8(input.read_u8()?).unwrap_or(CbtStateChange::Unknown);
     let is_flanking = input.read_u8()? != 0;
     let is_shields = input.read_u8()? != 0;
 
@@ -411,7 +411,7 @@ pub fn parse_event_rev1<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
     let is_statechange =
-        CbtStateChange::from_u8(input.read_u8()?).ok_or(ParseError::InvalidData)?;
+        CbtStateChange::from_u8(input.read_u8()?).unwrap_or(CbtStateChange::Unknown);
     let is_flanking = input.read_u8()? != 0;
     let is_shields = input.read_u8()? != 0;
     let is_offcycle = input.read_u8()? != 0;

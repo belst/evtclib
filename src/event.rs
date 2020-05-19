@@ -365,7 +365,8 @@ impl TryFrom<&raw::CbtEvent> for Event {
             | CbtStateChange::SkillTiming
             | CbtStateChange::BreakbarState
             | CbtStateChange::BreakbarPercent
-            | CbtStateChange::Error => {
+            | CbtStateChange::Error
+            | CbtStateChange::Unknown => {
                 return Err(FromRawEventError::UnknownStateChange(
                     raw_event.is_statechange,
                 ))
