@@ -195,6 +195,12 @@ pub enum CbtStateChange {
     SkillInfo,
     /// `src_agent` = action, `dst_agent` = at millisecond (not in realtime, one per timing)
     SkillTiming,
+    /// `src_agent` is agent, `value` is u16 game enum (active, recover, immune, none)
+    BreakbarState,
+    /// `src_agent` is agent, `value` is float with percent
+    BreakbarPercent,
+    /// `time` is the start of the error string.
+    Error,
 }
 
 impl Default for CbtStateChange {
