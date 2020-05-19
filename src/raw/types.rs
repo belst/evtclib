@@ -262,6 +262,49 @@ impl Default for Language {
     }
 }
 
+/// Buff formula attributes.
+///
+/// Variants prefixed with `Custom` are not native to the game client but rather variants added by
+/// arcdps.
+///
+/// The suffix `Inc` indicates an increase, whereas the suffix `Rec` stands for received.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
+pub enum Attribute {
+    None,
+    Power,
+    Precision,
+    Toughness,
+    Vitality,
+    Ferocity,
+    Healing,
+    Condition,
+    Concentration,
+    Expertise,
+    CustomArmor,
+    CustomAgony,
+    CustomStatInc,
+    CustomFlatInc,
+    CustomPhysInc,
+    CustomCondInc,
+    CustomPhysRec,
+    CustomCondRec,
+    CustomAttackSpeed,
+}
+
+/// Categories for [`BuffInfo`][CbtStateChange::BuffInfo] events.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
+pub enum BuffCategory {
+    Boon = 0,
+    Any = 1,
+    Condition = 2,
+    Food = 4,
+    Upgrade = 6,
+    Boost = 8,
+    Trait = 11,
+    Enhancement = 13,
+    Stance = 16,
+}
+
 /// A combat event.
 ///
 /// This event combines both the old structure and the new structure. Fields not
