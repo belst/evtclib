@@ -19,6 +19,8 @@ pub enum FromRawEventError {
     UnknownStateChange(raw::CbtStateChange),
     #[error("event contains an unknown damage event")]
     UnknownDamageEvent,
+    #[error("the event contains invalid text")]
+    InvalidText,
 }
 
 /// A rusty enum for all possible combat events.
@@ -177,6 +179,9 @@ pub enum EventKind {
         raw_bytes: [u8; 16],
         api_guild_id: Option<String>,
     },
+
+    /// An error was reported by arcdps.
+    Error { text: String },
 }
 
 /// A higher-level representation of a combat event.
@@ -354,6 +359,15 @@ impl TryFrom<&raw::CbtEvent> for Event {
                 agent_addr: raw_event.src_agent,
                 targetable: raw_event.dst_agent != 0,
             },
+            CbtStateChange::Error => {
+                let data = get_error_bytes(&raw_event);
+                EventKind::Error {
+                    text: raw::cstr_up_to_nul(&data)
+                        .ok_or(FromRawEventError::InvalidText)?
+                        .to_string_lossy()
+                        .into_owned(),
+                }
+            }
             // XXX: implement proper handling of those events!
             CbtStateChange::BuffInitial
             | CbtStateChange::ReplInfo
@@ -365,7 +379,6 @@ impl TryFrom<&raw::CbtEvent> for Event {
             | CbtStateChange::SkillTiming
             | CbtStateChange::BreakbarState
             | CbtStateChange::BreakbarPercent
-            | CbtStateChange::Error
             | CbtStateChange::Unknown => {
                 return Err(FromRawEventError::UnknownStateChange(
                     raw_event.is_statechange,
@@ -488,6 +501,17 @@ fn get_api_guild_string(bytes: &[u8; 16]) -> Option<String> {
         .collect::<Vec<String>>()
         .join("-");
     Some(result)
+}
+
+fn get_error_bytes(raw_event: &raw::CbtEvent) -> [u8; 32] {
+    let mut result = [0; 32];
+    let mut cursor = io::Cursor::new(&mut result as &mut [u8]);
+    cursor.write_u64::<BigEndian>(raw_event.time).unwrap();
+    cursor.write_u64::<BigEndian>(raw_event.src_agent).unwrap();
+    cursor.write_u64::<BigEndian>(raw_event.dst_agent).unwrap();
+    cursor.write_i32::<BigEndian>(raw_event.value).unwrap();
+    cursor.write_i32::<BigEndian>(raw_event.buff_dmg).unwrap();
+    result
 }
 
 /// The different weapon-sets in game.
