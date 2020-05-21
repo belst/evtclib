@@ -317,7 +317,7 @@ pub fn parse_events<R: Read>(
             Ok(x) => result.push(x),
             Err(ParseError::UnknownStateChange(_)) => {
                 // Ignore unknown statechanges, as advised by arcdps.
-            },
+            }
             Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => {
                 return Ok(result)
             }
