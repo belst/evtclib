@@ -155,6 +155,9 @@ pub enum ParseError {
     /// The revision used by the file is not known.
     #[error("unknown revision: {0}")]
     UnknownRevision(u8),
+    /// The event contains a statechange that we don't know about.
+    #[error("unknown statechange event: {0}")]
+    UnknownStateChange(u8),
     /// The given ZIP archive is invalid.
     #[error("invalid archive: {0}")]
     InvalidZip(#[from] zip::result::ZipError),
@@ -312,6 +315,9 @@ pub fn parse_events<R: Read>(
         let event = parser(&mut input);
         match event {
             Ok(x) => result.push(x),
+            Err(ParseError::UnknownStateChange(_)) => {
+                // Ignore unknown statechanges, as advised by arcdps.
+            },
             Err(ParseError::Io(ref e)) if e.kind() == ErrorKind::UnexpectedEof => {
                 return Ok(result)
             }
@@ -349,8 +355,9 @@ pub fn parse_event_rev0<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let is_ninety = input.read_u8()? != 0;
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
+    let statechange = input.read_u8()?;
     let is_statechange =
-        CbtStateChange::from_u8(input.read_u8()?).unwrap_or(CbtStateChange::Unknown);
+        CbtStateChange::from_u8(statechange).ok_or(ParseError::UnknownStateChange(statechange));
     let is_flanking = input.read_u8()? != 0;
     let is_shields = input.read_u8()? != 0;
 
@@ -377,7 +384,7 @@ pub fn parse_event_rev0<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
         is_ninety,
         is_fifty,
         is_moving,
-        is_statechange,
+        is_statechange: is_statechange?,
         is_flanking,
         is_shields,
         is_offcycle: false,
@@ -410,8 +417,9 @@ pub fn parse_event_rev1<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let is_ninety = input.read_u8()? != 0;
     let is_fifty = input.read_u8()? != 0;
     let is_moving = input.read_u8()? != 0;
+    let statechange = input.read_u8()?;
     let is_statechange =
-        CbtStateChange::from_u8(input.read_u8()?).unwrap_or(CbtStateChange::Unknown);
+        CbtStateChange::from_u8(statechange).ok_or(ParseError::UnknownStateChange(statechange));
     let is_flanking = input.read_u8()? != 0;
     let is_shields = input.read_u8()? != 0;
     let is_offcycle = input.read_u8()? != 0;
@@ -439,7 +447,7 @@ pub fn parse_event_rev1<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
         is_ninety,
         is_fifty,
         is_moving,
-        is_statechange,
+        is_statechange: is_statechange?,
         is_flanking,
         is_shields,
         is_offcycle,

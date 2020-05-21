@@ -201,16 +201,6 @@ pub enum CbtStateChange {
     BreakbarPercent,
     /// `time` is the start of the error string.
     Error,
-    /// The given state change is unknown.
-    ///
-    /// Note that this is not defined by arcdps itself, we just use this value as an easy way out
-    /// for when unknown statechanges are introduces.
-    ///
-    /// This is for future proofing, whenever a new event is added, we'd otherwise have to update
-    /// `evtclib` as well. The arcdps evtc README states to *make sure to ignore unknown
-    /// statechange types.*
-    // Keep this as the highest value, so we don't clash with future statechange additions.
-    Unknown = 255,
 }
 
 impl Default for CbtStateChange {
