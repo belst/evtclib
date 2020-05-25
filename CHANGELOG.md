@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.3.3 - 2020-05-25
+### Added
+- Variants for `CBTS_BREAKBARSTATE`, `CBTS_BREAKBARPERCENT` and `CBTS_ERROR`.
+- `EventKind::Error` as the higher-level part for `CBTS_ERROR`.
+- Equivalents for the  `e_attribute` and `e_buffcategory` enums.
+
+### Changed
+- Invalid state changes no longer cause the parser to choke, instead they are
+  ignored in `parse_events`.
+
 ## 0.3.2 - 2020-05-12
 ### Added
 - Support for determining Challenge Motes.
