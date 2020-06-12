@@ -182,6 +182,12 @@ pub enum EventKind {
 
     /// An error was reported by arcdps.
     Error { text: String },
+
+    /// The given agent has the tag.
+    ///
+    /// Note that the tag id is volatile and depends on the game build. Do not rely on the actual
+    /// value of this!
+    Tag { agent_addr: u64, tag_id: i32 },
 }
 
 /// A higher-level representation of a combat event.
@@ -368,6 +374,10 @@ impl TryFrom<&raw::CbtEvent> for Event {
                         .into_owned(),
                 }
             }
+            CbtStateChange::Tag => EventKind::Tag {
+                agent_addr: raw_event.src_agent,
+                tag_id: raw_event.value,
+            },
             // XXX: implement proper handling of those events!
             CbtStateChange::BuffInitial
             | CbtStateChange::ReplInfo

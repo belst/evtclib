@@ -201,6 +201,8 @@ pub enum CbtStateChange {
     BreakbarPercent,
     /// `time` is the start of the error string.
     Error,
+    /// `src_agent` is the agent, `value` is the tag id
+    Tag,
 }
 
 impl Default for CbtStateChange {
