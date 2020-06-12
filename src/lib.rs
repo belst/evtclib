@@ -794,6 +794,22 @@ impl Log {
     pub fn events(&self) -> &[Event] {
         &self.events
     }
+
+    /// Returns the timespan of the log in milliseconds.
+    ///
+    /// The timespan is the time between the first registered event and the last registered event,
+    /// measured in milliseconds.
+    ///
+    /// Note that this does not necessarily equate to the fight/encounter duration, as arcdps
+    /// starts logging as soon as you enter combat, but some bosses are still invulnerable (e.g.
+    /// Ensolyss). It does however give a good idea and is cheap to compute.
+    ///
+    /// In the rare occassions that a log does not have any events, this function will return 0.
+    pub fn span(&self) -> u64 {
+        let first = self.events().first().map(Event::time).unwrap_or(0);
+        let last = self.events().last().map(Event::time).unwrap_or(0);
+        last - first
+    }
 }
 
 /// Convenience data accessing funtions for [`Log`][Log]s.
