@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- A variant for `CBTS_TAG`.
+- The function `Log::span` to get the duration of a log.
 
 ## 0.3.3 - 2020-05-25
 ### Added
