@@ -65,42 +65,6 @@ pub enum Boss {
     WhisperOfJormag = 0x58B7,
 }
 
-impl Boss {
-    /// Returns the CM trigger for this boss.
-    pub fn cm_trigger(self) -> CmTrigger {
-        match self {
-            Boss::KeepConstruct => CmTrigger::Unknown,
-
-            Boss::Cairn => CmTrigger::BuffPresent(38_098),
-            Boss::MursaatOverseer => CmTrigger::HpThreshold(30_000_000),
-            Boss::Samarog => CmTrigger::HpThreshold(40_000_000),
-            Boss::Deimos => CmTrigger::HpThreshold(42_000_000),
-
-            Boss::SoullessHorror => CmTrigger::TimeBetweenBuffs(47414, 11_000),
-            Boss::Dhuum => CmTrigger::HpThreshold(40_000_000),
-
-            Boss::ConjuredAmalgamate => CmTrigger::BuffPresent(53_075),
-            // This is Nikare's health, as the log is saved with his ID
-            Boss::LargosTwins => CmTrigger::HpThreshold(19_200_000),
-            Boss::Qadim => CmTrigger::HpThreshold(21_100_000),
-
-            Boss::CardinalAdina => CmTrigger::HpThreshold(24_800_000),
-            Boss::CardinalSabir => CmTrigger::HpThreshold(32_400_000),
-            Boss::QadimThePeerless => CmTrigger::HpThreshold(51_000_000),
-
-            Boss::Skorvald => CmTrigger::HpThreshold(5_551_340),
-            Boss::Artsariiv => CmTrigger::Always,
-            Boss::Arkk => CmTrigger::Always,
-
-            Boss::MAMA => CmTrigger::Always,
-            Boss::Siax => CmTrigger::Always,
-            Boss::Ensolyss => CmTrigger::Always,
-
-            _ => CmTrigger::None,
-        }
-    }
-}
-
 /// Error for when converting a string to the boss fails.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Error)]
 #[error("Invalid boss identifier: {0}")]
@@ -202,29 +166,6 @@ impl Display for Boss {
 /// calculating boss damage on this encounter, as both Xeras have to be taken
 /// into account.
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
-
-/// The trigger of how a boss challenge mote (CM) is determined.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum CmTrigger {
-    /// The boss does not have a CM available.
-    None,
-    /// The boss has a CM available but we cannot determine if it has been activated.
-    Unknown,
-    /// Logs from this boss always count as having the CM active.
-    Always,
-    /// The CM is determined by the boss's health being at or above the given threshold.
-    ///
-    /// This works since most bosses increase their HP pool in the CM variant.
-    HpThreshold(u32),
-    /// The CM is active if the given buff is present in the log.
-    ///
-    /// The buff can be either on player or the enemy.
-    BuffPresent(u32),
-    /// The time between buff applications falls below the given threshold.
-    ///
-    /// The first number is the buff id, the second number is the time threshold in milliseconds.
-    TimeBetweenBuffs(u32, u64),
-}
 
 /// Error for when converting a string to a profession fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
