@@ -1,6 +1,6 @@
 //! Boss fight analyzers for Wing 6 (Mythwright Gambit)
 use crate::{
-    analyzers::{helpers, Analyzer},
+    analyzers::{helpers, Analyzer, Outcome},
     Log,
 };
 
@@ -30,6 +30,10 @@ impl<'log> Analyzer for CardinalAdina<'log> {
             .map(|h| h >= ADINA_CM_HEALTH)
             .unwrap_or(false)
     }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
+    }
 }
 
 pub const SABIR_CM_HEALTH: u64 = 32_400_000;
@@ -58,6 +62,10 @@ impl<'log> Analyzer for CardinalSabir<'log> {
             .map(|h| h >= SABIR_CM_HEALTH)
             .unwrap_or(false)
     }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
+    }
 }
 
 pub const QADIMP_CM_HEALTH: u64 = 51_000_000;
@@ -82,5 +90,9 @@ impl<'log> Analyzer for QadimThePeerless<'log> {
         helpers::boss_health(self.log)
             .map(|h| h >= QADIMP_CM_HEALTH)
             .unwrap_or(false)
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
