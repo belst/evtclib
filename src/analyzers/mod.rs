@@ -22,6 +22,7 @@ use crate::{Boss, Log};
 pub mod fractals;
 pub mod helpers;
 pub mod raids;
+pub mod strikes;
 
 /// The outcome of a fight.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -104,6 +105,10 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
             Some(Box::new(fractals::GenericFractal::new(log)))
         }
 
-        _ => None,
+        Boss::IcebroodConstruct
+        | Boss::VoiceOfTheFallen
+        | Boss::FraenirOfJormag
+        | Boss::Boneskinner
+        | Boss::WhisperOfJormag => Some(Box::new(strikes::GenericStrike::new(log))),
     }
 }
