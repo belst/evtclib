@@ -1,7 +1,7 @@
 //! Boss fight analyzers for Wing 4 (Bastion of the Penitent).
 use crate::{
-    analyzers::{helpers, Analyzer},
-    Log,
+    analyzers::{helpers, Analyzer, Outcome},
+    EventKind, Log,
 };
 
 pub const CAIRN_CM_BUFF: u32 = 38_098;
@@ -28,6 +28,10 @@ impl<'log> Analyzer for Cairn<'log> {
 
     fn is_cm(&self) -> bool {
         helpers::buff_present(self.log, CAIRN_CM_BUFF)
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
 
@@ -57,6 +61,10 @@ impl<'log> Analyzer for MursaatOverseer<'log> {
             .map(|h| h >= MO_CM_HEALTH)
             .unwrap_or(false)
     }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
+    }
 }
 
 pub const SAMAROG_CM_HEALTH: u64 = 40_000_000;
@@ -84,6 +92,10 @@ impl<'log> Analyzer for Samarog<'log> {
         helpers::boss_health(self.log)
             .map(|h| h >= SAMAROG_CM_HEALTH)
             .unwrap_or(false)
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
 
@@ -113,4 +125,90 @@ impl<'log> Analyzer for Deimos<'log> {
             .map(|h| h >= DEIMOS_CM_HEALTH)
             .unwrap_or(false)
     }
+
+    fn outcome(&self) -> Option<Outcome> {
+        // The idea for Deimos is that we first need to figure out when the 10% split happens (if
+        // it even happens), then we can find the time when 10%-Deimos becomes untargetable and
+        // then we can compare this time to the player exit time.
+
+        let split_time = deimos_10_time(self.log);
+        // We never got to 10%, so this is a fail.
+        if split_time == 0 {
+            return Some(Outcome::Failure);
+        }
+
+        let at_address = deimos_at_address(self.log);
+        if at_address == 0 {
+            return Some(Outcome::Failure);
+        }
+
+        let mut player_exit = 0u64;
+        let mut at_exit = 0u64;
+        for event in self.log.events() {
+            match event.kind() {
+                EventKind::ExitCombat { agent_addr }
+                    if self
+                        .log
+                        .agent_by_addr(*agent_addr)
+                        .map(|a| a.kind().is_player())
+                        .unwrap_or(false)
+                        && event.time() >= player_exit =>
+                {
+                    player_exit = event.time();
+                }
+
+                EventKind::Targetable {
+                    agent_addr,
+                    targetable,
+                } if *agent_addr == at_address && !targetable && event.time() >= at_exit => {
+                    at_exit = event.time();
+                }
+
+                _ => (),
+            }
+        }
+
+        // Safety margin
+        Outcome::from_bool(player_exit > at_exit + 1000)
+    }
+}
+
+// Extracts the timestamp when Deimos's 10% phase started.
+//
+// This function may panic when passed non-Deimos logs!
+fn deimos_10_time(log: &Log) -> u64 {
+    let mut first_aware = 0u64;
+
+    for event in log.events() {
+        if let EventKind::Targetable { targetable, .. } = event.kind() {
+            if *targetable {
+                first_aware = event.time();
+                println!("First aware: {}", first_aware);
+            }
+        }
+    }
+
+    first_aware
+}
+
+// Returns the attack target address for the 10% Deimos phase.
+//
+// Returns 0 when the right attack target is not found.
+fn deimos_at_address(log: &Log) -> u64 {
+    for event in log.events().iter().rev() {
+        if let EventKind::AttackTarget {
+            agent_addr,
+            parent_agent_addr,
+            ..
+        } = event.kind()
+        {
+            let parent = log.agent_by_addr(*parent_agent_addr);
+            if let Some(parent) = parent {
+                if Some("Deimos") == parent.as_gadget().map(|g| g.name()) {
+                    return *agent_addr;
+                }
+            }
+        }
+    }
+    0
 }

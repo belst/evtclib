@@ -23,6 +23,33 @@ pub mod fractals;
 pub mod helpers;
 pub mod raids;
 
+/// The outcome of a fight.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum Outcome {
+    /// The fight succeeded.
+    Success,
+    /// The fight failed, i.e. the group wiped.
+    Failure,
+}
+
+impl Outcome {
+    /// A function that turns a boolean into an [`Outcome`][Outcome].
+    ///
+    /// This is a convenience function that can help implementing
+    /// [`Analyzer::outcome`][Analyzer::outcome], which is also why this function returns an Option
+    /// instead of the outcome directly.
+    ///
+    /// This turns `true` into [`Outcome::Success`][Outcome::Success] and `false` into
+    /// [`Outcome::Failure`][Outcome::Failure].
+    pub fn from_bool(b: bool) -> Option<Outcome> {
+        if b {
+            Some(Outcome::Success)
+        } else {
+            Some(Outcome::Failure)
+        }
+    }
+}
+
 /// An [`Analyzer`][Analyzer] is something that implements fight-dependent analyzing of the log.
 pub trait Analyzer {
     /// Returns a reference to the log being analyzed.
@@ -30,6 +57,14 @@ pub trait Analyzer {
 
     /// Checks whether the fight was done with the challenge mote activated.
     fn is_cm(&self) -> bool;
+
+    /// Returns the outcome of the fight.
+    ///
+    /// Note that not all logs need to have an outcome, e.g. WvW or Golem logs may return `None`
+    /// here.
+    fn outcome(&self) -> Option<Outcome> {
+        None
+    }
 }
 
 /// Returns the correct [`Analyzer`][Analyzer] for the given log file.
@@ -39,6 +74,15 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
     let boss = log.encounter()?;
 
     match boss {
+        Boss::ValeGuardian | Boss::Gorseval | Boss::Sabetha => {
+            Some(Box::new(raids::GenericRaid::new(log)))
+        }
+
+        Boss::Slothasor | Boss::Matthias => Some(Box::new(raids::GenericRaid::new(log))),
+
+        Boss::KeepConstruct => Some(Box::new(raids::GenericRaid::new(log))),
+        Boss::Xera => Some(Box::new(raids::Xera::new(log))),
+
         Boss::Cairn => Some(Box::new(raids::Cairn::new(log))),
         Boss::MursaatOverseer => Some(Box::new(raids::MursaatOverseer::new(log))),
         Boss::Samarog => Some(Box::new(raids::Samarog::new(log))),
