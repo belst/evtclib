@@ -63,9 +63,7 @@ pub trait Analyzer {
     ///
     /// Note that not all logs need to have an outcome, e.g. WvW or Golem logs may return `None`
     /// here.
-    fn outcome(&self) -> Option<Outcome> {
-        None
-    }
+    fn outcome(&self) -> Option<Outcome>;
 }
 
 /// Returns the correct [`Analyzer`][Analyzer] for the given log file.
