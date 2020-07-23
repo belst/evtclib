@@ -70,6 +70,7 @@ impl<'log> Analyzer for CardinalSabir<'log> {
 
 pub const QADIMP_CM_HEALTH: u64 = 51_000_000;
 
+/// Analyzer for the final fight of Wing 7, Qadim The Peerless.
 #[derive(Debug, Clone, Copy)]
 pub struct QadimThePeerless<'log> {
     log: &'log Log,

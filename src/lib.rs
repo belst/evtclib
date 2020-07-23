@@ -884,6 +884,10 @@ impl Log {
     ///
     /// This can be used as an indication whether the fight was successful (`true`) or not
     /// (`false`).
+    ///
+    /// If you want to properly determine whether a fight was successful, check the
+    /// [`Analyzer::outcome`][Analyzer::outcome] method, which does more sophisticated checks
+    /// (dependent on the boss).
     pub fn was_rewarded(&self) -> bool {
         self.events().iter().any(|e| {
             if let EventKind::Reward { .. } = e.kind() {
