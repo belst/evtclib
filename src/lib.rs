@@ -760,6 +760,8 @@ impl Log {
     pub fn boss_agents(&self) -> Vec<&Agent> {
         let boss_ids = if self.boss_id == Boss::Xera as u16 {
             vec![self.boss_id, gamedata::XERA_PHASE2_ID]
+        } else if self.boss_id == Boss::LargosTwins as u16 {
+            vec![gamedata::NIKARE_ID, gamedata::KENUT_ID]
         } else {
             vec![self.boss_id]
         };
