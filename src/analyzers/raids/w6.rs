@@ -1,10 +1,12 @@
 //! Boss fight analyzers for Wing 6 (Mythwright Gambit)
 use crate::{
-    analyzers::{helpers, Analyzer},
-    Log,
+    analyzers::{helpers, Analyzer, Outcome},
+    gamedata::{KENUT_ID, NIKARE_ID},
+    EventKind, Log,
 };
 
 pub const CA_CM_BUFF: u32 = 53_075;
+pub const ZOMMOROS_ID: u16 = 21_118;
 
 /// Analyzer for the first fight of Wing 6, Conjured Amalgamate.
 ///
@@ -27,6 +29,23 @@ impl<'log> Analyzer for ConjuredAmalgamate<'log> {
 
     fn is_cm(&self) -> bool {
         helpers::buff_present(self.log, CA_CM_BUFF)
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        for event in self.log.events() {
+            if let EventKind::Spawn { agent_addr } = event.kind() {
+                if self
+                    .log
+                    .agent_by_addr(*agent_addr)
+                    .and_then(|a| a.as_character())
+                    .map(|a| a.id() == ZOMMOROS_ID)
+                    .unwrap_or(false)
+                {
+                    return Some(Outcome::Success);
+                }
+            }
+        }
+        Some(Outcome::Failure)
     }
 }
 
@@ -56,6 +75,33 @@ impl<'log> Analyzer for LargosTwins<'log> {
             .map(|h| h >= LARGOS_CM_HEALTH)
             .unwrap_or(false)
     }
+
+    fn outcome(&self) -> Option<Outcome> {
+        let mut nikare_dead = false;
+        let mut kenut_dead = false;
+
+        for event in self.log.events() {
+            if let EventKind::ChangeDead { agent_addr } = event.kind() {
+                let agent = if let Some(agent) = self
+                    .log
+                    .agent_by_addr(*agent_addr)
+                    .and_then(|a| a.as_character())
+                {
+                    agent
+                } else {
+                    continue;
+                };
+
+                if agent.id() == NIKARE_ID {
+                    nikare_dead = true;
+                } else if agent.id() == KENUT_ID {
+                    kenut_dead = true;
+                }
+            }
+        }
+
+        Outcome::from_bool(kenut_dead && nikare_dead)
+    }
 }
 
 pub const QADIM_CM_HEALTH: u64 = 21_100_000;
@@ -83,5 +129,9 @@ impl<'log> Analyzer for Qadim<'log> {
         helpers::boss_health(self.log)
             .map(|h| h >= QADIM_CM_HEALTH)
             .unwrap_or(false)
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::players_exit_after_boss(self.log))
     }
 }

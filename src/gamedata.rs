@@ -39,6 +39,10 @@ pub enum Boss {
 
     // Wing 6
     ConjuredAmalgamate = 0xABC6,
+    /// This is the ID of Nikare, as that is what the Twin Largos logs are identified by.
+    ///
+    /// If you want Nikare specifically, consider using [`NIKARE_ID`][NIKARE_ID], and similarly, if
+    /// you need Kenut, you can use [`KENUT_ID`][KENUT_ID].
     LargosTwins = 0x5271,
     Qadim = 0x51C6,
 
@@ -166,6 +170,11 @@ impl Display for Boss {
 /// calculating boss damage on this encounter, as both Xeras have to be taken
 /// into account.
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
+
+/// The ID of Nikare in the Twin Largos fight.
+pub const NIKARE_ID: u16 = Boss::LargosTwins as u16;
+/// The ID of Kenut in the Twin Largos fight.
+pub const KENUT_ID: u16 = 21089;
 
 /// Error for when converting a string to a profession fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
