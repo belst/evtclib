@@ -1,6 +1,6 @@
 //! Analyzers for (challenge mote) fractal encounters.
 use crate::{
-    analyzers::{helpers, Analyzer},
+    analyzers::{helpers, Analyzer, Outcome},
     Log,
 };
 
@@ -30,6 +30,10 @@ impl<'log> Analyzer for Skorvald<'log> {
             .map(|h| h >= SKORVALD_CM_HEALTH)
             .unwrap_or(false)
     }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(self.log.was_rewarded() || helpers::boss_is_dead(self.log))
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -50,5 +54,9 @@ impl<'log> Analyzer for GenericFractal<'log> {
 
     fn is_cm(&self) -> bool {
         true
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(self.log.was_rewarded() || helpers::boss_is_dead(self.log))
     }
 }
