@@ -1,11 +1,12 @@
 //! Boss fight analyzers for Wing 5 (Hall of Chains)
 use crate::{
-    analyzers::{helpers, Analyzer},
-    Log,
+    analyzers::{helpers, Analyzer, Outcome},
+    EventKind, Log,
 };
 
 pub const DESMINA_BUFF_ID: u32 = 47414;
 pub const DESMINA_MS_THRESHOLD: u64 = 11_000;
+pub const DESMINA_DEATH_BUFF: u32 = 895;
 
 /// Analyzer for the first fight of Wing 5, Soulless Horror (aka. Desmina).
 ///
@@ -30,6 +31,21 @@ impl<'log> Analyzer for SoullessHorror<'log> {
     fn is_cm(&self) -> bool {
         let tbb = helpers::time_between_buffs(self.log, DESMINA_BUFF_ID);
         tbb > 0 && tbb <= DESMINA_MS_THRESHOLD
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(self.log.events().iter().any(|event| {
+            if let EventKind::BuffApplication {
+                buff_id,
+                destination_agent_addr,
+                ..
+            } = event.kind()
+            {
+                self.log.is_boss(*destination_agent_addr) && *buff_id == DESMINA_DEATH_BUFF
+            } else {
+                false
+            }
+        }))
     }
 }
 
@@ -58,5 +74,9 @@ impl<'log> Analyzer for Dhuum<'log> {
         helpers::boss_health(self.log)
             .map(|h| h >= DHUUM_CM_HEALTH)
             .unwrap_or(false)
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
