@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 ### Added
 - A variant for `CBTS_TAG`.
 - The function `Log::span` to get the duration of a log.
+- Analyzers to detect fight outcomes and challenge motes in a fight-dependent
+  way.
+- `gamedata::KENUT_ID` and `gamedata::NIKARE_ID` for the Largos Twins' IDs.
+
+### Fixed
+- `Log::is_boss` and `Log::boss_agents` now properly work with both Largos in
+  the Twin Largos fight.
 
 ## 0.3.3 - 2020-05-25
 ### Added

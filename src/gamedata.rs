@@ -39,6 +39,10 @@ pub enum Boss {
 
     // Wing 6
     ConjuredAmalgamate = 0xABC6,
+    /// This is the ID of Nikare, as that is what the Twin Largos logs are identified by.
+    ///
+    /// If you want Nikare specifically, consider using [`NIKARE_ID`][NIKARE_ID], and similarly, if
+    /// you need Kenut, you can use [`KENUT_ID`][KENUT_ID].
     LargosTwins = 0x5271,
     Qadim = 0x51C6,
 
@@ -63,42 +67,6 @@ pub enum Boss {
     FraenirOfJormag = 0x57DC,
     Boneskinner = 0x57F9,
     WhisperOfJormag = 0x58B7,
-}
-
-impl Boss {
-    /// Returns the CM trigger for this boss.
-    pub fn cm_trigger(self) -> CmTrigger {
-        match self {
-            Boss::KeepConstruct => CmTrigger::Unknown,
-
-            Boss::Cairn => CmTrigger::BuffPresent(38_098),
-            Boss::MursaatOverseer => CmTrigger::HpThreshold(30_000_000),
-            Boss::Samarog => CmTrigger::HpThreshold(40_000_000),
-            Boss::Deimos => CmTrigger::HpThreshold(42_000_000),
-
-            Boss::SoullessHorror => CmTrigger::TimeBetweenBuffs(47414, 11_000),
-            Boss::Dhuum => CmTrigger::HpThreshold(40_000_000),
-
-            Boss::ConjuredAmalgamate => CmTrigger::BuffPresent(53_075),
-            // This is Nikare's health, as the log is saved with his ID
-            Boss::LargosTwins => CmTrigger::HpThreshold(19_200_000),
-            Boss::Qadim => CmTrigger::HpThreshold(21_100_000),
-
-            Boss::CardinalAdina => CmTrigger::HpThreshold(24_800_000),
-            Boss::CardinalSabir => CmTrigger::HpThreshold(32_400_000),
-            Boss::QadimThePeerless => CmTrigger::HpThreshold(51_000_000),
-
-            Boss::Skorvald => CmTrigger::HpThreshold(5_551_340),
-            Boss::Artsariiv => CmTrigger::Always,
-            Boss::Arkk => CmTrigger::Always,
-
-            Boss::MAMA => CmTrigger::Always,
-            Boss::Siax => CmTrigger::Always,
-            Boss::Ensolyss => CmTrigger::Always,
-
-            _ => CmTrigger::None,
-        }
-    }
 }
 
 /// Error for when converting a string to the boss fails.
@@ -203,28 +171,10 @@ impl Display for Boss {
 /// into account.
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 
-/// The trigger of how a boss challenge mote (CM) is determined.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum CmTrigger {
-    /// The boss does not have a CM available.
-    None,
-    /// The boss has a CM available but we cannot determine if it has been activated.
-    Unknown,
-    /// Logs from this boss always count as having the CM active.
-    Always,
-    /// The CM is determined by the boss's health being at or above the given threshold.
-    ///
-    /// This works since most bosses increase their HP pool in the CM variant.
-    HpThreshold(u32),
-    /// The CM is active if the given buff is present in the log.
-    ///
-    /// The buff can be either on player or the enemy.
-    BuffPresent(u32),
-    /// The time between buff applications falls below the given threshold.
-    ///
-    /// The first number is the buff id, the second number is the time threshold in milliseconds.
-    TimeBetweenBuffs(u32, u64),
-}
+/// The ID of Nikare in the Twin Largos fight.
+pub const NIKARE_ID: u16 = Boss::LargosTwins as u16;
+/// The ID of Kenut in the Twin Largos fight.
+pub const KENUT_ID: u16 = 21089;
 
 /// Error for when converting a string to a profession fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]

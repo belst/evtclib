@@ -88,7 +88,6 @@
 //! While there are legitimate use cases for writing/modification support, they are currently not
 //! implemented (but might be in a future version).
 
-use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::marker::PhantomData;
 
@@ -105,8 +104,10 @@ mod processing;
 pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
-use gamedata::CmTrigger;
 pub use gamedata::{Boss, EliteSpec, Profession};
+
+pub mod analyzers;
+pub use analyzers::{Analyzer, Outcome};
 
 /// Any error that can occur during the processing of evtc files.
 #[derive(Error, Debug)]
@@ -759,6 +760,8 @@ impl Log {
     pub fn boss_agents(&self) -> Vec<&Agent> {
         let boss_ids = if self.boss_id == Boss::Xera as u16 {
             vec![self.boss_id, gamedata::XERA_PHASE2_ID]
+        } else if self.boss_id == Boss::LargosTwins as u16 {
+            vec![gamedata::NIKARE_ID, gamedata::KENUT_ID]
         } else {
             vec![self.boss_id]
         };
@@ -787,6 +790,11 @@ impl Log {
     #[inline]
     pub fn encounter(&self) -> Option<Boss> {
         Boss::from_u16(self.boss_id)
+    }
+
+    /// Return an analyzer suitable to analyze the given log.
+    pub fn analyzer<'s>(&'s self) -> Option<Box<dyn Analyzer + 's>> {
+        analyzers::for_log(&self)
     }
 
     /// Return all events present in this log.
@@ -832,46 +840,7 @@ impl Log {
     /// * We cannot determine whether the CM was active
     /// * The boss is not known
     pub fn is_cm(&self) -> bool {
-        let trigger = self
-            .encounter()
-            .map(Boss::cm_trigger)
-            .unwrap_or(CmTrigger::Unknown);
-        match trigger {
-            CmTrigger::HpThreshold(hp_threshold) => {
-                for event in self.events() {
-                    if let EventKind::MaxHealthUpdate {
-                        agent_addr,
-                        max_health,
-                    } = *event.kind()
-                    {
-                        if self.is_boss(agent_addr) && max_health >= hp_threshold as u64 {
-                            return true;
-                        }
-                    }
-                }
-                false
-            }
-
-            CmTrigger::BuffPresent(wanted_buff_id) => {
-                for event in self.events() {
-                    if let EventKind::BuffApplication { buff_id, .. } = *event.kind() {
-                        if buff_id == wanted_buff_id {
-                            return true;
-                        }
-                    }
-                }
-                false
-            }
-
-            CmTrigger::TimeBetweenBuffs(buff_id, threshold) => {
-                let tbb = time_between_buffs(&self.events, buff_id);
-                tbb != 0 && tbb <= threshold
-            }
-
-            CmTrigger::Always => true,
-
-            CmTrigger::None | CmTrigger::Unknown => false,
-        }
+        self.analyzer().map(|a| a.is_cm()).unwrap_or(false)
     }
 
     /// Get the timestamp of when the log was started.
@@ -915,6 +884,10 @@ impl Log {
     ///
     /// This can be used as an indication whether the fight was successful (`true`) or not
     /// (`false`).
+    ///
+    /// If you want to properly determine whether a fight was successful, check the
+    /// [`Analyzer::outcome`][Analyzer::outcome] method, which does more sophisticated checks
+    /// (dependent on the boss).
     pub fn was_rewarded(&self) -> bool {
         self.events().iter().any(|e| {
             if let EventKind::Reward { .. } = e.kind() {
@@ -924,36 +897,4 @@ impl Log {
             }
         })
     }
-}
-
-fn time_between_buffs(events: &[Event], wanted_buff_id: u32) -> u64 {
-    let mut time_maps: HashMap<u64, Vec<u64>> = HashMap::new();
-    for event in events {
-        if let EventKind::BuffApplication {
-            destination_agent_addr,
-            buff_id,
-            ..
-        } = event.kind()
-        {
-            if *buff_id == wanted_buff_id {
-                time_maps
-                    .entry(*destination_agent_addr)
-                    .or_default()
-                    .push(event.time());
-            }
-        }
-    }
-    let timestamps = if let Some(ts) = time_maps.values().max_by_key(|v| v.len()) {
-        ts
-    } else {
-        return 0;
-    };
-    timestamps
-        .iter()
-        .zip(timestamps.iter().skip(1))
-        .map(|(a, b)| b - a)
-        // Arbitrary limit to filter out duplicated buff application events
-        .filter(|x| *x > 50)
-        .min()
-        .unwrap_or(0)
 }
