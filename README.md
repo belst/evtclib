@@ -36,6 +36,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+You can also check out `examples/loginfo.rs` or run it on a log file:
+
+```
+cargo run --example=loginfo -- path/to/log.zevtc
+```
+
 License
 -------
 
