@@ -28,6 +28,11 @@ macro_rules! test {
                 assert_eq!(player.profession(), *profession);
                 assert_eq!(player.elite(), *elite_spec);
             }
+
+            // We don't want to assert the correct outcome here (yet?), but at least ensure we have
+            // analyzer's ready that produce some outcome.
+            assert!(log.analyzer().is_some());
+            assert!(log.analyzer().unwrap().outcome().is_some());
         }
     };
 }
