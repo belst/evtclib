@@ -107,7 +107,7 @@ pub mod gamedata;
 pub use gamedata::{Boss, EliteSpec, Profession};
 
 pub mod analyzers;
-pub use analyzers::Analyzer;
+pub use analyzers::{Analyzer, Outcome};
 
 /// Any error that can occur during the processing of evtc files.
 #[derive(Error, Debug)]
