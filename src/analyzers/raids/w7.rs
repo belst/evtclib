@@ -15,6 +15,10 @@ pub struct CardinalAdina<'log> {
 }
 
 impl<'log> CardinalAdina<'log> {
+    /// Create a new [`CardinalAdina`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         CardinalAdina { log }
     }
@@ -47,6 +51,10 @@ pub struct CardinalSabir<'log> {
 }
 
 impl<'log> CardinalSabir<'log> {
+    /// Create a new [`CardinalSabir`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         CardinalSabir { log }
     }
@@ -77,6 +85,10 @@ pub struct QadimThePeerless<'log> {
 }
 
 impl<'log> QadimThePeerless<'log> {
+    /// Create a new [`QadimThePeerless`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         QadimThePeerless { log }
     }

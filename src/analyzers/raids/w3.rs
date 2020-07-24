@@ -10,6 +10,10 @@ pub struct Xera<'log> {
 }
 
 impl<'log> Xera<'log> {
+    /// Create a new [`Xera`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         Xera { log }
     }

@@ -16,6 +16,10 @@ pub struct Cairn<'log> {
 }
 
 impl<'log> Cairn<'log> {
+    /// Create a new [`Cairn`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         Cairn { log }
     }
@@ -46,6 +50,10 @@ pub struct MursaatOverseer<'log> {
 }
 
 impl<'log> MursaatOverseer<'log> {
+    /// Create a new [`MursaatOverseer`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         MursaatOverseer { log }
     }
@@ -78,6 +86,10 @@ pub struct Samarog<'log> {
 }
 
 impl<'log> Samarog<'log> {
+    /// Create a new [`Samarog`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         Samarog { log }
     }
@@ -110,6 +122,10 @@ pub struct Deimos<'log> {
 }
 
 impl<'log> Deimos<'log> {
+    /// Create a new [`Deimos`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         Deimos { log }
     }

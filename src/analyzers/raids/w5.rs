@@ -18,6 +18,10 @@ pub struct SoullessHorror<'log> {
 }
 
 impl<'log> SoullessHorror<'log> {
+    /// Create a new [`SoullessHorror`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         SoullessHorror { log }
     }
@@ -60,6 +64,10 @@ pub struct Dhuum<'log> {
 }
 
 impl<'log> Dhuum<'log> {
+    /// Create a new [`Dhuum`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         Dhuum { log }
     }

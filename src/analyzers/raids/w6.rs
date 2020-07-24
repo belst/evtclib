@@ -17,6 +17,10 @@ pub struct ConjuredAmalgamate<'log> {
 }
 
 impl<'log> ConjuredAmalgamate<'log> {
+    /// Create a new [`ConjuredAmalgamate`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         ConjuredAmalgamate { log }
     }
@@ -60,6 +64,10 @@ pub struct LargosTwins<'log> {
 }
 
 impl<'log> LargosTwins<'log> {
+    /// Create a new [`LargosTwins`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         LargosTwins { log }
     }
@@ -115,6 +123,10 @@ pub struct Qadim<'log> {
 }
 
 impl<'log> Qadim<'log> {
+    /// Create a new [`Qadim`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         Qadim { log }
     }

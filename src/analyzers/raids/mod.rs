@@ -36,6 +36,10 @@ pub struct GenericRaid<'log> {
 }
 
 impl<'log> GenericRaid<'log> {
+    /// Create a new [`GenericRaid`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
         GenericRaid { log }
     }
