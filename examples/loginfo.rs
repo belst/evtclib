@@ -20,6 +20,11 @@ fn main() {
 
     println!("Encounter: {:?}", log.encounter());
     println!("Was CM? {}", log.is_cm());
+    if let Some(analyzer) = log.analyzer() {
+        println!("Fight outcome: {:?}", analyzer.outcome());
+    } else {
+        println!("No analyzer available for this fight.");
+    }
     println!("Players:");
     for player in log.players() {
         println!(
