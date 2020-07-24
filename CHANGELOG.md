@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.4.0 - 2020-07-24
 ### Added
 - A variant for `CBTS_TAG`.
 - The function `Log::span` to get the duration of a log.
@@ -13,6 +15,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - `Log::is_boss` and `Log::boss_agents` now properly work with both Largos in
   the Twin Largos fight.
+
+### Removed
+- `CmTrigger` and `Boss::cm_trigger`, as that is now handled by analyzers.
 
 ## 0.3.3 - 2020-05-25
 ### Added
