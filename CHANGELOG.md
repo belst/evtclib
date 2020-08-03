@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Fixed
+- Fixed the conversion from `CBTS_ERROR` to `EventKind::Error` not having the
+  correct text.
 
 ## 0.4.0 - 2020-07-24
 ### Added

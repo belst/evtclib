@@ -6,7 +6,7 @@ use super::raw;
 use std::convert::TryFrom;
 use std::io;
 
-use byteorder::{BigEndian, WriteBytesExt};
+use byteorder::{BigEndian, WriteBytesExt, LE};
 use getset::{CopyGetters, Getters};
 use num_traits::FromPrimitive;
 use thiserror::Error;
@@ -515,11 +515,11 @@ fn get_api_guild_string(bytes: &[u8; 16]) -> Option<String> {
 fn get_error_bytes(raw_event: &raw::CbtEvent) -> [u8; 32] {
     let mut result = [0; 32];
     let mut cursor = io::Cursor::new(&mut result as &mut [u8]);
-    cursor.write_u64::<BigEndian>(raw_event.time).unwrap();
-    cursor.write_u64::<BigEndian>(raw_event.src_agent).unwrap();
-    cursor.write_u64::<BigEndian>(raw_event.dst_agent).unwrap();
-    cursor.write_i32::<BigEndian>(raw_event.value).unwrap();
-    cursor.write_i32::<BigEndian>(raw_event.buff_dmg).unwrap();
+    cursor.write_u64::<LE>(raw_event.time).unwrap();
+    cursor.write_u64::<LE>(raw_event.src_agent).unwrap();
+    cursor.write_u64::<LE>(raw_event.dst_agent).unwrap();
+    cursor.write_i32::<LE>(raw_event.value).unwrap();
+    cursor.write_i32::<LE>(raw_event.buff_dmg).unwrap();
     result
 }
 
