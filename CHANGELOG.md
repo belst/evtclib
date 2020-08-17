@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.4.1 - 2020-08-17
 ### Added
 - `Log::errors` as a convenience function.
 
