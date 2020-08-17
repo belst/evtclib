@@ -36,4 +36,8 @@ fn main() {
     }
 
     println!("Number of recorded events: {}", log.events().len());
+
+    for error in log.errors() {
+        println!("Error in log: {}", error);
+    }
 }

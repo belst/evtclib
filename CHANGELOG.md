@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- `Log::errors` as a convenience function.
+
 ### Fixed
 - Fixed the conversion from `CBTS_ERROR` to `EventKind::Error` not having the
   correct text.

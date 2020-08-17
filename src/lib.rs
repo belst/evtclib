@@ -897,4 +897,20 @@ impl Log {
             }
         })
     }
+
+    /// Returns all error strings that were captured.
+    ///
+    /// If no errors were encountered, an empty vec is returned.
+    ///
+    /// Note that those are errors reported verbatim by arcdps, nothing that evtclib
+    /// produces/interprets.
+    pub fn errors(&self) -> Vec<&str> {
+        self.events().iter().filter_map(|e| {
+            if let EventKind::Error { ref text } = e.kind() {
+                Some(text as &str)
+            } else {
+                None
+            }
+        }).collect()
+    }
 }
