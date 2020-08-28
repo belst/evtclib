@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Fixed
+- Removed leftover debug output ("First aware: ...") from the Deimos analyzer.
 
 ## 0.4.1 - 2020-08-17
 ### Added

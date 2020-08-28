@@ -199,7 +199,6 @@ fn deimos_10_time(log: &Log) -> u64 {
         if let EventKind::Targetable { targetable, .. } = event.kind() {
             if *targetable {
                 first_aware = event.time();
-                println!("First aware: {}", first_aware);
             }
         }
     }
