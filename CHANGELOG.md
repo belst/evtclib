@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Fixed
+- Handling of log files with "Claw of the Fallen" as the encounter id.
+- Both bosses are now returned for the "Voice & Claw of the Fallen" strike
+  mission.
 
 ## 0.4.2 - 2020-08-28
 ### Fixed

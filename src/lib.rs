@@ -762,6 +762,11 @@ impl Log {
             vec![self.boss_id, gamedata::XERA_PHASE2_ID]
         } else if self.boss_id == Boss::LargosTwins as u16 {
             vec![gamedata::NIKARE_ID, gamedata::KENUT_ID]
+        } else if self.encounter() == Some(Boss::VoiceOfTheFallen) {
+            vec![
+                gamedata::VOICE_OF_THE_FALLEN_ID,
+                gamedata::CLAW_OF_THE_FALLEN_ID,
+            ]
         } else {
             vec![self.boss_id]
         };
@@ -789,6 +794,12 @@ impl Log {
     /// if we know about it in [`Boss`][Boss].
     #[inline]
     pub fn encounter(&self) -> Option<Boss> {
+        // Sometimes, encounters of the strike mission "Voice of the Fallen and Claw of the Fallen"
+        // are saved with the ID of the Claw and sometimes with the Voice. Therefore, we need to
+        // unify those cases.
+        if self.boss_id == gamedata::CLAW_OF_THE_FALLEN_ID {
+            return Some(Boss::VoiceOfTheFallen);
+        }
         Boss::from_u16(self.boss_id)
     }
 

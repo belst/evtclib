@@ -63,6 +63,12 @@ pub enum Boss {
 
     // Strike missions
     IcebroodConstruct = 0x568A,
+    /// This is the ID of the Voice of the Fallen.
+    ///
+    /// The strike mission itself contains two bosses, the Voice of the Fallen and the Claw of the
+    /// Fallen. Consider using either [`VOICE_OF_THE_FALLEN_ID`][VOICE_OF_THE_FALLEN_ID] or
+    /// [`CLAW_OF_THE_FALLEN_ID`][CLAW_OF_THE_FALLEN_ID] if you refer to one of those bosses
+    /// specifically.
     VoiceOfTheFallen = 0x5747,
     FraenirOfJormag = 0x57DC,
     Boneskinner = 0x57F9,
@@ -175,6 +181,11 @@ pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 pub const NIKARE_ID: u16 = Boss::LargosTwins as u16;
 /// The ID of Kenut in the Twin Largos fight.
 pub const KENUT_ID: u16 = 21089;
+
+/// The ID of the Voice of the Fallen.
+pub const VOICE_OF_THE_FALLEN_ID: u16 = Boss::VoiceOfTheFallen as u16;
+/// The ID of the Claw of the Fallen.
+pub const CLAW_OF_THE_FALLEN_ID: u16 = 22481;
 
 /// Error for when converting a string to a profession fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
