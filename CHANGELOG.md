@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.4.3 - 2020-09-21
 ### Added
 - `gamedata::VOICE_OF_THE_FALLEN_ID` and `gamedata::CLAW_OF_THE_FALLEN_ID`.
 
