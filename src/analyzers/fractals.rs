@@ -7,9 +7,18 @@ use crate::{
 /// Health threshold for Skorvald to be detected as Challenge Mote.
 pub const SKORVALD_CM_HEALTH: u64 = 5_551_340;
 
+/// Character IDs for the anomalies in Skorvald's Challenge Mote.
+pub static SKORVALD_CM_ANOMALY_IDS: &[u16] = &[17_599, 17_673, 17_770, 17_851];
+
 /// Analyzer for the first boss of 100 CM, Skorvald.
 ///
-/// The CM is detected by the boss's health, which is higher in the challenge mote.
+/// The CM was detected by the boss's health, which was higher in the challenge mote.
+///
+/// The 2020-09-15 update which introduced a new fractal and shifted Shattered Observator CM to 99
+/// which changed the bosses' maximal health, so this method no longer works. Instead, we rely on
+/// the split phase to differentiate the "normal mode" flux anomalies from the "challenge mode"
+/// flux anomalies, with the downside that the CM detection is only working if players make it to
+/// the split phase.
 #[derive(Debug, Clone, Copy)]
 pub struct Skorvald<'log> {
     log: &'log Log,
@@ -31,9 +40,14 @@ impl<'log> Analyzer for Skorvald<'log> {
     }
 
     fn is_cm(&self) -> bool {
-        helpers::boss_health(self.log)
-            .map(|h| h >= SKORVALD_CM_HEALTH)
-            .unwrap_or(false)
+        // Shortcut for old logs for which this method still works.
+        if Some(true) == helpers::boss_health(self.log).map(|h| h >= SKORVALD_CM_HEALTH) {
+            return true;
+        }
+
+        self.log
+            .npcs()
+            .any(|character| SKORVALD_CM_ANOMALY_IDS.contains(&character.id()))
     }
 
     fn outcome(&self) -> Option<Outcome> {

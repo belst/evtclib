@@ -39,6 +39,7 @@ test!(test_sabir_cm, "logs/cms/sabir.zevtc");
 test!(test_qadimp_cm, "logs/cms/qadimp.zevtc");
 
 test!(test_skorvald_cm, "logs/skorvald-20200427.zevtc");
+test!(test_skorvald_cm_post_sunqua_patch, "logs/skorvald-20200920.zevtc");
 test!(test_artsariiv_cm, "logs/artsariiv-20200427.zevtc");
 test!(test_arkk_cm, "logs/arkk-20200427.zevtc");
 
