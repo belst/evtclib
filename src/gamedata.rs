@@ -6,9 +6,17 @@ use std::{
 };
 use thiserror::Error;
 
-/// Enum containing all bosses with their IDs.
+/// Enum containing all encounters with their IDs.
+///
+/// An encounter is a fight or event, consisting of no, one or multiple bosses. Most encounters map
+/// 1:1 to a boss (like Vale Guardian), however there are some encounters with multiple bosses
+/// (like Twin Largos), and even encounters without bosses (like the River of Souls).
+///
+/// This enum is non-exhaustive to ensure that future added encounters can be added without
+/// inducing a breaking change.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
-pub enum Boss {
+#[non_exhaustive]
+pub enum Encounter {
     // Wing 1
     ValeGuardian = 0x3C4E,
     Gorseval = 0x3C45,
@@ -20,11 +28,6 @@ pub enum Boss {
 
     // Wing 3
     KeepConstruct = 0x3F6B,
-    /// Xera ID for phase 1.
-    ///
-    /// This is only half of Xera's ID, as there will be a second agent for the
-    /// second phase. This agent will have another ID, see
-    /// [`XERA_PHASE2_ID`](constant.XERA_PHASE2_ID.html).
     Xera = 0x3F76,
 
     // Wing 4
@@ -35,15 +38,11 @@ pub enum Boss {
 
     // Wing 5
     SoullessHorror = 0x4D37,
-    Dhuum = 0x4BFA,
+    VoiceInTheVoid = 0x4BFA,
 
     // Wing 6
     ConjuredAmalgamate = 0xABC6,
-    /// This is the ID of Nikare, as that is what the Twin Largos logs are identified by.
-    ///
-    /// If you want Nikare specifically, consider using [`NIKARE_ID`][NIKARE_ID], and similarly, if
-    /// you need Kenut, you can use [`KENUT_ID`][KENUT_ID].
-    LargosTwins = 0x5271,
+    TwinLargos = 0x5271,
     Qadim = 0x51C6,
 
     // Wing 7
@@ -66,110 +65,104 @@ pub enum Boss {
 
     // Strike missions
     IcebroodConstruct = 0x568A,
-    /// This is the ID of the Voice of the Fallen.
-    ///
-    /// The strike mission itself contains two bosses, the Voice of the Fallen and the Claw of the
-    /// Fallen. Consider using either [`VOICE_OF_THE_FALLEN_ID`][VOICE_OF_THE_FALLEN_ID] or
-    /// [`CLAW_OF_THE_FALLEN_ID`][CLAW_OF_THE_FALLEN_ID] if you refer to one of those bosses
-    /// specifically.
-    VoiceOfTheFallen = 0x5747,
+    SuperKodanBrothers = 0x5747,
     FraenirOfJormag = 0x57DC,
     Boneskinner = 0x57F9,
     WhisperOfJormag = 0x58B7,
 }
 
-/// Error for when converting a string to the boss fails.
+/// Error for when converting a string to an encounter fails.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Error)]
-#[error("Invalid boss identifier: {0}")]
-pub struct ParseBossError(String);
+#[error("Invalid encounter identifier: {0}")]
+pub struct ParseEncounterError(String);
 
-impl FromStr for Boss {
-    type Err = ParseBossError;
+impl FromStr for Encounter {
+    type Err = ParseEncounterError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let lower = s.to_lowercase();
         match &lower as &str {
-            "vg" | "vale guardian" => Ok(Boss::ValeGuardian),
-            "gorse" | "gorseval" => Ok(Boss::Gorseval),
-            "sab" | "sabetha" => Ok(Boss::Sabetha),
+            "vg" | "vale guardian" => Ok(Encounter::ValeGuardian),
+            "gorse" | "gorseval" => Ok(Encounter::Gorseval),
+            "sab" | "sabetha" => Ok(Encounter::Sabetha),
 
-            "sloth" | "slothasor" => Ok(Boss::Slothasor),
-            "matthias" => Ok(Boss::Matthias),
+            "sloth" | "slothasor" => Ok(Encounter::Slothasor),
+            "matthias" => Ok(Encounter::Matthias),
 
-            "kc" | "keep construct" => Ok(Boss::KeepConstruct),
-            "xera" => Ok(Boss::Xera),
+            "kc" | "keep construct" => Ok(Encounter::KeepConstruct),
+            "xera" => Ok(Encounter::Xera),
 
-            "cairn" => Ok(Boss::Cairn),
-            "mo" | "mursaat overseer" => Ok(Boss::MursaatOverseer),
-            "sam" | "sama" | "samarog" => Ok(Boss::Samarog),
-            "deimos" => Ok(Boss::Deimos),
+            "cairn" => Ok(Encounter::Cairn),
+            "mo" | "mursaat overseer" => Ok(Encounter::MursaatOverseer),
+            "sam" | "sama" | "samarog" => Ok(Encounter::Samarog),
+            "deimos" => Ok(Encounter::Deimos),
 
-            "desmina" | "sh" | "soulless horror" => Ok(Boss::SoullessHorror),
-            "dhuum" => Ok(Boss::Dhuum),
+            "desmina" | "sh" | "soulless horror" => Ok(Encounter::SoullessHorror),
+            "dhuum" | "voice in the void" => Ok(Encounter::VoiceInTheVoid),
 
-            "ca" | "conjured amalgamate" => Ok(Boss::ConjuredAmalgamate),
-            "largos" | "twins" | "largos twins" => Ok(Boss::LargosTwins),
-            "qadim" => Ok(Boss::Qadim),
+            "ca" | "conjured amalgamate" => Ok(Encounter::ConjuredAmalgamate),
+            "largos" | "twins" | "largos twins" => Ok(Encounter::TwinLargos),
+            "qadim" => Ok(Encounter::Qadim),
 
-            "adina" | "cardinal adina" => Ok(Boss::CardinalAdina),
-            "sabir" | "cardinal sabir" => Ok(Boss::CardinalSabir),
-            "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Boss::QadimThePeerless),
+            "adina" | "cardinal adina" => Ok(Encounter::CardinalAdina),
+            "sabir" | "cardinal sabir" => Ok(Encounter::CardinalSabir),
+            "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Encounter::QadimThePeerless),
 
-            "ai" | "ai keeper of the peak" => Ok(Boss::Ai),
+            "ai" | "ai keeper of the peak" => Ok(Encounter::Ai),
 
-            "skorvald" => Ok(Boss::Skorvald),
-            "artsariiv" => Ok(Boss::Artsariiv),
-            "arkk" => Ok(Boss::Arkk),
+            "skorvald" => Ok(Encounter::Skorvald),
+            "artsariiv" => Ok(Encounter::Artsariiv),
+            "arkk" => Ok(Encounter::Arkk),
 
-            "mama" => Ok(Boss::MAMA),
-            "siax" => Ok(Boss::Siax),
-            "ensolyss" | "ensolyss of the endless torment" => Ok(Boss::Ensolyss),
+            "mama" => Ok(Encounter::MAMA),
+            "siax" => Ok(Encounter::Siax),
+            "ensolyss" | "ensolyss of the endless torment" => Ok(Encounter::Ensolyss),
 
-            "icebrood" | "icebrood construct" => Ok(Boss::IcebroodConstruct),
-            "kodans" | "super kodan brothers" => Ok(Boss::VoiceOfTheFallen),
-            "fraenir" | "fraenir of jormag" => Ok(Boss::FraenirOfJormag),
-            "boneskinner" => Ok(Boss::Boneskinner),
-            "whisper" | "whisper of jormag" => Ok(Boss::WhisperOfJormag),
+            "icebrood" | "icebrood construct" => Ok(Encounter::IcebroodConstruct),
+            "kodans" | "super kodan brothers" => Ok(Encounter::SuperKodanBrothers),
+            "fraenir" | "fraenir of jormag" => Ok(Encounter::FraenirOfJormag),
+            "boneskinner" => Ok(Encounter::Boneskinner),
+            "whisper" | "whisper of jormag" => Ok(Encounter::WhisperOfJormag),
 
-            _ => Err(ParseBossError(s.to_owned())),
+            _ => Err(ParseEncounterError(s.to_owned())),
         }
     }
 }
 
-impl Display for Boss {
+impl Display for Encounter {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let name = match *self {
-            Boss::ValeGuardian => "Vale Guardian",
-            Boss::Gorseval => "Gorseval",
-            Boss::Sabetha => "Sabetha",
-            Boss::Slothasor => "Slothasor",
-            Boss::Matthias => "Matthias Gabrel",
-            Boss::KeepConstruct => "Keep Construct",
-            Boss::Xera => "Xera",
-            Boss::Cairn => "Cairn the Indomitable",
-            Boss::MursaatOverseer => "Mursaat Overseer",
-            Boss::Samarog => "Samarog",
-            Boss::Deimos => "Deimos",
-            Boss::SoullessHorror => "Soulless Horror",
-            Boss::Dhuum => "Dhuum",
-            Boss::ConjuredAmalgamate => "Conjured Amalgamate",
-            Boss::LargosTwins => "Twin Largos",
-            Boss::Qadim => "Qadim",
-            Boss::CardinalAdina => "Cardinal Adina",
-            Boss::CardinalSabir => "Cardinal Sabir",
-            Boss::QadimThePeerless => "Qadim the Peerless",
-            Boss::Ai => "Ai Keeper of the Peak",
-            Boss::Skorvald => "Skorvald the Shattered",
-            Boss::Artsariiv => "Artsariiv",
-            Boss::Arkk => "Arkk",
-            Boss::MAMA => "MAMA",
-            Boss::Siax => "Siax the Corrupted",
-            Boss::Ensolyss => "Ensolyss of the Endless Torment",
-            Boss::IcebroodConstruct => "Icebrood Construct",
-            Boss::VoiceOfTheFallen => "Super Kodan Brothers",
-            Boss::FraenirOfJormag => "Fraenir of Jormag",
-            Boss::Boneskinner => "Boneskinner",
-            Boss::WhisperOfJormag => "Whisper of Jormag",
+            Encounter::ValeGuardian => "Vale Guardian",
+            Encounter::Gorseval => "Gorseval",
+            Encounter::Sabetha => "Sabetha",
+            Encounter::Slothasor => "Slothasor",
+            Encounter::Matthias => "Matthias Gabrel",
+            Encounter::KeepConstruct => "Keep Construct",
+            Encounter::Xera => "Xera",
+            Encounter::Cairn => "Cairn the Indomitable",
+            Encounter::MursaatOverseer => "Mursaat Overseer",
+            Encounter::Samarog => "Samarog",
+            Encounter::Deimos => "Deimos",
+            Encounter::SoullessHorror => "Soulless Horror",
+            Encounter::VoiceInTheVoid => "Voice in the Void",
+            Encounter::ConjuredAmalgamate => "Conjured Amalgamate",
+            Encounter::TwinLargos => "Twin Largos",
+            Encounter::Qadim => "Qadim",
+            Encounter::CardinalAdina => "Cardinal Adina",
+            Encounter::CardinalSabir => "Cardinal Sabir",
+            Encounter::QadimThePeerless => "Qadim the Peerless",
+            Encounter::Ai => "Ai Keeper of the Peak",
+            Encounter::Skorvald => "Skorvald the Shattered",
+            Encounter::Artsariiv => "Artsariiv",
+            Encounter::Arkk => "Arkk",
+            Encounter::MAMA => "MAMA",
+            Encounter::Siax => "Siax the Corrupted",
+            Encounter::Ensolyss => "Ensolyss of the Endless Torment",
+            Encounter::IcebroodConstruct => "Icebrood Construct",
+            Encounter::SuperKodanBrothers => "Super Kodan Brothers",
+            Encounter::FraenirOfJormag => "Fraenir of Jormag",
+            Encounter::Boneskinner => "Boneskinner",
+            Encounter::WhisperOfJormag => "Whisper of Jormag",
         };
         write!(f, "{}", name)
     }
@@ -184,12 +177,12 @@ impl Display for Boss {
 pub const XERA_PHASE2_ID: u16 = 0x3F9E;
 
 /// The ID of Nikare in the Twin Largos fight.
-pub const NIKARE_ID: u16 = Boss::LargosTwins as u16;
+pub const NIKARE_ID: u16 = Encounter::TwinLargos as u16;
 /// The ID of Kenut in the Twin Largos fight.
 pub const KENUT_ID: u16 = 21089;
 
 /// The ID of the Voice of the Fallen.
-pub const VOICE_OF_THE_FALLEN_ID: u16 = Boss::VoiceOfTheFallen as u16;
+pub const VOICE_OF_THE_FALLEN_ID: u16 = Encounter::SuperKodanBrothers as u16;
 /// The ID of the Claw of the Fallen.
 pub const CLAW_OF_THE_FALLEN_ID: u16 = 22481;
 
@@ -369,9 +362,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_boss_parsing_ok() {
-        use Boss::*;
-        let tests: &[(&'static str, Boss)] = &[
+    fn test_encounter_parsing_ok() {
+        use Encounter::*;
+        let tests: &[(&'static str, Encounter)] = &[
             ("vg", ValeGuardian),
             ("VG", ValeGuardian),
             ("vale guardian", ValeGuardian),
@@ -408,14 +401,14 @@ mod tests {
             ("soulless horror", SoullessHorror),
             ("desmina", SoullessHorror),
             ("Desmina", SoullessHorror),
-            ("dhuum", Dhuum),
-            ("Dhuum", Dhuum),
+            ("dhuum", VoiceInTheVoid),
+            ("Dhuum", VoiceInTheVoid),
             ("ca", ConjuredAmalgamate),
             ("conjured amalgamate", ConjuredAmalgamate),
             ("Conjured Amalgamate", ConjuredAmalgamate),
-            ("largos", LargosTwins),
-            ("twins", LargosTwins),
-            ("largos twins", LargosTwins),
+            ("largos", TwinLargos),
+            ("twins", TwinLargos),
+            ("largos twins", TwinLargos),
             ("qadim", Qadim),
             ("Qadim", Qadim),
             ("adina", CardinalAdina),
@@ -445,7 +438,7 @@ mod tests {
             ("fraenir", FraenirOfJormag),
             ("Fraenir of Jormag", FraenirOfJormag),
             ("boneskinner", Boneskinner),
-            ("kodans", VoiceOfTheFallen),
+            ("kodans", SuperKodanBrothers),
             ("whisper", WhisperOfJormag),
             ("Whisper of Jormag", WhisperOfJormag),
         ];
@@ -461,7 +454,7 @@ mod tests {
     }
 
     #[test]
-    fn test_boss_parsing_err() {
+    fn test_encounter_parsing_err() {
         let tests = &[
             "",
             "vga",
@@ -475,7 +468,7 @@ mod tests {
             "cardinal",
         ];
         for test in tests {
-            assert!(test.parse::<Boss>().is_err());
+            assert!(test.parse::<Encounter>().is_err());
         }
     }
 

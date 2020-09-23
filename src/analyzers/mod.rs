@@ -24,7 +24,7 @@
 //! [`Log::analyzer`][Log::analyzer] (or [`for_log`][for_log]) and the methods defined in
 //! [`Analyzer`][Analyzer].
 
-use crate::{Boss, Log};
+use crate::{Encounter, Log};
 
 pub mod fractals;
 pub mod helpers;
@@ -82,41 +82,43 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
     let boss = log.encounter()?;
 
     match boss {
-        Boss::ValeGuardian | Boss::Gorseval | Boss::Sabetha => {
+        Encounter::ValeGuardian | Encounter::Gorseval | Encounter::Sabetha => {
             Some(Box::new(raids::GenericRaid::new(log)))
         }
 
-        Boss::Slothasor | Boss::Matthias => Some(Box::new(raids::GenericRaid::new(log))),
+        Encounter::Slothasor | Encounter::Matthias => Some(Box::new(raids::GenericRaid::new(log))),
 
-        Boss::KeepConstruct => Some(Box::new(raids::GenericRaid::new(log))),
-        Boss::Xera => Some(Box::new(raids::Xera::new(log))),
+        Encounter::KeepConstruct => Some(Box::new(raids::GenericRaid::new(log))),
+        Encounter::Xera => Some(Box::new(raids::Xera::new(log))),
 
-        Boss::Cairn => Some(Box::new(raids::Cairn::new(log))),
-        Boss::MursaatOverseer => Some(Box::new(raids::MursaatOverseer::new(log))),
-        Boss::Samarog => Some(Box::new(raids::Samarog::new(log))),
-        Boss::Deimos => Some(Box::new(raids::Deimos::new(log))),
+        Encounter::Cairn => Some(Box::new(raids::Cairn::new(log))),
+        Encounter::MursaatOverseer => Some(Box::new(raids::MursaatOverseer::new(log))),
+        Encounter::Samarog => Some(Box::new(raids::Samarog::new(log))),
+        Encounter::Deimos => Some(Box::new(raids::Deimos::new(log))),
 
-        Boss::SoullessHorror => Some(Box::new(raids::SoullessHorror::new(log))),
-        Boss::Dhuum => Some(Box::new(raids::Dhuum::new(log))),
+        Encounter::SoullessHorror => Some(Box::new(raids::SoullessHorror::new(log))),
+        Encounter::VoiceInTheVoid => Some(Box::new(raids::Dhuum::new(log))),
 
-        Boss::ConjuredAmalgamate => Some(Box::new(raids::ConjuredAmalgamate::new(log))),
-        Boss::LargosTwins => Some(Box::new(raids::LargosTwins::new(log))),
-        Boss::Qadim => Some(Box::new(raids::Qadim::new(log))),
+        Encounter::ConjuredAmalgamate => Some(Box::new(raids::ConjuredAmalgamate::new(log))),
+        Encounter::TwinLargos => Some(Box::new(raids::TwinLargos::new(log))),
+        Encounter::Qadim => Some(Box::new(raids::Qadim::new(log))),
 
-        Boss::CardinalAdina => Some(Box::new(raids::CardinalAdina::new(log))),
-        Boss::CardinalSabir => Some(Box::new(raids::CardinalSabir::new(log))),
-        Boss::QadimThePeerless => Some(Box::new(raids::QadimThePeerless::new(log))),
+        Encounter::CardinalAdina => Some(Box::new(raids::CardinalAdina::new(log))),
+        Encounter::CardinalSabir => Some(Box::new(raids::CardinalSabir::new(log))),
+        Encounter::QadimThePeerless => Some(Box::new(raids::QadimThePeerless::new(log))),
 
-        Boss::Ai => Some(Box::new(fractals::Ai::new(log))),
-        Boss::Skorvald => Some(Box::new(fractals::Skorvald::new(log))),
-        Boss::Artsariiv | Boss::Arkk | Boss::MAMA | Boss::Siax | Boss::Ensolyss => {
-            Some(Box::new(fractals::GenericFractal::new(log)))
-        }
+        Encounter::Ai => Some(Box::new(fractals::Ai::new(log))),
+        Encounter::Skorvald => Some(Box::new(fractals::Skorvald::new(log))),
+        Encounter::Artsariiv
+        | Encounter::Arkk
+        | Encounter::MAMA
+        | Encounter::Siax
+        | Encounter::Ensolyss => Some(Box::new(fractals::GenericFractal::new(log))),
 
-        Boss::IcebroodConstruct
-        | Boss::VoiceOfTheFallen
-        | Boss::FraenirOfJormag
-        | Boss::Boneskinner
-        | Boss::WhisperOfJormag => Some(Box::new(strikes::GenericStrike::new(log))),
+        Encounter::IcebroodConstruct
+        | Encounter::SuperKodanBrothers
+        | Encounter::FraenirOfJormag
+        | Encounter::Boneskinner
+        | Encounter::WhisperOfJormag => Some(Box::new(strikes::GenericStrike::new(log))),
     }
 }

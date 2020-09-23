@@ -104,7 +104,7 @@ mod processing;
 pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
-pub use gamedata::{Boss, EliteSpec, Profession};
+pub use gamedata::{EliteSpec, Encounter, Profession};
 
 pub mod analyzers;
 pub use analyzers::{Analyzer, Outcome};
@@ -758,11 +758,11 @@ impl Log {
     /// This correctly returns multiple agents on encounters where multiple
     /// agents are needed.
     pub fn boss_agents(&self) -> Vec<&Agent> {
-        let boss_ids = if self.boss_id == Boss::Xera as u16 {
+        let boss_ids = if self.boss_id == Encounter::Xera as u16 {
             vec![self.boss_id, gamedata::XERA_PHASE2_ID]
-        } else if self.boss_id == Boss::LargosTwins as u16 {
+        } else if self.boss_id == Encounter::TwinLargos as u16 {
             vec![gamedata::NIKARE_ID, gamedata::KENUT_ID]
-        } else if self.encounter() == Some(Boss::VoiceOfTheFallen) {
+        } else if self.encounter() == Some(Encounter::SuperKodanBrothers) {
             vec![
                 gamedata::VOICE_OF_THE_FALLEN_ID,
                 gamedata::CLAW_OF_THE_FALLEN_ID,
@@ -791,16 +791,16 @@ impl Log {
     ///
     /// Some logs don't have an encounter set or have an ID that is unknown to us (for example, if
     /// people set up arcdps with custom IDs). Therefore, this method can only return the encounter
-    /// if we know about it in [`Boss`][Boss].
+    /// if we know about it in [`Encounter`].
     #[inline]
-    pub fn encounter(&self) -> Option<Boss> {
+    pub fn encounter(&self) -> Option<Encounter> {
         // Sometimes, encounters of the strike mission "Voice of the Fallen and Claw of the Fallen"
         // are saved with the ID of the Claw and sometimes with the Voice. Therefore, we need to
         // unify those cases.
         if self.boss_id == gamedata::CLAW_OF_THE_FALLEN_ID {
-            return Some(Boss::VoiceOfTheFallen);
+            return Some(Encounter::SuperKodanBrothers);
         }
-        Boss::from_u16(self.boss_id)
+        Encounter::from_u16(self.boss_id)
     }
 
     /// Return an analyzer suitable to analyze the given log.

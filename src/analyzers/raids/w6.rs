@@ -59,21 +59,21 @@ pub const LARGOS_CM_HEALTH: u64 = 19_200_000;
 ///
 /// The CM is detected by the boss's health, which is higher in the challenge mote.
 #[derive(Debug, Clone, Copy)]
-pub struct LargosTwins<'log> {
+pub struct TwinLargos<'log> {
     log: &'log Log,
 }
 
-impl<'log> LargosTwins<'log> {
-    /// Create a new [`LargosTwins`] analyzer for the given log.
+impl<'log> TwinLargos<'log> {
+    /// Create a new [`TwinLargos`] analyzer for the given log.
     ///
     /// **Do not** use this method unless you know what you are doing. Instead, rely on
     /// [`Log::analyzer`]!
     pub fn new(log: &'log Log) -> Self {
-        LargosTwins { log }
+        TwinLargos { log }
     }
 }
 
-impl<'log> Analyzer for LargosTwins<'log> {
+impl<'log> Analyzer for TwinLargos<'log> {
     fn log(&self) -> &Log {
         self.log
     }
