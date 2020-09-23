@@ -72,6 +72,51 @@ pub enum Encounter {
     WhisperOfJormag = Boss::WhisperOfJormag as u16,
 }
 
+impl Encounter {
+    /// Return all possible bosses that can appear in this encounter.
+    ///
+    /// This returns the possible boss IDs, not actual agents. For a similar function check
+    /// [`Log::boss_agents`][crate::Log::boss_agents].
+    ///
+    /// Note that not all of them have to be present in a log, for example if the encounter stopped
+    /// before all of them spawned.
+    pub fn bosses(self) -> &'static [Boss] {
+        match self {
+            Encounter::ValeGuardian => &[Boss::ValeGuardian],
+            Encounter::Gorseval => &[Boss::Gorseval],
+            Encounter::Sabetha => &[Boss::Sabetha],
+            Encounter::Slothasor => &[Boss::Slothasor],
+            Encounter::Matthias => &[Boss::Matthias],
+            Encounter::KeepConstruct => &[Boss::KeepConstruct],
+            Encounter::Xera => &[Boss::Xera, Boss::Xera2],
+            Encounter::Cairn => &[Boss::Cairn],
+            Encounter::MursaatOverseer => &[Boss::MursaatOverseer],
+            Encounter::Samarog => &[Boss::Samarog],
+            Encounter::Deimos => &[Boss::Deimos],
+            Encounter::SoullessHorror => &[Boss::SoullessHorror],
+            Encounter::VoiceInTheVoid => &[Boss::Dhuum],
+            Encounter::ConjuredAmalgamate => &[Boss::ConjuredAmalgamate],
+            Encounter::TwinLargos => &[Boss::Nikare, Boss::Kenut],
+            Encounter::Qadim => &[Boss::Qadim],
+            Encounter::CardinalAdina => &[Boss::CardinalAdina],
+            Encounter::CardinalSabir => &[Boss::CardinalSabir],
+            Encounter::QadimThePeerless => &[Boss::QadimThePeerless],
+            Encounter::Ai => &[Boss::Ai],
+            Encounter::Skorvald => &[Boss::Skorvald],
+            Encounter::Artsariiv => &[Boss::Artsariiv],
+            Encounter::Arkk => &[Boss::Arkk],
+            Encounter::MAMA => &[Boss::MAMA],
+            Encounter::Siax => &[Boss::Siax],
+            Encounter::Ensolyss => &[Boss::Ensolyss],
+            Encounter::IcebroodConstruct => &[Boss::IcebroodConstruct],
+            Encounter::SuperKodanBrothers => &[Boss::VoiceOfTheFallen, Boss::ClawOfTheFallen],
+            Encounter::FraenirOfJormag => &[Boss::FraenirOfJormag],
+            Encounter::Boneskinner => &[Boss::Boneskinner],
+            Encounter::WhisperOfJormag => &[Boss::WhisperOfJormag],
+        }
+    }
+}
+
 /// Error for when converting a string to an encounter fails.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Error)]
 #[error("Invalid encounter identifier: {0}")]
@@ -241,6 +286,50 @@ pub enum Boss {
     FraenirOfJormag = 0x57DC,
     Boneskinner = 0x57F9,
     WhisperOfJormag = 0x58B7,
+}
+
+impl Boss {
+    /// Get the encounter ID in which this boss can appear.
+    ///
+    /// This is the counterpart to [`Encounter::bosses`].
+    pub fn encounter(self) -> Encounter {
+        match self {
+            Boss::ValeGuardian => Encounter::ValeGuardian,
+            Boss::Gorseval => Encounter::Gorseval,
+            Boss::Sabetha => Encounter::Sabetha,
+            Boss::Slothasor => Encounter::Slothasor,
+            Boss::Matthias => Encounter::Matthias,
+            Boss::KeepConstruct => Encounter::KeepConstruct,
+            Boss::Xera => Encounter::Xera,
+            Boss::Xera2 => Encounter::Xera,
+            Boss::Cairn => Encounter::Cairn,
+            Boss::MursaatOverseer => Encounter::MursaatOverseer,
+            Boss::Samarog => Encounter::Samarog,
+            Boss::Deimos => Encounter::Deimos,
+            Boss::SoullessHorror => Encounter::SoullessHorror,
+            Boss::Dhuum => Encounter::VoiceInTheVoid,
+            Boss::ConjuredAmalgamate => Encounter::ConjuredAmalgamate,
+            Boss::Nikare => Encounter::TwinLargos,
+            Boss::Kenut => Encounter::TwinLargos,
+            Boss::Qadim => Encounter::Qadim,
+            Boss::CardinalAdina => Encounter::CardinalAdina,
+            Boss::CardinalSabir => Encounter::CardinalSabir,
+            Boss::QadimThePeerless => Encounter::QadimThePeerless,
+            Boss::Ai => Encounter::Ai,
+            Boss::Skorvald => Encounter::Skorvald,
+            Boss::Artsariiv => Encounter::Artsariiv,
+            Boss::Arkk => Encounter::Arkk,
+            Boss::MAMA => Encounter::MAMA,
+            Boss::Siax => Encounter::Siax,
+            Boss::Ensolyss => Encounter::Ensolyss,
+            Boss::IcebroodConstruct => Encounter::IcebroodConstruct,
+            Boss::VoiceOfTheFallen => Encounter::SuperKodanBrothers,
+            Boss::ClawOfTheFallen => Encounter::SuperKodanBrothers,
+            Boss::FraenirOfJormag => Encounter::FraenirOfJormag,
+            Boss::Boneskinner => Encounter::Boneskinner,
+            Boss::WhisperOfJormag => Encounter::WhisperOfJormag,
+        }
+    }
 }
 
 /// Error for when converting a string to a profession fails.

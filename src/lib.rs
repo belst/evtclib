@@ -759,17 +759,9 @@ impl Log {
     /// This correctly returns multiple agents on encounters where multiple
     /// agents are needed.
     pub fn boss_agents(&self) -> Vec<&Agent> {
-        let boss_ids = if self.boss_id == Encounter::Xera as u16 {
-            vec![self.boss_id, Boss::Xera2 as u16]
-        } else if self.boss_id == Encounter::TwinLargos as u16 {
-            vec![Boss::Nikare as u16, Boss::Kenut as u16]
-        } else if self.encounter() == Some(Encounter::SuperKodanBrothers) {
-            vec![Boss::VoiceOfTheFallen as u16, Boss::ClawOfTheFallen as u16]
-        } else {
-            vec![self.boss_id]
-        };
+        let bosses = self.encounter().map(Encounter::bosses).unwrap_or(&[] as &[_]);
         self.npcs()
-            .filter(|c| boss_ids.contains(&c.character().id))
+            .filter(|c| bosses.iter().any(|boss| *boss as u16 == c.character().id))
             .map(Agent::erase)
             .collect()
     }
@@ -792,13 +784,7 @@ impl Log {
     /// if we know about it in [`Encounter`].
     #[inline]
     pub fn encounter(&self) -> Option<Encounter> {
-        // Sometimes, encounters of the strike mission "Voice of the Fallen and Claw of the Fallen"
-        // are saved with the ID of the Claw and sometimes with the Voice. Therefore, we need to
-        // unify those cases.
-        if self.boss_id == Boss::ClawOfTheFallen as u16 {
-            return Some(Encounter::SuperKodanBrothers);
-        }
-        Encounter::from_u16(self.boss_id)
+        Boss::from_u16(self.boss_id).map(Boss::encounter)
     }
 
     /// Return an analyzer suitable to analyze the given log.
