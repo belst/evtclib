@@ -81,7 +81,7 @@ pub fn process_stream<R: Read + Seek>(
 /// Convenience function to process a given file directly.
 ///
 /// This is a shorthand for opening the file and then using [`process_stream`][process_stream] with
-/// it. This function automatically wraps the raw file in a buffered reader, to ensure the bext
+/// it. This function automatically wraps the raw file in a buffered reader, to ensure the best
 /// reading performance.
 ///
 /// If you need more fine-grained control, consider using [`process_stream`][process_stream] or
