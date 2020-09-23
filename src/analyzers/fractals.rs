@@ -1,7 +1,7 @@
 //! Analyzers for (challenge mote) fractal encounters.
 use crate::{
     analyzers::{helpers, Analyzer, Outcome},
-    Boss, EventKind, Log,
+    EventKind, Log,
 };
 
 /// The ID of the invulnerability buff that Ai gets when she has been defeated.
@@ -85,14 +85,8 @@ impl<'log> Analyzer for Ai<'log> {
                 ..
             } = event.kind()
             {
-                let agent = self
-                    .log
-                    .agent_by_addr(*destination_agent_addr)
-                    .and_then(|a| a.as_character());
-                if let Some(c) = agent {
-                    if c.id() == Boss::Ai as u16 && *buff_id == AI_INVULNERABILITY_ID {
-                        return Some(Outcome::Success);
-                    }
+                if *buff_id == AI_INVULNERABILITY_ID && self.log.is_boss(*destination_agent_addr) {
+                    return Some(Outcome::Success);
                 }
             }
         }
