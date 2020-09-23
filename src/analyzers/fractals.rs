@@ -18,13 +18,9 @@ pub const AI_HAS_DARK_MODE_SKILL: u32 = 61_356;
 /// If the whole log is in dark phase, `Some(0)` is returned.
 fn get_dark_phase_start(log: &Log) -> Option<u64> {
     // Determine if we even have a dark phase.
-    if !log.events().iter().any(|event| {
-        if let EventKind::SkillUse { skill_id, .. } = event.kind() {
-            *skill_id == AI_HAS_DARK_MODE_SKILL
-        } else {
-            false
-        }
-    }) {
+    if !log.events().iter().any(|event|
+        matches!(event.kind(), EventKind::SkillUse { skill_id, ..} if *skill_id == AI_HAS_DARK_MODE_SKILL)
+    ) {
         return None;
     };
 

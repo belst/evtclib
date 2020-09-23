@@ -900,13 +900,9 @@ impl Log {
     /// [`Analyzer::outcome`][Analyzer::outcome] method, which does more sophisticated checks
     /// (dependent on the boss).
     pub fn was_rewarded(&self) -> bool {
-        self.events().iter().any(|e| {
-            if let EventKind::Reward { .. } = e.kind() {
-                true
-            } else {
-                false
-            }
-        })
+        self.events()
+            .iter()
+            .any(|e| matches!(e.kind(), EventKind::Reward { .. }))
     }
 
     /// Returns all error strings that were captured.

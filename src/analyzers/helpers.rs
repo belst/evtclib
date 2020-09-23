@@ -29,10 +29,9 @@ pub fn boss_health(log: &Log) -> Option<u64> {
 /// Death is determined by checking for the [`EventKind::ChangeDead`][EventKind::ChangeDead] event,
 /// and whether a NPC is a boss is determined by the [`Log::is_boss`][Log::is_boss] method.
 pub fn boss_is_dead(log: &Log) -> bool {
-    log.events().iter().any(|ev| match ev.kind() {
-        EventKind::ChangeDead { agent_addr } if log.is_boss(*agent_addr) => true,
-        _ => false,
-    })
+    log.events().iter().any(
+        |ev| matches!(ev.kind(), EventKind::ChangeDead { agent_addr } if log.is_boss(*agent_addr)),
+    )
 }
 
 /// Checks whether the players exit combat after the boss.
