@@ -51,12 +51,15 @@ pub enum Boss {
     CardinalSabir = 0x55CC,
     QadimThePeerless = 0x55F0,
 
-    // 100 CM
+    // 100 CM (Sunqua Peak)
+    Ai = 0x5AD6,
+
+    // 99 CM (Shattered Observatory)
     Skorvald = 0x44E0,
     Artsariiv = 0x461D,
     Arkk = 0x455F,
 
-    // 99 CM
+    // 98 CM (Nightmare)
     MAMA = 0x427D,
     Siax = 0x4284,
     Ensolyss = 0x4234,
@@ -112,6 +115,8 @@ impl FromStr for Boss {
             "sabir" | "cardinal sabir" => Ok(Boss::CardinalSabir),
             "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Boss::QadimThePeerless),
 
+            "ai" | "ai keeper of the peak" => Ok(Boss::Ai),
+
             "skorvald" => Ok(Boss::Skorvald),
             "artsariiv" => Ok(Boss::Artsariiv),
             "arkk" => Ok(Boss::Arkk),
@@ -153,6 +158,7 @@ impl Display for Boss {
             Boss::CardinalAdina => "Cardinal Adina",
             Boss::CardinalSabir => "Cardinal Sabir",
             Boss::QadimThePeerless => "Qadim the Peerless",
+            Boss::Ai => "Ai Keeper of the Peak",
             Boss::Skorvald => "Skorvald the Shattered",
             Boss::Artsariiv => "Artsariiv",
             Boss::Arkk => "Arkk",

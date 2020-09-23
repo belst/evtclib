@@ -107,6 +107,7 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
         Boss::CardinalSabir => Some(Box::new(raids::CardinalSabir::new(log))),
         Boss::QadimThePeerless => Some(Box::new(raids::QadimThePeerless::new(log))),
 
+        Boss::Ai => Some(Box::new(fractals::Ai::new(log))),
         Boss::Skorvald => Some(Box::new(fractals::Skorvald::new(log))),
         Boss::Artsariiv | Boss::Arkk | Boss::MAMA | Boss::Siax | Boss::Ensolyss => {
             Some(Box::new(fractals::GenericFractal::new(log)))
