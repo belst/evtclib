@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- `Boss::Ai` to represent Ai, Keeper of the Peak in the Sunqua Peak fractal.
+- `analyzers::fractal::Ai` with logic to determine CM and outcome of the
+  Sunqua Peak CM fight.
 
 ## 0.4.3 - 2020-09-21
 ### Added
