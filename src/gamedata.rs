@@ -8,11 +8,12 @@ use thiserror::Error;
 
 /// Enum containing all encounters with their IDs.
 ///
-/// An encounter is a fight or event, consisting of no, one or multiple bosses. Most encounters map
-/// 1:1 to a boss (like Vale Guardian), however there are some encounters with multiple bosses
-/// (like Twin Largos), and even encounters without bosses (like the River of Souls).
+/// An encounter is a fight or event for which a log can exist. An encounter consists of no, one or
+/// multiple bosses. Most encounters map 1:1 to a boss (like Vale Guardian), however there are some
+/// encounters with multiple bosses (like Twin Largos), and even encounters without bosses (like
+/// the River of Souls, currently not implemented.).
 ///
-/// This enum is non-exhaustive to ensure that future added encounters can be added without
+/// This enum is non-exhaustive to ensure that future encounters can be added without
 /// inducing a breaking change.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 #[non_exhaustive]
@@ -66,6 +67,7 @@ pub enum Encounter {
 
     // Strike missions
     IcebroodConstruct = Boss::IcebroodConstruct as u16,
+    /// Internal name for the "Voice of the Fallen and Claw of the Fallen" strike mission.
     SuperKodanBrothers = Boss::VoiceOfTheFallen as u16,
     FraenirOfJormag = Boss::FraenirOfJormag as u16,
     Boneskinner = Boss::Boneskinner as u16,
@@ -217,74 +219,177 @@ impl Display for Encounter {
 /// Enum containing all boss IDs.
 ///
 /// For a high-level event categorization, take a look at the [`Encounter`] enum. The IDs listed
-/// here are for a more fine-grained control, i.e. if you need to check a specific boss for
-/// something.
+/// here are for a more fine-grained control, e.g. if you specifically need to differentiate
+/// between Nikare and Kenut in the Twin Largos encounter.
 ///
-/// This enum is non-exhaustive to ensure that future added bosses can be added without
+/// This enum is non-exhaustive to ensure that future bosses can be added without
 /// inducing a breaking change.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 #[non_exhaustive]
 #[repr(u16)]
 pub enum Boss {
     // Wing 1
+    /// Vale Guardian, first boss of Spirit Vale.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Vale_Guardian)
     ValeGuardian = 0x3C4E,
+    /// Gorseval, second boss of Spirit Vale.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Gorseval_the_Multifarious)
     Gorseval = 0x3C45,
+    /// Sabetha, third boss of Spirit Vale.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Sabetha_the_Saboteur)
     Sabetha = 0x3C0F,
 
     // Wing 2
+    /// Slothasor, first boss of Salvation Pass.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Slothasor)
     Slothasor = 0x3EFB,
+    /// Matthias, third boss of Salvation Pass.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Matthias_Gabrel)
     Matthias = 0x3EF3,
 
     // Wing 3
+    /// Keep Construct, second boss of the Stronghold of the Faithful.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Keep_Construct)
     KeepConstruct = 0x3F6B,
+    /// Xera, third boss of the Stronghold of the Faithful.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Xera)
     Xera = 0x3F76,
     /// ID for Xera in the second phase.
     ///
     /// The original Xera will despawn, and after the tower phase, a separate spawn will take over.
-    /// This new Xera will have this ID. Care needs to be taken when calculating boss damage on
-    /// this encounter, as both Xeras have to be taken into account.
+    /// This new Xera will have [`Boss::Xera2`] as ID. Care needs to be taken when calculating boss
+    /// damage on this encounter, as both Xeras have to be taken into account.
     Xera2 = 0x3F9E,
 
     // Wing 4
+    /// Cairn, first boss of the Bastion of the Penitent.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Cairn_the_Indomitable)
     Cairn = 0x432A,
+    /// Mursaat Overseer, second boss of the Bastion of the Penitent.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Mursaat_Overseer)
     MursaatOverseer = 0x4314,
+    /// Samarog, third boss of the Bastion of the Penitent.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Samarog)
     Samarog = 0x4324,
+    /// Deimos, fourth boss of the Bastion of the Penitent.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Deimos)
     Deimos = 0x4302,
 
     // Wing 5
+    /// Soulless Horror, first boss of the Hall of Chains.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Soulless_Horror)
     SoullessHorror = 0x4D37,
+    /// Dhuum, second boss of the Hall of Chains.
+    ///
+    /// The encounter to this boss is called [Voice in the Void][Encounter::VoiceInTheVoid].
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Dhuum)
     Dhuum = 0x4BFA,
 
     // Wing 6
+    /// Conjured Amalgamate, first boss of Mythwright Gambit.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Conjured_Amalgamate)
     ConjuredAmalgamate = 0xABC6,
+    /// Nikare, part of the [Twin Largos][Encounter::TwinLargos] encounter in Mythwright Gamit.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Nikare)
     Nikare = 0x5271,
+    /// Kenut, part of the [Twin Largos][Encounter::TwinLargos] encounter in Mythwright Gamit.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Nikare)
     Kenut = 0x5261,
+    /// Qadim, third boss in Mythwright Gambit.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Qadim)
     Qadim = 0x51C6,
 
     // Wing 7
+    /// Cardinal Adina, one of the first two bosses in the Key of Ahdashim.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Cardinal_Adina)
     CardinalAdina = 0x55F6,
+    /// Cardinal Sabir, one of the first two bosses in the Key of Ahdashim.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Cardinal_Sabir)
     CardinalSabir = 0x55CC,
+    /// Qadim the Peerless, third boss in the Key of Ahdashim.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Qadim_the_Peerless)
     QadimThePeerless = 0x55F0,
 
     // 100 CM (Sunqua Peak)
+    /// Ai, Keeper of the Peak, boss of the Sunqua Peak CM fractal.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Ai,_Keeper_of_the_Peak)
     Ai = 0x5AD6,
 
     // 99 CM (Shattered Observatory)
+    /// Skorvald the Shattered, first boss in the Shattered Observatory.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Skorvald_the_Shattered)
     Skorvald = 0x44E0,
+    /// Artsariiv, second boss in the Shattered Observatory CM.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Artsariiv)
     Artsariiv = 0x461D,
+    /// Arkk, third boss in the Shattered Observatory.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Arkk)
     Arkk = 0x455F,
 
     // 98 CM (Nightmare)
+    /// MAMA, first boss in the Nightmare CM fractal.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/MAMA)
     MAMA = 0x427D,
+    /// Siax the Corrupted, second boss in the Nightmare CM fractal.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Siax_the_Corrupted)
     Siax = 0x4284,
+    /// Ensolyss of the Endless Torment, third boss in the Nightmare CM fractal.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Ensolyss_of_the_Endless_Torment)
     Ensolyss = 0x4234,
 
     // Strike missions
+    /// Legendary Icebrood Construct, boss of the Shiverpeaks Pass strike mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Legendary_Icebrood_Construct)
     IcebroodConstruct = 0x568A,
+    /// The Voice of the Fallen, part of the Voice of the Fallen and Claw of the Fallen strike
+    /// mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Voice_of_the_Fallen)
     VoiceOfTheFallen = 0x5747,
+    /// The Claw of the Fallen, part of the Voice of the Fallen and Claw of the Fallen strike
+    /// mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Claw_of_the_Fallen)
     ClawOfTheFallen = 0x57D1,
+    /// The Fraenir of Jormag, boss of the Fraenir of Jormag strike mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Fraenir_of_Jormag)
     FraenirOfJormag = 0x57DC,
+    /// The Boneskinner, boss of the Boneskinner strike mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Boneskinner)
     Boneskinner = 0x57F9,
+    /// The Whisper of Jormag, boss of the Whisper of Jormag strike mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Whisper_of_Jormag)
     WhisperOfJormag = 0x58B7,
 }
 
