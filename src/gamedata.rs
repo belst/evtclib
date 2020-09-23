@@ -16,59 +16,60 @@ use thiserror::Error;
 /// inducing a breaking change.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 #[non_exhaustive]
+#[repr(u16)]
 pub enum Encounter {
     // Wing 1
-    ValeGuardian = 0x3C4E,
-    Gorseval = 0x3C45,
-    Sabetha = 0x3C0F,
+    ValeGuardian = Boss::ValeGuardian as u16,
+    Gorseval = Boss::Gorseval as u16,
+    Sabetha = Boss::Sabetha as u16,
 
     // Wing 2
-    Slothasor = 0x3EFB,
-    Matthias = 0x3EF3,
+    Slothasor = Boss::Slothasor as u16,
+    Matthias = Boss::Matthias as u16,
 
     // Wing 3
-    KeepConstruct = 0x3F6B,
-    Xera = 0x3F76,
+    KeepConstruct = Boss::KeepConstruct as u16,
+    Xera = Boss::Xera as u16,
 
     // Wing 4
-    Cairn = 0x432A,
-    MursaatOverseer = 0x4314,
-    Samarog = 0x4324,
-    Deimos = 0x4302,
+    Cairn = Boss::Cairn as u16,
+    MursaatOverseer = Boss::MursaatOverseer as u16,
+    Samarog = Boss::Samarog as u16,
+    Deimos = Boss::Deimos as u16,
 
     // Wing 5
-    SoullessHorror = 0x4D37,
-    VoiceInTheVoid = 0x4BFA,
+    SoullessHorror = Boss::SoullessHorror as u16,
+    VoiceInTheVoid = Boss::Dhuum as u16,
 
     // Wing 6
-    ConjuredAmalgamate = 0xABC6,
-    TwinLargos = 0x5271,
-    Qadim = 0x51C6,
+    ConjuredAmalgamate = Boss::ConjuredAmalgamate as u16,
+    TwinLargos = Boss::Nikare as u16,
+    Qadim = Boss::Qadim as u16,
 
     // Wing 7
-    CardinalAdina = 0x55F6,
-    CardinalSabir = 0x55CC,
-    QadimThePeerless = 0x55F0,
+    CardinalAdina = Boss::CardinalAdina as u16,
+    CardinalSabir = Boss::CardinalSabir as u16,
+    QadimThePeerless = Boss::QadimThePeerless as u16,
 
     // 100 CM (Sunqua Peak)
-    Ai = 0x5AD6,
+    Ai = Boss::Ai as u16,
 
     // 99 CM (Shattered Observatory)
-    Skorvald = 0x44E0,
-    Artsariiv = 0x461D,
-    Arkk = 0x455F,
+    Skorvald = Boss::Skorvald as u16,
+    Artsariiv = Boss::Artsariiv as u16,
+    Arkk = Boss::Arkk as u16,
 
     // 98 CM (Nightmare)
-    MAMA = 0x427D,
-    Siax = 0x4284,
-    Ensolyss = 0x4234,
+    MAMA = Boss::MAMA as u16,
+    Siax = Boss::Siax as u16,
+    Ensolyss = Boss::Ensolyss as u16,
 
     // Strike missions
-    IcebroodConstruct = 0x568A,
-    SuperKodanBrothers = 0x5747,
-    FraenirOfJormag = 0x57DC,
-    Boneskinner = 0x57F9,
-    WhisperOfJormag = 0x58B7,
+    IcebroodConstruct = Boss::IcebroodConstruct as u16,
+    SuperKodanBrothers = Boss::VoiceOfTheFallen as u16,
+    FraenirOfJormag = Boss::FraenirOfJormag as u16,
+    Boneskinner = Boss::Boneskinner as u16,
+    WhisperOfJormag = Boss::WhisperOfJormag as u16,
 }
 
 /// Error for when converting a string to an encounter fails.
@@ -168,23 +169,79 @@ impl Display for Encounter {
     }
 }
 
-/// ID for Xera in the second phase.
+/// Enum containing all boss IDs.
 ///
-/// The original Xera will despawn, and after the tower phase, a separate spawn
-/// will take over. This new Xera will have this ID. Care needs to be taken when
-/// calculating boss damage on this encounter, as both Xeras have to be taken
-/// into account.
-pub const XERA_PHASE2_ID: u16 = 0x3F9E;
+/// For a high-level event categorization, take a look at the [`Encounter`] enum. The IDs listed
+/// here are for a more fine-grained control, i.e. if you need to check a specific boss for
+/// something.
+///
+/// This enum is non-exhaustive to ensure that future added bosses can be added without
+/// inducing a breaking change.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
+#[non_exhaustive]
+#[repr(u16)]
+pub enum Boss {
+    // Wing 1
+    ValeGuardian = 0x3C4E,
+    Gorseval = 0x3C45,
+    Sabetha = 0x3C0F,
 
-/// The ID of Nikare in the Twin Largos fight.
-pub const NIKARE_ID: u16 = Encounter::TwinLargos as u16;
-/// The ID of Kenut in the Twin Largos fight.
-pub const KENUT_ID: u16 = 21089;
+    // Wing 2
+    Slothasor = 0x3EFB,
+    Matthias = 0x3EF3,
 
-/// The ID of the Voice of the Fallen.
-pub const VOICE_OF_THE_FALLEN_ID: u16 = Encounter::SuperKodanBrothers as u16;
-/// The ID of the Claw of the Fallen.
-pub const CLAW_OF_THE_FALLEN_ID: u16 = 22481;
+    // Wing 3
+    KeepConstruct = 0x3F6B,
+    Xera = 0x3F76,
+    /// ID for Xera in the second phase.
+    ///
+    /// The original Xera will despawn, and after the tower phase, a separate spawn will take over.
+    /// This new Xera will have this ID. Care needs to be taken when calculating boss damage on
+    /// this encounter, as both Xeras have to be taken into account.
+    Xera2 = 0x3F9E,
+
+    // Wing 4
+    Cairn = 0x432A,
+    MursaatOverseer = 0x4314,
+    Samarog = 0x4324,
+    Deimos = 0x4302,
+
+    // Wing 5
+    SoullessHorror = 0x4D37,
+    Dhuum = 0x4BFA,
+
+    // Wing 6
+    ConjuredAmalgamate = 0xABC6,
+    Nikare = 0x5271,
+    Kenut = 0x5261,
+    Qadim = 0x51C6,
+
+    // Wing 7
+    CardinalAdina = 0x55F6,
+    CardinalSabir = 0x55CC,
+    QadimThePeerless = 0x55F0,
+
+    // 100 CM (Sunqua Peak)
+    Ai = 0x5AD6,
+
+    // 99 CM (Shattered Observatory)
+    Skorvald = 0x44E0,
+    Artsariiv = 0x461D,
+    Arkk = 0x455F,
+
+    // 98 CM (Nightmare)
+    MAMA = 0x427D,
+    Siax = 0x4284,
+    Ensolyss = 0x4234,
+
+    // Strike missions
+    IcebroodConstruct = 0x568A,
+    VoiceOfTheFallen = 0x5747,
+    ClawOfTheFallen = 0x57D1,
+    FraenirOfJormag = 0x57DC,
+    Boneskinner = 0x57F9,
+    WhisperOfJormag = 0x58B7,
+}
 
 /// Error for when converting a string to a profession fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]

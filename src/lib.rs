@@ -104,6 +104,7 @@ mod processing;
 pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
+use gamedata::Boss;
 pub use gamedata::{EliteSpec, Encounter, Profession};
 
 pub mod analyzers;
@@ -759,14 +760,11 @@ impl Log {
     /// agents are needed.
     pub fn boss_agents(&self) -> Vec<&Agent> {
         let boss_ids = if self.boss_id == Encounter::Xera as u16 {
-            vec![self.boss_id, gamedata::XERA_PHASE2_ID]
+            vec![self.boss_id, Boss::Xera2 as u16]
         } else if self.boss_id == Encounter::TwinLargos as u16 {
-            vec![gamedata::NIKARE_ID, gamedata::KENUT_ID]
+            vec![Boss::Nikare as u16, Boss::Kenut as u16]
         } else if self.encounter() == Some(Encounter::SuperKodanBrothers) {
-            vec![
-                gamedata::VOICE_OF_THE_FALLEN_ID,
-                gamedata::CLAW_OF_THE_FALLEN_ID,
-            ]
+            vec![Boss::VoiceOfTheFallen as u16, Boss::ClawOfTheFallen as u16]
         } else {
             vec![self.boss_id]
         };
@@ -797,7 +795,7 @@ impl Log {
         // Sometimes, encounters of the strike mission "Voice of the Fallen and Claw of the Fallen"
         // are saved with the ID of the Claw and sometimes with the Voice. Therefore, we need to
         // unify those cases.
-        if self.boss_id == gamedata::CLAW_OF_THE_FALLEN_ID {
+        if self.boss_id == Boss::ClawOfTheFallen as u16 {
             return Some(Encounter::SuperKodanBrothers);
         }
         Encounter::from_u16(self.boss_id)

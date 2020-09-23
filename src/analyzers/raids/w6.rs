@@ -1,7 +1,7 @@
 //! Boss fight analyzers for Wing 6 (Mythwright Gambit)
 use crate::{
     analyzers::{helpers, Analyzer, Outcome},
-    gamedata::{KENUT_ID, NIKARE_ID},
+    gamedata::Boss,
     EventKind, Log,
 };
 
@@ -100,9 +100,9 @@ impl<'log> Analyzer for TwinLargos<'log> {
                     continue;
                 };
 
-                if agent.id() == NIKARE_ID {
+                if agent.id() == Boss::Nikare as u16 {
                     nikare_dead = true;
-                } else if agent.id() == KENUT_ID {
+                } else if agent.id() == Boss::Kenut as u16 {
                     kenut_dead = true;
                 }
             }
