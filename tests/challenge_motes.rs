@@ -38,6 +38,8 @@ test!(test_adina_cm, "logs/cms/adina.zevtc");
 test!(test_sabir_cm, "logs/cms/sabir.zevtc");
 test!(test_qadimp_cm, "logs/cms/qadimp.zevtc");
 
+test!(test_ai_cm, "logs/ai-20200922.zevtc");
+
 test!(test_skorvald_cm, "logs/skorvald-20200427.zevtc");
 test!(
     test_skorvald_cm_post_sunqua_patch,

@@ -396,6 +396,21 @@ test! {
 // 100 CM tests
 
 test! {
+    name: parse_ai,
+    log: "logs/ai-20200922.zevtc",
+    boss: Boss::Ai,
+    players: &[
+        (0, ":Dunje.4863", "Padme Amidada", Guardian, Some(Firebrand)),
+        (0, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
+        (0, ":Gellalli.6580", "Germi Burns", Guardian, Some(Firebrand)),
+        (0, ":tokageroh.7521", "Jason Redwood", Revenant, Some(Renegade)),
+        (0, ":xyoz.6710", "Xaphnira", Guardian, Some(Firebrand)),
+    ],
+}
+
+// 99 CM tests
+
+test! {
     name: parse_skorvald,
     log: "logs/skorvald-20200427.zevtc",
     boss: Boss::Skorvald,
@@ -434,7 +449,7 @@ test! {
     ],
 }
 
-// 99 CM tests
+// 98 CM tests
 
 test! {
     name: parse_mama,

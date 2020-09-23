@@ -29,3 +29,25 @@ fn test_xera_succeeded() {
 
     assert_eq!(analyzer.outcome(), Some(Outcome::Success));
 }
+
+#[test]
+fn test_ai_failed() {
+    let log = evtclib::process_file(
+        "tests/logs/analyzers/ai-failed-20200922.zevtc",
+        Compression::Zip,
+    )
+    .unwrap();
+
+    let analyzer = log.analyzer().expect("No analyzer for Ai!");
+
+    assert_eq!(analyzer.outcome(), Some(Outcome::Failure));
+}
+
+#[test]
+fn test_ai_succeeded() {
+    let log = evtclib::process_file("tests/logs/ai-20200922.zevtc", Compression::Zip).unwrap();
+
+    let analyzer = log.analyzer().expect("No analyzer for Ai!");
+
+    assert_eq!(analyzer.outcome(), Some(Outcome::Success));
+}
