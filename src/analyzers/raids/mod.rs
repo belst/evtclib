@@ -19,7 +19,7 @@ mod w5;
 pub use w5::{Dhuum, SoullessHorror};
 
 mod w6;
-pub use w6::{ConjuredAmalgamate, LargosTwins, Qadim};
+pub use w6::{ConjuredAmalgamate, Qadim, TwinLargos};
 
 mod w7;
 pub use w7::{CardinalAdina, CardinalSabir, QadimThePeerless};

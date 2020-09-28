@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 - `analyzers::fractal::Ai` with logic to determine CM and outcome of the
   Sunqua Peak CM fight.
 
+### Changed
+- `gamedata::Boss` has been split in `gamedata::Boss` and `gamedata::Encounter`
+  - `Encounter::VoiceOfTheFallen` is now `Encounter::SuperKodanBrothers`
+  - `Encounter::LargosTwins` is now `Encounter::TwinLargos`
+  - `Boss::Xera2`, `Boss::Nikare`, `Boss::Kenut`, `Boss::ClawOfTheFallen` and
+    `Boss::VoiceOfTheFallen` have been introduced
+- `gamedata::Boss` is no longer re-exported as `evtclib::Boss`, instead
+  `evtclib::Encounter` is exported.
+
+### Removed
+- Various `*_ID` constants from `gamedata`: `XERA_PHASE2_ID`, `NIKARE_ID`,
+  `KENUT_ID`, `VOICE_OF_THE_FALLEN_ID` and `CLAW_OF_THE_FALLEN_ID`.
+
 ## 0.4.3 - 2020-09-21
 ### Added
 - `gamedata::VOICE_OF_THE_FALLEN_ID` and `gamedata::CLAW_OF_THE_FALLEN_ID`.
