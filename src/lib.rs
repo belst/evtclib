@@ -145,6 +145,7 @@ pub enum EvtcError {
 /// Note that a `Player` is only the player character itself. Any additional entities that are
 /// spawned by the player (clones, illusions, banners, ...) are either a [`Character`][Character]
 /// or a [`Gadget`][Gadget].
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Player {
     /// The player's profession.
@@ -186,6 +187,7 @@ impl Player {
 /// Examples of this include the [banners](https://wiki.guildwars2.com/wiki/Banner) spawned by
 /// Warriors, but also skill effects like the roots created by
 /// [Entangle](https://wiki.guildwars2.com/wiki/Entangle) or the other objects in the arena.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Gadget {
     /// The id of the gadget.
@@ -208,6 +210,7 @@ impl Gadget {
 ///
 /// Characters are NPCs such as the bosses themselves, additional mobs that they spawn, but also
 /// friendly characters like Mesmer's clones and illusions, Necromancer minions, and so on.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq, CopyGetters)]
 pub struct Character {
     /// The id of the character.
@@ -242,6 +245,7 @@ impl Character {
 /// // Convert it
 /// let agent: AgentKind = raw_agent.try_into().unwrap();
 /// ```
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum AgentKind {
     /// The agent is a player.
@@ -440,6 +444,7 @@ impl TryFrom<&raw::Agent> for AgentKind {
 /// `Kind`. An escape hatch is the method [`.erase()`][Agent::erase], which erases the kind
 /// information and produces the default `Agent<()>`. Functions/methods that only take `Agent<()>`
 /// can therefore be used by any other agent as well.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Getters, CopyGetters)]
 // For the reasoning of #[repr(C)] see Agent::transmute.
 #[repr(C)]
@@ -700,6 +705,7 @@ impl Agent<Character> {
 }
 
 /// A fully processed log file.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone)]
 pub struct Log {
     agents: Vec<Agent>,

@@ -7,6 +7,7 @@ use std::{self, fmt};
 use std::hash::{Hash, Hasher};
 
 /// The "friend or foe" enum.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum IFF {
     /// Green vs green, red vs red.
@@ -26,6 +27,7 @@ impl Default for IFF {
 }
 
 /// Combat result (physical)
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtResult {
     /// Good physical hit
@@ -59,6 +61,7 @@ impl Default for CbtResult {
 }
 
 /// Combat activation
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtActivation {
     /// Field is not used in this kind of event.
@@ -85,6 +88,7 @@ impl Default for CbtActivation {
 ///
 /// The referenced fields are of the [`CbtEvent`](struct.CbtEvent.html)
 /// struct.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtStateChange {
     /// Field is not used in this kind of event.
@@ -212,6 +216,7 @@ impl Default for CbtStateChange {
 }
 
 /// Combat buff remove type
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtBuffRemove {
     /// Field is not used in this kind of event.
@@ -235,6 +240,7 @@ impl Default for CbtBuffRemove {
 }
 
 /// Custom skill ids
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum CbtCustomSkill {
     /// Not custom but important and unnamed.
@@ -246,6 +252,7 @@ pub enum CbtCustomSkill {
 }
 
 /// Language
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum Language {
     /// English.
@@ -270,6 +277,7 @@ impl Default for Language {
 /// arcdps.
 ///
 /// The suffix `Inc` indicates an increase, whereas the suffix `Rec` stands for received.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum Attribute {
     None,
@@ -294,6 +302,7 @@ pub enum Attribute {
 }
 
 /// Categories for [`BuffInfo`][CbtStateChange::BuffInfo] events.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, FromPrimitive)]
 pub enum BuffCategory {
     Boon = 0,
@@ -314,6 +323,7 @@ pub enum BuffCategory {
 /// to check the header.revision tag.
 ///
 /// For conflicting data types, the bigger one is chosen (e.g. u32 over u16).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct CbtEvent {
     /// System time since Windows was started, in milliseconds.

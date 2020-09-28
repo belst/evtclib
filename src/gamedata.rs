@@ -15,6 +15,7 @@ use thiserror::Error;
 ///
 /// This enum is non-exhaustive to ensure that future encounters can be added without
 /// inducing a breaking change.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 #[non_exhaustive]
 #[repr(u16)]
@@ -193,6 +194,7 @@ impl Display for Encounter {
 ///
 /// This enum is non-exhaustive to ensure that future bosses can be added without
 /// inducing a breaking change.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive)]
 #[non_exhaustive]
 #[repr(u16)]
@@ -516,6 +518,7 @@ pub struct ParseProfessionError(String);
 ///
 /// This only contains the 9 base professions. For elite specializations, see
 /// [`EliteSpec`][EliteSpec].
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive)]
 pub enum Profession {
     Guardian = 1,
@@ -576,6 +579,7 @@ pub struct ParseEliteSpecError(String);
 /// Note that the numeric value of the enum variants correspond to the specialization ID in the API
 /// as well. See [the official wiki](https://wiki.guildwars2.com/wiki/API:2/specializations) for
 /// more information regarding the API usage.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive)]
 pub enum EliteSpec {
     // Heart of Thorns elites:

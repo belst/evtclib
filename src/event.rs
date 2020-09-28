@@ -26,6 +26,7 @@ pub enum FromRawEventError {
 /// A rusty enum for all possible combat events.
 ///
 /// This makes dealing with [`CbtEvent`][raw::CbtEvent] a bit saner (and safer).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub enum EventKind {
     // State change events
@@ -213,6 +214,7 @@ pub enum EventKind {
 ///
 /// Note that if you plan on re-using the raw event afterwards, you should use the implementation
 /// that works on a reference instead: `Event::try_from(&raw_event)`.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, CopyGetters, Getters)]
 pub struct Event {
     /// The time when the event happened.
@@ -524,6 +526,7 @@ fn get_error_bytes(raw_event: &raw::CbtEvent) -> [u8; 32] {
 }
 
 /// The different weapon-sets in game.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WeaponSet {
     /// First water weapon set.
@@ -558,6 +561,7 @@ impl WeaponSet {
 /// The different types to activate a skill.
 ///
 /// The parameter is the animation time in milliseconds.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Activation {
     /// The skill was activated with quickness.

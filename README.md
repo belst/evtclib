@@ -15,6 +15,8 @@ Features:
 * A high-level interface, intended for consumption within Rust applications.
 * Support for reading zipped evtc files (`.evtc.zip` or `.zevtc`).
 * Backwards compatible for older revisions of the evtc format.
+* Optional: [serde](https://github.com/serde-rs/serde) integration for
+  (de)serialization support (enable the `serde` feature).
 
 `evtclib` is currently in beta-stage. Not all evtc events are supported, and
 the API is not yet set in stone.
