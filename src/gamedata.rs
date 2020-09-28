@@ -128,49 +128,18 @@ impl FromStr for Encounter {
     type Err = ParseEncounterError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // Parsing an encounter is in most cases the same as parsing a boss, as the encounters map
+        // 1:1 to a boss. For the special cases where the encounter as such has a specific name
+        // (such as Twin Largos), this parses strictly more bosses (so "Kenut" would be parsed as
+        // Encounter::TwinLargos, which is fine). The special cases are then added later (so that
+        // "Twin Largos" also is parsed as Encounter::TwinLargos).
+        if let Ok(boss) = Boss::from_str(s) {
+            return Ok(boss.encounter());
+        }
         let lower = s.to_lowercase();
         match &lower as &str {
-            "vg" | "vale guardian" => Ok(Encounter::ValeGuardian),
-            "gorse" | "gorseval" => Ok(Encounter::Gorseval),
-            "sab" | "sabetha" => Ok(Encounter::Sabetha),
-
-            "sloth" | "slothasor" => Ok(Encounter::Slothasor),
-            "matthias" => Ok(Encounter::Matthias),
-
-            "kc" | "keep construct" => Ok(Encounter::KeepConstruct),
-            "xera" => Ok(Encounter::Xera),
-
-            "cairn" => Ok(Encounter::Cairn),
-            "mo" | "mursaat overseer" => Ok(Encounter::MursaatOverseer),
-            "sam" | "sama" | "samarog" => Ok(Encounter::Samarog),
-            "deimos" => Ok(Encounter::Deimos),
-
-            "desmina" | "sh" | "soulless horror" => Ok(Encounter::SoullessHorror),
-            "dhuum" | "voice in the void" => Ok(Encounter::VoiceInTheVoid),
-
-            "ca" | "conjured amalgamate" => Ok(Encounter::ConjuredAmalgamate),
-            "largos" | "twins" | "largos twins" => Ok(Encounter::TwinLargos),
-            "qadim" => Ok(Encounter::Qadim),
-
-            "adina" | "cardinal adina" => Ok(Encounter::CardinalAdina),
-            "sabir" | "cardinal sabir" => Ok(Encounter::CardinalSabir),
-            "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Encounter::QadimThePeerless),
-
-            "ai" | "ai keeper of the peak" => Ok(Encounter::Ai),
-
-            "skorvald" => Ok(Encounter::Skorvald),
-            "artsariiv" => Ok(Encounter::Artsariiv),
-            "arkk" => Ok(Encounter::Arkk),
-
-            "mama" => Ok(Encounter::MAMA),
-            "siax" => Ok(Encounter::Siax),
-            "ensolyss" | "ensolyss of the endless torment" => Ok(Encounter::Ensolyss),
-
-            "icebrood" | "icebrood construct" => Ok(Encounter::IcebroodConstruct),
+            "largos" | "twins" | "largos twins" | "twin largos" => Ok(Encounter::TwinLargos),
             "kodans" | "super kodan brothers" => Ok(Encounter::SuperKodanBrothers),
-            "fraenir" | "fraenir of jormag" => Ok(Encounter::FraenirOfJormag),
-            "boneskinner" => Ok(Encounter::Boneskinner),
-            "whisper" | "whisper of jormag" => Ok(Encounter::WhisperOfJormag),
 
             _ => Err(ParseEncounterError(s.to_owned())),
         }
@@ -437,6 +406,107 @@ impl Boss {
     }
 }
 
+/// Error for when converting a string to an encounter fails.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Error)]
+#[error("Invalid boss identifier: {0}")]
+pub struct ParseBossError(String);
+
+impl FromStr for Boss {
+    type Err = ParseBossError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let lower = s.to_lowercase();
+        match &lower as &str {
+            "vg" | "vale guardian" => Ok(Boss::ValeGuardian),
+            "gorse" | "gorseval" => Ok(Boss::Gorseval),
+            "sab" | "sabetha" => Ok(Boss::Sabetha),
+
+            "sloth" | "slothasor" => Ok(Boss::Slothasor),
+            "matthias" => Ok(Boss::Matthias),
+
+            "kc" | "keep construct" => Ok(Boss::KeepConstruct),
+            "xera" => Ok(Boss::Xera),
+
+            "cairn" => Ok(Boss::Cairn),
+            "mo" | "mursaat overseer" => Ok(Boss::MursaatOverseer),
+            "sam" | "sama" | "samarog" => Ok(Boss::Samarog),
+            "deimos" => Ok(Boss::Deimos),
+
+            "desmina" | "sh" | "soulless horror" => Ok(Boss::SoullessHorror),
+            "dhuum" | "voice in the void" => Ok(Boss::Dhuum),
+
+            "ca" | "conjured amalgamate" => Ok(Boss::ConjuredAmalgamate),
+            "nikare" => Ok(Boss::Nikare),
+            "kenut" => Ok(Boss::Kenut),
+            "qadim" => Ok(Boss::Qadim),
+
+            "adina" | "cardinal adina" => Ok(Boss::CardinalAdina),
+            "sabir" | "cardinal sabir" => Ok(Boss::CardinalSabir),
+            "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Boss::QadimThePeerless),
+
+            "ai" | "ai keeper of the peak" => Ok(Boss::Ai),
+
+            "skorvald" => Ok(Boss::Skorvald),
+            "artsariiv" => Ok(Boss::Artsariiv),
+            "arkk" => Ok(Boss::Arkk),
+
+            "mama" => Ok(Boss::MAMA),
+            "siax" => Ok(Boss::Siax),
+            "ensolyss" | "ensolyss of the endless torment" => Ok(Boss::Ensolyss),
+
+            "icebrood" | "icebrood construct" => Ok(Boss::IcebroodConstruct),
+            "voice" | "voice of the fallen" => Ok(Boss::VoiceOfTheFallen),
+            "claw" | "claw of the fallen" => Ok(Boss::ClawOfTheFallen),
+            "fraenir" | "fraenir of jormag" => Ok(Boss::FraenirOfJormag),
+            "boneskinner" => Ok(Boss::Boneskinner),
+            "whisper" | "whisper of jormag" => Ok(Boss::WhisperOfJormag),
+
+            _ => Err(ParseBossError(s.to_owned())),
+        }
+    }
+}
+
+impl Display for Boss {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let name = match *self {
+            Boss::ValeGuardian => "Vale Guardian",
+            Boss::Gorseval => "Gorseval",
+            Boss::Sabetha => "Sabetha",
+            Boss::Slothasor => "Slothasor",
+            Boss::Matthias => "Matthias Gabrel",
+            Boss::KeepConstruct => "Keep Construct",
+            Boss::Xera => "Xera",
+            Boss::Xera2 => "Xera",
+            Boss::Cairn => "Cairn the Indomitable",
+            Boss::MursaatOverseer => "Mursaat Overseer",
+            Boss::Samarog => "Samarog",
+            Boss::Deimos => "Deimos",
+            Boss::SoullessHorror => "Soulless Horror",
+            Boss::Dhuum => "Dhuum",
+            Boss::ConjuredAmalgamate => "Conjured Amalgamate",
+            Boss::Nikare => "Nikare",
+            Boss::Kenut => "Kenut",
+            Boss::Qadim => "Qadim",
+            Boss::CardinalAdina => "Cardinal Adina",
+            Boss::CardinalSabir => "Cardinal Sabir",
+            Boss::QadimThePeerless => "Qadim the Peerless",
+            Boss::Ai => "Ai Keeper of the Peak",
+            Boss::Skorvald => "Skorvald the Shattered",
+            Boss::Artsariiv => "Artsariiv",
+            Boss::Arkk => "Arkk",
+            Boss::MAMA => "MAMA",
+            Boss::Siax => "Siax the Corrupted",
+            Boss::Ensolyss => "Ensolyss of the Endless Torment",
+            Boss::IcebroodConstruct => "Icebrood Construct",
+            Boss::VoiceOfTheFallen => "Voice of the Fallen",
+            Boss::ClawOfTheFallen => "Claw of the Fallen",
+            Boss::FraenirOfJormag => "Fraenir of Jormag",
+            Boss::Boneskinner => "Boneskinner",
+            Boss::WhisperOfJormag => "Whisper of Jormag",
+        };
+        write!(f, "{}", name)
+    }
+}
 /// Error for when converting a string to a profession fails.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Error)]
 #[error("Invalid profession identifier: {0}")]
@@ -671,6 +741,8 @@ mod tests {
             ("qadimp", QadimThePeerless),
             ("qadim the peerless", QadimThePeerless),
             ("Qadim The Peerless", QadimThePeerless),
+            ("Ai", Ai),
+            ("ai", Ai),
             ("skorvald", Skorvald),
             ("Skorvald", Skorvald),
             ("artsariiv", Artsariiv),
@@ -720,6 +792,129 @@ mod tests {
         ];
         for test in tests {
             assert!(test.parse::<Encounter>().is_err());
+        }
+    }
+
+    #[test]
+    fn test_boss_parsing_ok() {
+        use Boss::*;
+        let tests: &[(&'static str, Boss)] = &[
+            ("vg", ValeGuardian),
+            ("VG", ValeGuardian),
+            ("vale guardian", ValeGuardian),
+            ("Vale Guardian", ValeGuardian),
+            ("gorse", Gorseval),
+            ("Gorse", Gorseval),
+            ("gorseval", Gorseval),
+            ("Gorseval", Gorseval),
+            ("sab", Sabetha),
+            ("sabetha", Sabetha),
+            ("Sabetha", Sabetha),
+            ("sloth", Slothasor),
+            ("slothasor", Slothasor),
+            ("Slothasor", Slothasor),
+            ("matthias", Matthias),
+            ("Matthias", Matthias),
+            ("kc", KeepConstruct),
+            ("KC", KeepConstruct),
+            ("keep construct", KeepConstruct),
+            ("Keep Construct", KeepConstruct),
+            ("xera", Xera),
+            ("Xera", Xera),
+            ("cairn", Cairn),
+            ("Cairn", Cairn),
+            ("mo", MursaatOverseer),
+            ("MO", MursaatOverseer),
+            ("mursaat overseer", MursaatOverseer),
+            ("Mursaat Overseer", MursaatOverseer),
+            ("samarog", Samarog),
+            ("Samarog", Samarog),
+            ("deimos", Deimos),
+            ("Deimos", Deimos),
+            ("sh", SoullessHorror),
+            ("soulless horror", SoullessHorror),
+            ("desmina", SoullessHorror),
+            ("Desmina", SoullessHorror),
+            ("dhuum", Dhuum),
+            ("Dhuum", Dhuum),
+            ("ca", ConjuredAmalgamate),
+            ("conjured amalgamate", ConjuredAmalgamate),
+            ("Conjured Amalgamate", ConjuredAmalgamate),
+            ("kenut", Kenut),
+            ("Kenut", Kenut),
+            ("nikare", Nikare),
+            ("Nikare", Nikare),
+            ("qadim", Qadim),
+            ("Qadim", Qadim),
+            ("adina", CardinalAdina),
+            ("cardinal adina", CardinalAdina),
+            ("Cardinal Adina", CardinalAdina),
+            ("sabir", CardinalSabir),
+            ("cardinal sabir", CardinalSabir),
+            ("Cardinal Sabir", CardinalSabir),
+            ("qadimp", QadimThePeerless),
+            ("qadim the peerless", QadimThePeerless),
+            ("Qadim The Peerless", QadimThePeerless),
+            ("Ai", Ai),
+            ("ai", Ai),
+            ("skorvald", Skorvald),
+            ("Skorvald", Skorvald),
+            ("artsariiv", Artsariiv),
+            ("Artsariiv", Artsariiv),
+            ("arkk", Arkk),
+            ("Arkk", Arkk),
+            ("mama", MAMA),
+            ("MAMA", MAMA),
+            ("siax", Siax),
+            ("SIAX", Siax),
+            ("ensolyss", Ensolyss),
+            ("Ensolyss", Ensolyss),
+            ("Ensolyss of the Endless Torment", Ensolyss),
+            ("icebrood", IcebroodConstruct),
+            ("Icebrood Construct", IcebroodConstruct),
+            ("fraenir", FraenirOfJormag),
+            ("Fraenir of Jormag", FraenirOfJormag),
+            ("boneskinner", Boneskinner),
+            ("claw", ClawOfTheFallen),
+            ("Claw", ClawOfTheFallen),
+            ("Claw of the Fallen", ClawOfTheFallen),
+            ("voice", VoiceOfTheFallen),
+            ("Voice", VoiceOfTheFallen),
+            ("Voice of the Fallen", VoiceOfTheFallen),
+            ("whisper", WhisperOfJormag),
+            ("Whisper of Jormag", WhisperOfJormag),
+        ];
+
+        for (input, expected) in tests {
+            assert_eq!(
+                input.parse(),
+                Ok(*expected),
+                "parsing input {:?} failed",
+                input
+            );
+        }
+    }
+
+    #[test]
+    fn test_boss_parsing_err() {
+        let tests = &[
+            "",
+            "vga",
+            "VGA",
+            "foovg",
+            "valeguardian",
+            "ValeGuardian",
+            "slotha",
+            "slot",
+            "slothasora",
+            "cardinal",
+            // The following are encounters, make sure we don't parse them as bosses.
+            "twins",
+            "kodans",
+            "twin largos",
+        ];
+        for test in tests {
+            assert!(test.parse::<Boss>().is_err());
         }
     }
 
