@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - `analyzers::fractal::Ai` with logic to determine CM and outcome of the
   Sunqua Peak CM fight.
 - `Log::gadgets` to retrieve all gadget agents.
+- `Log::build_id` to retrieve the game's build id.
 
 ### Changed
 - `gamedata::Boss` has been split in `gamedata::Boss` and `gamedata::Encounter`

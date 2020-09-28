@@ -915,4 +915,16 @@ impl Log {
             })
             .collect()
     }
+
+    /// Returns the game's build id.
+    ///
+    /// If no build id was found, `None` is returned.
+    pub fn build_id(&self) -> Option<u64> {
+        for event in self.events() {
+            if let EventKind::Build { build } = event.kind() {
+                return Some(*build)
+            }
+        }
+        None
+    }
 }
