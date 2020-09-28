@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - `Boss::Ai` to represent Ai, Keeper of the Peak in the Sunqua Peak fractal.
 - `analyzers::fractal::Ai` with logic to determine CM and outcome of the
   Sunqua Peak CM fight.
+- `Log::gadgets` to retrieve all gadget agents.
 
 ### Changed
 - `gamedata::Boss` has been split in `gamedata::Boss` and `gamedata::Encounter`

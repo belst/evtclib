@@ -743,6 +743,11 @@ impl Log {
         self.agents.iter().filter_map(|a| a.as_character())
     }
 
+    /// Return an iterator over all agents that are gadgets.
+    pub fn gadgets(&self) -> impl Iterator<Item = &Agent<Gadget>> {
+        self.agents.iter().filter_map(|a| a.as_gadget())
+    }
+
     /// Return the boss agent.
     ///
     /// Be careful with encounters that have multiple boss agents, such as Trio
