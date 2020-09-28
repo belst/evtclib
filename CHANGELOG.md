@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
     `Boss::VoiceOfTheFallen` have been introduced
 - `gamedata::Boss` is no longer re-exported as `evtclib::Boss`, instead
   `evtclib::Encounter` is exported.
+- Renamed `Log::npcs` to `Log::characters` to have consistent naming.
 
 ### Removed
 - Various `*_ID` constants from `gamedata`: `XERA_PHASE2_ID`, `NIKARE_ID`,

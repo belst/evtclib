@@ -738,8 +738,8 @@ impl Log {
         self.agents.iter().filter_map(|a| a.as_player())
     }
 
-    /// Return an iterator over all agents that are NPCs.
-    pub fn npcs(&self) -> impl Iterator<Item = &Agent<Character>> {
+    /// Return an iterator over all agents that are characters.
+    pub fn characters(&self) -> impl Iterator<Item = &Agent<Character>> {
         self.agents.iter().filter_map(|a| a.as_character())
     }
 
@@ -753,7 +753,7 @@ impl Log {
     /// Be careful with encounters that have multiple boss agents, such as Trio
     /// and Xera.
     pub fn boss(&self) -> &Agent {
-        self.npcs()
+        self.characters()
             .find(|c| c.character().id == self.boss_id)
             .map(Agent::erase)
             .expect("Boss has no agent!")
@@ -768,7 +768,7 @@ impl Log {
             .encounter()
             .map(Encounter::bosses)
             .unwrap_or(&[] as &[_]);
-        self.npcs()
+        self.characters()
             .filter(|c| bosses.iter().any(|boss| *boss as u16 == c.character().id))
             .map(Agent::erase)
             .collect()

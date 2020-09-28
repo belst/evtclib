@@ -137,7 +137,7 @@ impl<'log> Analyzer for Skorvald<'log> {
         }
 
         self.log
-            .npcs()
+            .characters()
             .any(|character| SKORVALD_CM_ANOMALY_IDS.contains(&character.id()))
     }
 
