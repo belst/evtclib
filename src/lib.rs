@@ -928,7 +928,7 @@ impl Log {
     pub fn build_id(&self) -> Option<u64> {
         for event in self.events() {
             if let EventKind::Build { build } = event.kind() {
-                return Some(*build)
+                return Some(*build);
             }
         }
         None
