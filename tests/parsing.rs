@@ -3,7 +3,7 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use evtclib::{Encounter, EliteSpec::*, Profession::*};
+use evtclib::{EliteSpec::*, Encounter, Profession::*};
 
 macro_rules! test {
     (name: $name:ident, log: $log:literal, boss: $boss:expr, players: $players:expr,) => {

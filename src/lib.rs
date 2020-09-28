@@ -759,7 +759,10 @@ impl Log {
     /// This correctly returns multiple agents on encounters where multiple
     /// agents are needed.
     pub fn boss_agents(&self) -> Vec<&Agent> {
-        let bosses = self.encounter().map(Encounter::bosses).unwrap_or(&[] as &[_]);
+        let bosses = self
+            .encounter()
+            .map(Encounter::bosses)
+            .unwrap_or(&[] as &[_]);
         self.npcs()
             .filter(|c| bosses.iter().any(|boss| *boss as u16 == c.character().id))
             .map(Agent::erase)
