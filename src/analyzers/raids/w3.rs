@@ -29,6 +29,7 @@ impl<'log> Analyzer for Xera<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::players_exit_after_boss(self.log))
     }
 }

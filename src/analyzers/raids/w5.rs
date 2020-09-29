@@ -38,6 +38,7 @@ impl<'log> Analyzer for SoullessHorror<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(self.log.events().iter().any(|event| {
             if let EventKind::BuffApplication {
                 buff_id,
@@ -85,6 +86,7 @@ impl<'log> Analyzer for Dhuum<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }

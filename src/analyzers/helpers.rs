@@ -3,6 +3,16 @@ use std::collections::HashMap;
 
 use crate::{AgentKind, EventKind, Log};
 
+/// Check if the log was rewarded, and if yes, return `Outcome::Success` early.
+macro_rules! check_reward {
+    ($log:expr) => {
+        let log: &Log = $log;
+        if log.was_rewarded() {
+            return Some(crate::analyzers::Outcome::Success);
+        }
+    };
+}
+
 /// Returns the maximum health of the boss agent.
 ///
 /// If the health cannot be determined, this function returns `None`.

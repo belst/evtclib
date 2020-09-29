@@ -27,6 +27,7 @@
 use crate::{Encounter, Log};
 
 pub mod fractals;
+#[macro_use]
 pub mod helpers;
 pub mod raids;
 pub mod strikes;

@@ -36,6 +36,7 @@ impl<'log> Analyzer for CardinalAdina<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
@@ -72,6 +73,7 @@ impl<'log> Analyzer for CardinalSabir<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
@@ -106,6 +108,7 @@ impl<'log> Analyzer for QadimThePeerless<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }

@@ -35,6 +35,7 @@ impl<'log> Analyzer for Cairn<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
@@ -71,6 +72,7 @@ impl<'log> Analyzer for MursaatOverseer<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
@@ -107,6 +109,7 @@ impl<'log> Analyzer for Samarog<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::boss_is_dead(self.log))
     }
 }
@@ -143,6 +146,7 @@ impl<'log> Analyzer for Deimos<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         // The idea for Deimos is that we first need to figure out when the 10% split happens (if
         // it even happens), then we can find the time when 10%-Deimos becomes untargetable and
         // then we can compare this time to the player exit time.

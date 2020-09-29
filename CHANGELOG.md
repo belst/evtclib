@@ -21,6 +21,10 @@ All notable changes to this project will be documented in this file.
   `evtclib::Encounter` is exported.
 - Renamed `Log::npcs` to `Log::characters` to have consistent naming.
 
+### Fixed
+- Some edge cases where raid success was not detected (as long as the fight was
+  rewarded).
+
 ### Removed
 - Various `*_ID` constants from `gamedata`: `XERA_PHASE2_ID`, `NIKARE_ID`,
   `KENUT_ID`, `VOICE_OF_THE_FALLEN_ID` and `CLAW_OF_THE_FALLEN_ID`.

@@ -36,6 +36,7 @@ impl<'log> Analyzer for ConjuredAmalgamate<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         for event in self.log.events() {
             if let EventKind::Spawn { agent_addr } = event.kind() {
                 if self
@@ -85,6 +86,7 @@ impl<'log> Analyzer for TwinLargos<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         let mut nikare_dead = false;
         let mut kenut_dead = false;
 
@@ -144,6 +146,7 @@ impl<'log> Analyzer for Qadim<'log> {
     }
 
     fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
         Outcome::from_bool(helpers::players_exit_after_boss(self.log))
     }
 }
