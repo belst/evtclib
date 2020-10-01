@@ -110,7 +110,7 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
 
 fn get_agent_by_addr(agents: &mut [Agent], addr: u64) -> Option<&mut Agent> {
     for agent in agents {
-        if agent.addr == addr {
+        if agent.addr() == addr {
             return Some(agent);
         }
     }
@@ -121,11 +121,11 @@ fn set_agent_awares(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcEr
     for event in &data.events {
         if event.is_statechange == raw::CbtStateChange::None {
             if let Some(current_agent) = get_agent_by_addr(agents, event.src_agent) {
-                current_agent.instance_id = event.src_instid;
-                if current_agent.first_aware == 0 {
-                    current_agent.first_aware = event.time;
+                current_agent.set_instance_id(event.src_instid);
+                if current_agent.first_aware() == 0 {
+                    current_agent.set_first_aware(event.time);
                 }
-                current_agent.last_aware = event.time;
+                current_agent.set_last_aware(event.time);
             }
         }
     }
@@ -137,17 +137,17 @@ fn set_agent_masters(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcE
         if event.src_master_instid != 0 {
             let mut master_addr = None;
             for agent in &*agents {
-                if agent.instance_id == event.src_master_instid
-                    && agent.first_aware < event.time
-                    && event.time < agent.last_aware
+                if agent.instance_id() == event.src_master_instid
+                    && agent.first_aware() < event.time
+                    && event.time < agent.last_aware()
                 {
-                    master_addr = Some(agent.addr);
+                    master_addr = Some(agent.addr());
                     break;
                 }
             }
             if let Some(master_addr) = master_addr {
                 if let Some(current_slave) = get_agent_by_addr(agents, event.src_agent) {
-                    current_slave.master_agent = Some(master_addr);
+                    current_slave.set_master_agent(Some(master_addr));
                 }
             }
         }
