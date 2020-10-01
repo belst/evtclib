@@ -403,7 +403,7 @@ pub struct Agent<Kind = ()> {
 #[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for Agent {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        use serde::de::{self, MapAccess, Visitor};
+        use serde::de::{self, MapAccess, SeqAccess, Visitor};
         use std::fmt;
 
         #[derive(serde::Deserialize)]
@@ -428,6 +428,53 @@ impl<'de> serde::Deserialize<'de> for Agent {
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("struct Agent")
+            }
+
+            fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<Agent, V::Error> {
+                let addr = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let kind = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                let toughness = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(2, &self))?;
+                let concentration = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(3, &self))?;
+                let healing = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(4, &self))?;
+                let condition = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(5, &self))?;
+                let instance_id = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(6, &self))?;
+                let first_aware = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(7, &self))?;
+                let last_aware = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(8, &self))?;
+                let master_agent = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(9, &self))?;
+
+                Ok(Agent {
+                    addr,
+                    kind,
+                    toughness,
+                    concentration,
+                    healing,
+                    condition,
+                    instance_id,
+                    first_aware,
+                    last_aware,
+                    master_agent,
+                    phantom_data: PhantomData,
+                })
             }
 
             fn visit_map<V: MapAccess<'de>>(self, mut map: V) -> Result<Agent, V::Error> {
@@ -780,6 +827,27 @@ mod tests {
     #[should_panic(expected = "duplicate field `master_agent`")]
     fn deserialization_duplicated_field() {
         let json = r#"{"addr":3735928559,"kind":{"Character":{"id":3840,"name":"Foo Bar"}},"toughness":-13,"concentration":-14,"healing":-15,"condition":-16,"instance_id":1337,"first_aware":0,"last_aware":16777215,"master_agent":null,"master_agent":null}"#;
+        serde_json::from_str::<Agent>(json).unwrap();
+    }
+
+    #[test]
+    fn deserialization_sequence() {
+        let json = r#"[3735928559,{"Character":{"id":3840,"name":"Foo Bar"}},-13,-14,-15,-16,1337,0,16777215,null]"#;
+        let deserialized: Agent = serde_json::from_str(json).unwrap();
+        assert_eq!(deserialized, agent());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid length 9")]
+    fn deserialization_sequence_too_short() {
+        let json = r#"[3735928559,{"Character":{"id":3840,"name":"Foo Bar"}},-13,-14,-15,-16,1337,0,16777215]"#;
+        serde_json::from_str::<Agent>(json).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "trailing characters")]
+    fn deserialization_sequence_too_long() {
+        let json = r#"[3735928559,{"Character":{"id":3840,"name":"Foo Bar"}},-13,-14,-15,-16,1337,0,16777215,null,null]"#;
         serde_json::from_str::<Agent>(json).unwrap();
     }
 }
