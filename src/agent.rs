@@ -242,7 +242,7 @@ impl TryFrom<&raw::Agent> for AgentKind {
     /// This automatically discerns between player, gadget and characters.
     ///
     /// Note that in most cases, you probably want to use `Agent::try_from` or even
-    /// [`process`][process] instead of this function.
+    /// [`process`][super::process] instead of this function.
     fn try_from(raw_agent: &raw::Agent) -> Result<Self, Self::Error> {
         if raw_agent.is_character() {
             Ok(AgentKind::Character(AgentKind::from_raw_character(
@@ -280,9 +280,9 @@ impl TryFrom<&raw::Agent> for AgentKind {
 ///
 /// # Obtaining an agent
 ///
-/// The normal way to obtain the agents is to use the [`.agents()`](Log::agents) method on a
-/// [`Log`][Log], or one of the other accessor methods (like [`.players()`][Log::players] or
-/// [`.agent_by_addr()`][Log::agent_by_addr]).
+/// The normal way to obtain the agents is to use the [`.agents()`](super::Log::agents) method on a
+/// [`Log`][super::Log], or one of the other accessor methods (like
+/// [`.players()`][super::Log::players] or [`.agent_by_addr()`][super::Log::agent_by_addr]).
 ///
 /// In the cases where you already have a [`raw::Agent`][raw::Agent] available, you can also
 /// convert it to an [`Agent`][Agent] by using the standard
@@ -306,8 +306,8 @@ impl TryFrom<&raw::Agent> for AgentKind {
 /// `Option<&Player>`). This works because such tagged `Agent`s can only be constructed (safely)
 /// using [`.as_player()`][Agent::as_player], [`.as_gadget()`][Agent::as_gadget] or
 /// [`.as_character()`][Agent::as_character]. This is useful since functions like
-/// [`Log::players`][Log::players], which already filter only players, don't require the consumer
-/// to do another check/pattern match for the right agent kind.
+/// [`Log::players`][super::Log::players], which already filter only players, don't require the
+/// consumer to do another check/pattern match for the right agent kind.
 ///
 /// The unit type `()` is used to tag `Agent`s which contain an undetermined type, and it is the
 /// default if you write `Agent` without any parameters.
