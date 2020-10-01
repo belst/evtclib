@@ -444,7 +444,7 @@ impl TryFrom<&raw::Agent> for AgentKind {
 /// `Kind`. An escape hatch is the method [`.erase()`][Agent::erase], which erases the kind
 /// information and produces the default `Agent<()>`. Functions/methods that only take `Agent<()>`
 /// can therefore be used by any other agent as well.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Getters, CopyGetters)]
 // For the reasoning of #[repr(C)] see Agent::transmute.
 #[repr(C)]
@@ -513,7 +513,162 @@ pub struct Agent<Kind = ()> {
     #[get_copy = "pub"]
     master_agent: Option<u64>,
 
+    #[cfg_attr(feature = "serde", serde(skip_serializing))]
     phantom_data: PhantomData<Kind>,
+}
+
+// We could derive this, however that would derive Deserialize generically for Agent<T>, where T is
+// deserializable. In particular, this would mean that you could deserialize Agent<Character>,
+// Agent<Player> and Agent<Gadget> directly, which would not be too bad - the problem is that serde
+// has no way of knowing if the serialized agent actually is a character/player/gadget agent, as
+// that information only exists on the type level. This meant that you could "coerce" agents into
+// the wrong type, safely, using a serialization followed by a deserialization.
+// Now this doesn't actually lead to memory unsafety or other bad behaviour, but it could mean that
+// the program would panic if you tried to access a non-existing field, e.g. by calling
+// Agent<Character>::id() on a non-character agent.
+// In order to prevent this, we manually implement Deserialize only for Agent<()>, so that the
+// usual conversion functions with the proper checks have to be used.
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for Agent {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{self, Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
+        use std::fmt;
+
+        #[derive(serde::Deserialize)]
+        #[serde(field_identifier, rename_all = "snake_case")]
+        enum Field {
+            Addr,
+            Kind,
+            Toughness,
+            Concentration,
+            Healing,
+            Condition,
+            InstanceId,
+            FirstAware,
+            LastAware,
+            MasterAgent,
+        };
+
+        struct AgentVisitor;
+
+        impl<'de> Visitor<'de> for AgentVisitor {
+            type Value = Agent;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("struct Agent")
+            }
+
+            fn visit_map<V: MapAccess<'de>>(self, mut map: V) -> Result<Agent, V::Error> {
+                let mut addr = None;
+                let mut kind = None;
+                let mut toughness = None;
+                let mut concentration = None;
+                let mut healing = None;
+                let mut condition = None;
+                let mut instance_id = None;
+                let mut first_aware = None;
+                let mut last_aware = None;
+                let mut master_agent = None;
+
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        Field::Addr => {
+                            if addr.is_some() {
+                                return Err(de::Error::duplicate_field("addr"));
+                            }
+                            addr = Some(map.next_value()?);
+                        }
+                        Field::Kind => {
+                            if kind.is_some() {
+                                return Err(de::Error::duplicate_field("kind"));
+                            }
+                            kind = Some(map.next_value()?);
+                        }
+                        Field::Toughness => {
+                            if toughness.is_some() {
+                                return Err(de::Error::duplicate_field("toughness"));
+                            }
+                            toughness = Some(map.next_value()?);
+                        }
+                        Field::Concentration => {
+                            if concentration.is_some() {
+                                return Err(de::Error::duplicate_field("concentration"));
+                            }
+                            concentration = Some(map.next_value()?);
+                        }
+                        Field::Healing => {
+                            if healing.is_some() {
+                                return Err(de::Error::duplicate_field("healing"));
+                            }
+                            healing = Some(map.next_value()?);
+                        }
+                        Field::Condition => {
+                            if condition.is_some() {
+                                return Err(de::Error::duplicate_field("condition"));
+                            }
+                            condition = Some(map.next_value()?);
+                        }
+                        Field::InstanceId=> {
+                            if instance_id.is_some() {
+                                return Err(de::Error::duplicate_field("instance_id"));
+                            }
+                            instance_id = Some(map.next_value()?);
+                        }
+                        Field::FirstAware=> {
+                            if first_aware.is_some() {
+                                return Err(de::Error::duplicate_field("first_aware"));
+                            }
+                            first_aware = Some(map.next_value()?);
+                        }
+                        Field::LastAware => {
+                            if last_aware.is_some() {
+                                return Err(de::Error::duplicate_field("last_aware"));
+                            }
+                            last_aware = Some(map.next_value()?);
+                        }
+                        Field::MasterAgent => {
+                            if master_agent.is_some() {
+                                return Err(de::Error::duplicate_field("master_agent"));
+                            }
+                            master_agent = Some(map.next_value()?);
+                        }
+                    }
+                }
+
+                Ok(Agent {
+                    addr: addr.ok_or_else(|| de::Error::missing_field("addr"))?,
+                    kind: kind.ok_or_else(|| de::Error::missing_field("kind"))?,
+                    toughness: toughness.ok_or_else(|| de::Error::missing_field("toughness"))?,
+                    concentration: concentration
+                        .ok_or_else(|| de::Error::missing_field("concentration"))?,
+                    healing: healing.ok_or_else(|| de::Error::missing_field("healing"))?,
+                    condition: condition.ok_or_else(|| de::Error::missing_field("condition"))?,
+                    instance_id: instance_id
+                        .ok_or_else(|| de::Error::missing_field("instance_id"))?,
+                    first_aware: first_aware
+                        .ok_or_else(|| de::Error::missing_field("first_aware"))?,
+                    last_aware: last_aware.ok_or_else(|| de::Error::missing_field("last_aware"))?,
+                    master_agent: master_agent
+                        .ok_or_else(|| de::Error::missing_field("master_agent"))?,
+                    phantom_data: PhantomData,
+                })
+            }
+        };
+
+        const FIELDS: &'static [&'static str] = &[
+            "addr",
+            "kind",
+            "toughness",
+            "concentration",
+            "healing",
+            "condition",
+            "instance_id",
+            "first_aware",
+            "last_aware",
+            "master_agent",
+        ];
+        deserializer.deserialize_struct("Agent", FIELDS, AgentVisitor)
+    }
 }
 
 impl TryFrom<&raw::Agent> for Agent {
