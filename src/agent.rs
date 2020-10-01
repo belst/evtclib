@@ -527,7 +527,7 @@ impl<'de> serde::Deserialize<'de> for Agent {
             }
         };
 
-        const FIELDS: &[&'static str] = &[
+        const FIELDS: &[&str] = &[
             "addr",
             "kind",
             "toughness",
