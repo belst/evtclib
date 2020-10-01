@@ -730,3 +730,56 @@ impl Agent<Character> {
         self.character().name()
     }
 }
+
+#[cfg(all(feature = "serde", test))]
+mod tests {
+    use super::*;
+
+    fn agent() -> Agent {
+        Agent {
+            addr: 0xdeadbeef,
+            kind: AgentKind::Character(Character {
+                id: 0xf00,
+                name: "Foo Bar".into(),
+            }),
+            toughness: -13,
+            concentration: -14,
+            healing: -15,
+            condition: -16,
+            instance_id: 1337,
+            first_aware: 0,
+            last_aware: 0xffffff,
+            master_agent: None,
+            phantom_data: PhantomData,
+        }
+    }
+
+    #[test]
+    fn serialization() {
+        let agent = agent();
+        let json = serde_json::to_string(&agent).unwrap();
+        let expected = r#"{"addr":3735928559,"kind":{"Character":{"id":3840,"name":"Foo Bar"}},"toughness":-13,"concentration":-14,"healing":-15,"condition":-16,"instance_id":1337,"first_aware":0,"last_aware":16777215,"master_agent":null}"#;
+        assert_eq!(json, expected);
+    }
+
+    #[test]
+    fn deserialization() {
+        let json = r#"{"addr":3735928559,"kind":{"Character":{"id":3840,"name":"Foo Bar"}},"toughness":-13,"concentration":-14,"healing":-15,"condition":-16,"instance_id":1337,"first_aware":0,"last_aware":16777215,"master_agent":null}"#;
+        let deserialized: Agent = serde_json::from_str(json).unwrap();
+        assert_eq!(deserialized, agent());
+    }
+
+    #[test]
+    #[should_panic(expected = "missing field `master_agent`")]
+    fn deserialization_missing_field() {
+        let json = r#"{"addr":3735928559,"kind":{"Character":{"id":3840,"name":"Foo Bar"}},"toughness":-13,"concentration":-14,"healing":-15,"condition":-16,"instance_id":1337,"first_aware":0,"last_aware":16777215}"#;
+        serde_json::from_str::<Agent>(json).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "duplicate field `master_agent`")]
+    fn deserialization_duplicated_field() {
+        let json = r#"{"addr":3735928559,"kind":{"Character":{"id":3840,"name":"Foo Bar"}},"toughness":-13,"concentration":-14,"healing":-15,"condition":-16,"instance_id":1337,"first_aware":0,"last_aware":16777215,"master_agent":null,"master_agent":null}"#;
+        serde_json::from_str::<Agent>(json).unwrap();
+    }
+}
