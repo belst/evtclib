@@ -88,7 +88,6 @@
 //! While there are legitimate use cases for writing/modification support, they are currently not
 //! implemented (but might be in a future version).
 
-use num_traits::FromPrimitive;
 use thiserror::Error;
 
 pub mod raw;
@@ -103,7 +102,6 @@ mod processing;
 pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
-use gamedata::Boss;
 pub use gamedata::{EliteSpec, Encounter, Profession};
 
 pub mod analyzers;
@@ -230,7 +228,7 @@ impl Log {
     /// if we know about it in [`Encounter`].
     #[inline]
     pub fn encounter(&self) -> Option<Encounter> {
-        Boss::from_u16(self.boss_id).map(Boss::encounter)
+        Encounter::from_header_id(self.boss_id)
     }
 
     /// Return an analyzer suitable to analyze the given log.

@@ -1,5 +1,6 @@
 //! This module contains some low-level game data, such as different boss IDs.
 use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use std::{
     fmt::{self, Display, Formatter},
     str::FromStr,
@@ -117,6 +118,21 @@ impl Encounter {
             Encounter::Boneskinner => &[Boss::Boneskinner],
             Encounter::WhisperOfJormag => &[Boss::WhisperOfJormag],
         }
+    }
+
+    /// Converts a combat ID as given in the arcdps header into the correct encounter.
+    ///
+    /// This properly takes care of encounters with multiple bosses or which could be saved as
+    /// multiple bosses.
+    ///
+    /// ```
+    /// # use evtclib::gamedata::Encounter;
+    /// assert_eq!(Encounter::from_header_id(0x3C4E), Some(Encounter::ValeGuardian));
+    /// assert_eq!(Encounter::from_header_id(0x5261), Some(Encounter::TwinLargos));
+    /// ```
+    #[inline]
+    pub fn from_header_id(id: u16) -> Option<Encounter> {
+        Boss::from_u16(id).map(Boss::encounter)
     }
 }
 
