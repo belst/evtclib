@@ -17,8 +17,13 @@ include = [
 [features]
 default = []
 
+[[bench]]
+name = "parsing_benchmark"
+harness = false
+
 [dev-dependencies]
 serde_json = "1.0"
+criterion = "0.3"
 
 [dependencies]
 num-traits = "0.2"
