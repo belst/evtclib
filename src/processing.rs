@@ -23,6 +23,9 @@ use super::{raw, Agent, Event, EvtcError, Log};
 pub fn process(data: &raw::Evtc) -> Result<Log, EvtcError> {
     // Prepare "augmented" agents
     let mut agents = setup_agents(data)?;
+    // We sort the agents so we can do a binary search later in get_agent_by_addr. The order is not
+    // really defined or important anyway, so we can just choose whatever works best here.
+    agents.sort_by_key(Agent::addr);
     // Do the first aware/last aware field
     set_agent_awares(data, &mut agents)?;
 
@@ -103,9 +106,9 @@ fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
     data.agents.iter().map(Agent::try_from).collect()
 }
 
-#[inline]
 fn get_agent_by_addr(agents: &mut [Agent], addr: u64) -> Option<&mut Agent> {
-    agents.iter_mut().find(|agent| agent.addr() == addr)
+    let pos = agents.binary_search_by_key(&addr, Agent::addr).ok()?;
+    Some(&mut agents[pos])
 }
 
 fn set_agent_awares(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcError> {
