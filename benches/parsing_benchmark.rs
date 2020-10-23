@@ -55,9 +55,25 @@ fn unzipped_qadim_benchmark(c: &mut Criterion) {
     });
 }
 
+/// This benchmark tests the performance of process on a pre-parsed log.
+///
+/// This is important because it is the point where we can change the most. Parsing the input file
+/// is a lot of bit-twiddling and there's probably not a lot of performance that we can gain
+/// (especially in the case where I/O slowdown is minimal), but when going from a RawEvtc to a Log,
+/// it is the first time that we actually do some work in converting all of the values from
+/// low-level to high-level.
+fn process_qadim(c: &mut Criterion) {
+    let file = io::BufReader::new(fs::File::open(QADIM_LOG).unwrap());
+    let raw_evtc = evtclib::raw::parse_zip(file).unwrap();
+
+    c.bench_function("process Qadim", |b| {
+        b.iter(|| evtclib::process(&raw_evtc).unwrap())
+    });
+}
+
 criterion_group! {
     name = benches;
     config = Criterion::default().sample_size(30);
-    targets = zipped_qadim_benchmark, zipped_qadim_ram_benchmark, unzipped_qadim_benchmark
+    targets = zipped_qadim_benchmark, zipped_qadim_ram_benchmark, unzipped_qadim_benchmark, process_qadim
 }
 criterion_main!(benches);
