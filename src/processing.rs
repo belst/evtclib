@@ -100,21 +100,12 @@ pub fn process_file<P: AsRef<Path>>(path: P, compression: Compression) -> Result
 }
 
 fn setup_agents(data: &raw::Evtc) -> Result<Vec<Agent>, EvtcError> {
-    let mut agents = Vec::with_capacity(data.agents.len());
-
-    for raw_agent in &data.agents {
-        agents.push(Agent::try_from(raw_agent)?);
-    }
-    Ok(agents)
+    data.agents.iter().map(Agent::try_from).collect()
 }
 
+#[inline]
 fn get_agent_by_addr(agents: &mut [Agent], addr: u64) -> Option<&mut Agent> {
-    for agent in agents {
-        if agent.addr() == addr {
-            return Some(agent);
-        }
-    }
-    None
+    agents.iter_mut().find(|agent| agent.addr() == addr)
 }
 
 fn set_agent_awares(data: &raw::Evtc, agents: &mut [Agent]) -> Result<(), EvtcError> {
