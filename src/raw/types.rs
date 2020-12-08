@@ -207,6 +207,9 @@ pub enum CbtStateChange {
     Error,
     /// `src_agent` is the agent, `value` is the tag id
     Tag,
+    /// `src_agent` is at barrier percent, `dst_agent` is the percentage times 10000 (so 99.5%
+    /// will be 9950).
+    BarrierUpdate,
 }
 
 impl Default for CbtStateChange {
