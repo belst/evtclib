@@ -115,6 +115,7 @@ pub enum EventKind {
         buff_id: u32,
         duration: i32,
         overstack: u32,
+        stack_id: u32,
     },
 
     /// Buff removed.
@@ -509,6 +510,7 @@ fn check_damage(raw_event: &raw::CbtEvent) -> Result<EventKind, FromRawEventErro
             buff_id: raw_event.skillid,
             duration: raw_event.value,
             overstack: raw_event.overstack_value,
+            stack_id: raw_event.padding_end,
         })
     } else if raw_event.buff == 1 && raw_event.buff_dmg == 0 && raw_event.value == 0 {
         Ok(EventKind::InvulnTick {
