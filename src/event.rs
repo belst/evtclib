@@ -21,6 +21,8 @@ pub enum FromRawEventError {
     UnknownDamageEvent,
     #[error("the event contains invalid text")]
     InvalidText,
+    #[error("an unexpected REPLINFO was found")]
+    UnexpectedReplInfo,
 }
 
 /// A rusty enum for all possible combat events.
@@ -394,9 +396,11 @@ impl TryFrom<&raw::CbtEvent> for Event {
                 buff_id: raw_event.skillid,
                 duration: raw_event.value,
             },
+            // The README says "internal use, won't see anywhere", so if we find one, we treat it
+            // as an error.
+            CbtStateChange::ReplInfo => return Err(FromRawEventError::UnexpectedReplInfo),
             // XXX: implement proper handling of those events!
-            CbtStateChange::ReplInfo
-            | CbtStateChange::StackActive
+            CbtStateChange::StackActive
             | CbtStateChange::StackReset
             | CbtStateChange::BuffInfo
             | CbtStateChange::BuffFormula
