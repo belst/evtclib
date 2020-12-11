@@ -135,6 +135,16 @@ pub enum EventKind {
         duration: i32,
     },
 
+    /// Mark the given buff stack as active.
+    StackActive { agent_addr: u64, stack_id: u32 },
+
+    /// Reset the duration of the given stack.
+    StackReset {
+        agent_addr: u64,
+        stack_id: u32,
+        duration: i32,
+    },
+
     /// Position of the agent has changed.
     Position {
         agent_addr: u64,
@@ -399,10 +409,17 @@ impl TryFrom<&raw::CbtEvent> for Event {
             // The README says "internal use, won't see anywhere", so if we find one, we treat it
             // as an error.
             CbtStateChange::ReplInfo => return Err(FromRawEventError::UnexpectedReplInfo),
+            CbtStateChange::StackActive => EventKind::StackActive {
+                agent_addr: raw_event.src_agent,
+                stack_id: raw_event.dst_agent as u32,
+            },
+            CbtStateChange::StackReset => EventKind::StackReset {
+                agent_addr: raw_event.src_agent,
+                stack_id: raw_event.padding_end,
+                duration: raw_event.value,
+            },
             // XXX: implement proper handling of those events!
-            CbtStateChange::StackActive
-            | CbtStateChange::StackReset
-            | CbtStateChange::BuffInfo
+            CbtStateChange::BuffInfo
             | CbtStateChange::BuffFormula
             | CbtStateChange::SkillInfo
             | CbtStateChange::SkillTiming

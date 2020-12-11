@@ -370,6 +370,8 @@ pub struct CbtEvent {
     pub is_shields: bool,
     /// False if buff dmg happened during tick, true otherwise.
     pub is_offcycle: bool,
+    /// Padding for some events.
+    pub padding_end: u32,
 }
 
 /// An agent.

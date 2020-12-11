@@ -388,6 +388,7 @@ pub fn parse_event_rev0<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
         is_flanking,
         is_shields,
         is_offcycle: false,
+        padding_end: 0,
     })
 }
 
@@ -424,8 +425,9 @@ pub fn parse_event_rev1<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
     let is_shields = input.read_u8()? != 0;
     let is_offcycle = input.read_u8()? != 0;
 
-    // Four more bytes of internal tracking garbage.
-    input.read_u32::<LE>()?;
+    // Should only be padding in most cases, but could also be useful for some events (like
+    // STACKRESET).
+    let padding_end = input.read_u32::<LE>()?;
 
     Ok(CbtEvent {
         time,
@@ -451,6 +453,7 @@ pub fn parse_event_rev1<R: Read>(mut input: R) -> ParseResult<CbtEvent> {
         is_flanking,
         is_shields,
         is_offcycle,
+        padding_end,
     })
 }
 
