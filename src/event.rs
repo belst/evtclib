@@ -125,6 +125,14 @@ pub enum EventKind {
         removal: raw::CbtBuffRemove,
     },
 
+    /// Initial buff
+    BuffInitial {
+        source_agent_addr: u64,
+        destination_agent_addr: u64,
+        buff_id: u32,
+        duration: i32,
+    },
+
     /// Position of the agent has changed.
     Position {
         agent_addr: u64,
@@ -380,9 +388,14 @@ impl TryFrom<&raw::CbtEvent> for Event {
                 agent_addr: raw_event.src_agent,
                 tag_id: raw_event.value,
             },
+            CbtStateChange::BuffInitial => EventKind::BuffInitial {
+                source_agent_addr: raw_event.src_agent,
+                destination_agent_addr: raw_event.dst_agent,
+                buff_id: raw_event.skillid,
+                duration: raw_event.value,
+            },
             // XXX: implement proper handling of those events!
-            CbtStateChange::BuffInitial
-            | CbtStateChange::ReplInfo
+            CbtStateChange::ReplInfo
             | CbtStateChange::StackActive
             | CbtStateChange::StackReset
             | CbtStateChange::BuffInfo
