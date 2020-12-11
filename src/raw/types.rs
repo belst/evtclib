@@ -50,6 +50,8 @@ pub enum CbtResult {
     KillingBlow,
     /// Hit was downing hit.
     Downed,
+    /// Hit was breakbar damage.
+    Breakbar,
     /// Field is not used in this kind of event.
     None,
 }
