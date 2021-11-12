@@ -39,6 +39,8 @@ pub struct Player {
 
 impl Player {
     /// The player's character name.
+    ///
+    /// **Note**: Hostile WvW agents will have a randomly generated player name.
     pub fn character_name(&self) -> &str {
         &self.character_name
     }
@@ -46,6 +48,8 @@ impl Player {
     /// The player's account name.
     ///
     /// This includes the leading colon and the 4-digit denominator.
+    ///
+    /// **Note**: Hostile WvW agents will have an empty account name.
     pub fn account_name(&self) -> &str {
         &self.account_name
     }
@@ -158,10 +162,19 @@ impl AgentKind {
         let character_name = raw::cstr_up_to_nul(&raw_agent.name)
             .ok_or(EvtcError::InvalidData)?
             .to_str()?;
-        let account_name = raw::cstr_up_to_nul(&raw_agent.name[character_name.len() + 1..])
+        let remainder = &raw_agent.name[character_name.len() + 1..];
+        let account_name = raw::cstr_up_to_nul(remainder)
             .ok_or(EvtcError::InvalidData)?
             .to_str()?;
-        let subgroup = raw_agent.name[character_name.len() + account_name.len() + 2] - b'0';
+        let remainder = &remainder[account_name.len() + 1..];
+        let subgroup = raw::cstr_up_to_nul(remainder)
+            .ok_or(EvtcError::InvalidData)?
+            .to_str()?;
+        let subgroup = if subgroup.is_empty() {
+            0
+        } else {
+            subgroup.parse().map_err(|_| EvtcError::InvalidData)?
+        };
         let elite = if raw_agent.is_elite == 0 {
             None
         } else {

@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 - Boss and encounter definitions for the training golems (`StandardKittyGolem`,
   `MediumKittyGolem`, `LargeKittyGolem`)
 
+### Fixed
+- `evtclib` will no longer choke on WvW logs where player names might not contain the expected
+  information.
+
 ## 0.5.0 - 2020-10-07
 ### Added
 - `Boss::Ai` to represent Ai, Keeper of the Peak in the Sunqua Peak fractal.
