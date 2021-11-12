@@ -393,6 +393,35 @@ test! {
     ],
 }
 
+// Training area
+
+test! {
+    name: parse_standard_kitty_golem,
+    log: "logs/standard-golem-20211112.zevtc",
+    boss: Encounter::StandardKittyGolem,
+    players: &[
+        (1, ":Dunje.4863", "Ai Higashi", Guardian, Some(Dragonhunter)),
+    ],
+}
+
+test! {
+    name: parse_medium_kitty_golem,
+    log: "logs/medium-golem-20211112.zevtc",
+    boss: Encounter::MediumKittyGolem,
+    players: &[
+        (1, ":Dunje.4863", "Ai Higashi", Guardian, Some(Dragonhunter)),
+    ],
+}
+
+test! {
+    name: parse_large_kitty_golem,
+    log: "logs/large-golem-20211112.zevtc",
+    boss: Encounter::LargeKittyGolem,
+    players: &[
+        (1, ":Dunje.4863", "Ai Higashi", Guardian, Some(Dragonhunter)),
+    ],
+}
+
 // 100 CM tests
 
 test! {

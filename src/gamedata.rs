@@ -54,6 +54,11 @@ pub enum Encounter {
     CardinalSabir = Boss::CardinalSabir as u16,
     QadimThePeerless = Boss::QadimThePeerless as u16,
 
+    // Training area
+    StandardKittyGolem = Boss::StandardKittyGolem as u16,
+    MediumKittyGolem = Boss::MediumKittyGolem as u16,
+    LargeKittyGolem = Boss::LargeKittyGolem as u16,
+
     // 100 CM (Sunqua Peak)
     Ai = Boss::Ai as u16,
 
@@ -105,6 +110,9 @@ impl Encounter {
             Encounter::CardinalAdina => &[Boss::CardinalAdina],
             Encounter::CardinalSabir => &[Boss::CardinalSabir],
             Encounter::QadimThePeerless => &[Boss::QadimThePeerless],
+            Encounter::StandardKittyGolem => &[Boss::StandardKittyGolem],
+            Encounter::MediumKittyGolem => &[Boss::MediumKittyGolem],
+            Encounter::LargeKittyGolem => &[Boss::LargeKittyGolem],
             Encounter::Ai => &[Boss::Ai],
             Encounter::Skorvald => &[Boss::Skorvald],
             Encounter::Artsariiv => &[Boss::Artsariiv],
@@ -185,6 +193,9 @@ impl Display for Encounter {
             Encounter::CardinalAdina => "Cardinal Adina",
             Encounter::CardinalSabir => "Cardinal Sabir",
             Encounter::QadimThePeerless => "Qadim the Peerless",
+            Encounter::StandardKittyGolem => "Standard Kitty Golem",
+            Encounter::MediumKittyGolem => "Medium Kitty Golem",
+            Encounter::LargeKittyGolem => "Large Kitty Golem",
             Encounter::Ai => "Ai Keeper of the Peak",
             Encounter::Skorvald => "Skorvald the Shattered",
             Encounter::Artsariiv => "Artsariiv",
@@ -317,6 +328,20 @@ pub enum Boss {
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Qadim_the_Peerless)
     QadimThePeerless = 0x55F0,
 
+    // The training area
+    /// The standard training golem, available in the Special Forces Training Area.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Standard_Kitty_Golem)
+    StandardKittyGolem = 0x3F47,
+    /// The medium training golem, available in the Special Forces Training Area.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Medium_Kitty_Golem)
+    MediumKittyGolem = 0x4CBD,
+    /// The large kitty golem available in the Special Forces Training Area.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Large_Kitty_Golem)
+    LargeKittyGolem = 0x4CDC,
+
     // 100 CM (Sunqua Peak)
     /// Ai, Keeper of the Peak, boss of the Sunqua Peak CM fractal.
     ///
@@ -407,6 +432,9 @@ impl Boss {
             Boss::CardinalAdina => Encounter::CardinalAdina,
             Boss::CardinalSabir => Encounter::CardinalSabir,
             Boss::QadimThePeerless => Encounter::QadimThePeerless,
+            Boss::StandardKittyGolem => Encounter::StandardKittyGolem,
+            Boss::MediumKittyGolem => Encounter::MediumKittyGolem,
+            Boss::LargeKittyGolem => Encounter::LargeKittyGolem,
             Boss::Ai => Encounter::Ai,
             Boss::Skorvald => Encounter::Skorvald,
             Boss::Artsariiv => Encounter::Artsariiv,
@@ -462,6 +490,10 @@ impl FromStr for Boss {
             "sabir" | "cardinal sabir" => Ok(Boss::CardinalSabir),
             "qadimp" | "peerless qadim" | "qadim the peerless" => Ok(Boss::QadimThePeerless),
 
+            "standard golem" | "standard kitty golem" => Ok(Boss::StandardKittyGolem),
+            "medium golem" | "medium kitty golem" => Ok(Boss::MediumKittyGolem),
+            "large golem" | "large kitty golem" => Ok(Boss::LargeKittyGolem),
+
             "ai" | "ai keeper of the peak" => Ok(Boss::Ai),
 
             "skorvald" => Ok(Boss::Skorvald),
@@ -508,6 +540,9 @@ impl Display for Boss {
             Boss::CardinalAdina => "Cardinal Adina",
             Boss::CardinalSabir => "Cardinal Sabir",
             Boss::QadimThePeerless => "Qadim the Peerless",
+            Boss::StandardKittyGolem => "Standard Kitty Golem",
+            Boss::MediumKittyGolem => "Medium Kitty Golem",
+            Boss::LargeKittyGolem => "Large Kitty Golem",
             Boss::Ai => "Ai Keeper of the Peak",
             Boss::Skorvald => "Skorvald the Shattered",
             Boss::Artsariiv => "Artsariiv",

@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Boss and encounter definitions for the training golems (`StandardKittyGolem`,
+  `MediumKittyGolem`, `LargeKittyGolem`)
 
 ## 0.5.0 - 2020-10-07
 ### Added

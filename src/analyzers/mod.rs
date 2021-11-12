@@ -108,6 +108,10 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
         Encounter::CardinalSabir => Some(Box::new(raids::CardinalSabir::new(log))),
         Encounter::QadimThePeerless => Some(Box::new(raids::QadimThePeerless::new(log))),
 
+        Encounter::StandardKittyGolem
+        | Encounter::MediumKittyGolem
+        | Encounter::LargeKittyGolem => Some(Box::new(raids::GenericRaid::new(log))),
+
         Encounter::Ai => Some(Box::new(fractals::Ai::new(log))),
         Encounter::Skorvald => Some(Box::new(fractals::Skorvald::new(log))),
         Encounter::Artsariiv
