@@ -389,7 +389,7 @@ impl TryFrom<&raw::CbtEvent> for Event {
                 targetable: raw_event.dst_agent != 0,
             },
             CbtStateChange::Error => {
-                let data = get_error_bytes(&raw_event);
+                let data = get_error_bytes(raw_event);
                 EventKind::Error {
                     text: raw::cstr_up_to_nul(&data)
                         .ok_or(FromRawEventError::InvalidText)?

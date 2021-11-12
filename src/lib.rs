@@ -233,7 +233,7 @@ impl Log {
 
     /// Return an analyzer suitable to analyze the given log.
     pub fn analyzer<'s>(&'s self) -> Option<Box<dyn Analyzer + 's>> {
-        analyzers::for_log(&self)
+        analyzers::for_log(self)
     }
 
     /// Return all events present in this log.
