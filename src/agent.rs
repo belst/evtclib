@@ -432,7 +432,7 @@ impl<'de> serde::Deserialize<'de> for Agent {
             FirstAware,
             LastAware,
             MasterAgent,
-        };
+        }
 
         struct AgentVisitor;
 
@@ -585,7 +585,7 @@ impl<'de> serde::Deserialize<'de> for Agent {
                     phantom_data: PhantomData,
                 })
             }
-        };
+        }
 
         const FIELDS: &[&str] = &[
             "addr",
