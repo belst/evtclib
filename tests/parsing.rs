@@ -115,6 +115,24 @@ test! {
 }
 
 test! {
+    name: parse_bandit_trio,
+    log: "logs/trio-20210501.zevtc",
+    boss: Encounter::BanditTrio,
+    players: &[
+        (2, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
+        (2, ":Straimer.1093", "Deepfreeze Myself", Elementalist, Some(Weaver)),
+        (2, ":Alninio.5964", "Daedhur", Necromancer, Some(Reaper)),
+        (2, ":Luigi.8076", "Phantasmal Ficus", Mesmer, Some(Chronomancer)),
+        (2, ":Subi.8014", "Juvenile Subi", Ranger, Some(Druid)),
+        (3, ":xyoz.6710", "Xaphy", Engineer, Some(Holosmith)),
+        (3, ":Ashe.2473", "Dust Of Stance", Revenant, Some(Renegade)),
+        (3, ":neko.9741", "Cat Of Jormag", Engineer, Some(Holosmith)),
+        (3, ":Snake.9125", "Matis Dorei", Guardian, Some(Firebrand)),
+        (3, ":eupneo.1036", "Tormented Flame", Revenant, Some(Renegade)),
+    ],
+}
+
+test! {
     name: parse_matthias,
     log: "logs/matthias-20200421.zevtc",
     boss: Encounter::Matthias,
