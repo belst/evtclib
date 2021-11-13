@@ -16,7 +16,7 @@ mod w4;
 pub use w4::{Cairn, Deimos, MursaatOverseer, Samarog};
 
 mod w5;
-pub use w5::{Dhuum, SoullessHorror};
+pub use w5::{Dhuum, RiverOfSouls, SoullessHorror};
 
 mod w6;
 pub use w6::{ConjuredAmalgamate, Qadim, TwinLargos};

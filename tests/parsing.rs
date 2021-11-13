@@ -283,6 +283,24 @@ test! {
 }
 
 test! {
+    name: parse_river,
+    log: "logs/river-20210412.zevtc",
+    boss: Encounter::RiverOfSouls,
+    players: &[
+        (1, ":Baragos.2384", "Cicadania", Mesmer, Some(Chronomancer)),
+        (1, ":Jupp.4570", "Aldwor", Guardian, Some(Firebrand)),
+        (2, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
+        (2, ":Taniniver BlindDragon.9503", "Dragon Kills You", Necromancer, Some(Scourge)),
+        (2, ":neko.9741", "Mordrem Cat", Ranger, Some(Druid)),
+        (2, ":Ricola.5183", "Glühstrumpf", Mesmer, Some(Chronomancer)),
+        (2, ":Faboss.2534", "Faboss Sensei", Revenant, Some(Renegade)),
+        (3, ":Glahs.2549", "Nala", Ranger, Some(Druid)),
+        (3, ":xyoz.6710", "Xaphwen", Mesmer, Some(Chronomancer)),
+        (3, ":Straimer.1093", "Deepfreeze Myself", Elementalist, Some(Tempest)),
+    ],
+}
+
+test! {
     name: parse_dhuum,
     log: "logs/dhuum-20200428.zevtc",
     boss: Encounter::VoiceInTheVoid,

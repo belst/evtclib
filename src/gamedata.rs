@@ -28,6 +28,11 @@ pub enum Encounter {
 
     // Wing 2
     Slothasor = Boss::Slothasor as u16,
+    /// The "Protect the caged prisoners" event in Salvation Pass.
+    ///
+    /// Consists of [`Boss::Berg`], [`Boss::Zane`] and [`Boss::Narella`].
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Protect_the_caged_prisoners)
     // Berg is the first encounter, which is why the logs are saved as "Berg".
     BanditTrio = Boss::Berg as u16,
     Matthias = Boss::Matthias as u16,
@@ -44,6 +49,10 @@ pub enum Encounter {
 
     // Wing 5
     SoullessHorror = Boss::SoullessHorror as u16,
+    /// The River of Souls is the Desmina escort event and an encounter that does not have a boss.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Traverse_the_River_of_Souls)
+    RiverOfSouls = 0x4D74,
     VoiceInTheVoid = Boss::Dhuum as u16,
 
     // Wing 6
@@ -106,6 +115,7 @@ impl Encounter {
             Encounter::Samarog => &[Boss::Samarog],
             Encounter::Deimos => &[Boss::Deimos],
             Encounter::SoullessHorror => &[Boss::SoullessHorror],
+            Encounter::RiverOfSouls => &[],
             Encounter::VoiceInTheVoid => &[Boss::Dhuum],
             Encounter::ConjuredAmalgamate => &[Boss::ConjuredAmalgamate],
             Encounter::TwinLargos => &[Boss::Nikare, Boss::Kenut],
@@ -143,6 +153,10 @@ impl Encounter {
     /// ```
     #[inline]
     pub fn from_header_id(id: u16) -> Option<Encounter> {
+        // For the encounter without boss, we do it manually.
+        if id == Encounter::RiverOfSouls as u16 {
+            return Some(Encounter::RiverOfSouls);
+        }
         Boss::from_u16(id).map(Boss::encounter)
     }
 }
@@ -167,6 +181,7 @@ impl FromStr for Encounter {
         let lower = s.to_lowercase();
         match &lower as &str {
             "trio" | "bandit trio" => Ok(Encounter::BanditTrio),
+            "river" | "river of souls" => Ok(Encounter::RiverOfSouls),
             "largos" | "twins" | "largos twins" | "twin largos" => Ok(Encounter::TwinLargos),
             "kodans" | "super kodan brothers" => Ok(Encounter::SuperKodanBrothers),
 
@@ -191,6 +206,7 @@ impl Display for Encounter {
             Encounter::Samarog => "Samarog",
             Encounter::Deimos => "Deimos",
             Encounter::SoullessHorror => "Soulless Horror",
+            Encounter::RiverOfSouls => "River of Souls",
             Encounter::VoiceInTheVoid => "Voice in the Void",
             Encounter::ConjuredAmalgamate => "Conjured Amalgamate",
             Encounter::TwinLargos => "Twin Largos",
@@ -807,6 +823,9 @@ mod tests {
             ("soulless horror", SoullessHorror),
             ("desmina", SoullessHorror),
             ("Desmina", SoullessHorror),
+            ("river", RiverOfSouls),
+            ("River", RiverOfSouls),
+            ("river of souls", RiverOfSouls),
             ("dhuum", VoiceInTheVoid),
             ("Dhuum", VoiceInTheVoid),
             ("ca", ConjuredAmalgamate),
