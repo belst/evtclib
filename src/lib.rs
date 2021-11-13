@@ -257,6 +257,18 @@ impl Log {
         let last = self.events().last().map(Event::time).unwrap_or(0);
         last - first
     }
+
+    /// Check whether this log represents a "generic" log.
+    ///
+    /// A generic log is a log that is not tied to a specific boss ID, but rather is triggered by
+    /// squad members entering and leaving combat. This is for example the case in WvW logs, which
+    /// can be identified using this function.
+    ///
+    /// Note that many of the analyzing functions (such as [`Log::was_rewarded`]) do not have
+    /// sensible results for generic functions.
+    pub fn is_generic(&self) -> bool {
+        self.boss_id == 1
+    }
 }
 
 /// Convenience data accessing funtions for [`Log`][Log]s.

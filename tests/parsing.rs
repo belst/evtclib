@@ -13,6 +13,7 @@ macro_rules! test {
             let log = evtclib::raw::parse_zip(&mut file).expect("parsing zip failed");
             let log = evtclib::process(&log).expect("processing log failed");
             assert_eq!(log.encounter(), Some($boss));
+            assert!(!log.is_generic());
 
             let players = $players;
 
