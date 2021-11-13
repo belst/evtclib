@@ -87,7 +87,9 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
             Some(Box::new(raids::GenericRaid::new(log)))
         }
 
-        Encounter::Slothasor | Encounter::Matthias => Some(Box::new(raids::GenericRaid::new(log))),
+        Encounter::Slothasor | Encounter::BanditTrio | Encounter::Matthias => {
+            Some(Box::new(raids::GenericRaid::new(log)))
+        }
 
         Encounter::KeepConstruct => Some(Box::new(raids::GenericRaid::new(log))),
         Encounter::Xera => Some(Box::new(raids::Xera::new(log))),

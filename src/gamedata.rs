@@ -28,6 +28,8 @@ pub enum Encounter {
 
     // Wing 2
     Slothasor = Boss::Slothasor as u16,
+    // Berg is the first encounter, which is why the logs are saved as "Berg".
+    BanditTrio = Boss::Berg as u16,
     Matthias = Boss::Matthias as u16,
 
     // Wing 3
@@ -95,6 +97,7 @@ impl Encounter {
             Encounter::Gorseval => &[Boss::Gorseval],
             Encounter::Sabetha => &[Boss::Sabetha],
             Encounter::Slothasor => &[Boss::Slothasor],
+            Encounter::BanditTrio => &[Boss::Berg, Boss::Zane, Boss::Narella],
             Encounter::Matthias => &[Boss::Matthias],
             Encounter::KeepConstruct => &[Boss::KeepConstruct],
             Encounter::Xera => &[Boss::Xera, Boss::Xera2],
@@ -163,6 +166,7 @@ impl FromStr for Encounter {
         }
         let lower = s.to_lowercase();
         match &lower as &str {
+            "trio" | "bandit trio" => Ok(Encounter::BanditTrio),
             "largos" | "twins" | "largos twins" | "twin largos" => Ok(Encounter::TwinLargos),
             "kodans" | "super kodan brothers" => Ok(Encounter::SuperKodanBrothers),
 
@@ -178,6 +182,7 @@ impl Display for Encounter {
             Encounter::Gorseval => "Gorseval",
             Encounter::Sabetha => "Sabetha",
             Encounter::Slothasor => "Slothasor",
+            Encounter::BanditTrio => "Bandit Trio",
             Encounter::Matthias => "Matthias Gabrel",
             Encounter::KeepConstruct => "Keep Construct",
             Encounter::Xera => "Xera",
@@ -245,6 +250,18 @@ pub enum Boss {
     ///
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Slothasor)
     Slothasor = 0x3EFB,
+    /// Berg, part of the "Bandit Trio" encounter.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Berg)
+    Berg = 0x3ED8,
+    /// Zane, part of the "Bandit Trio" encounter.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Zane)
+    Zane = 0x3F09,
+    /// Narella, part of the "Bandit Trio" encounter.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Narella)
+    Narella = 0x3EFD,
     /// Matthias, third boss of Salvation Pass.
     ///
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Matthias_Gabrel)
@@ -415,6 +432,7 @@ impl Boss {
             Boss::Gorseval => Encounter::Gorseval,
             Boss::Sabetha => Encounter::Sabetha,
             Boss::Slothasor => Encounter::Slothasor,
+            Boss::Berg | Boss::Zane | Boss::Narella => Encounter::BanditTrio,
             Boss::Matthias => Encounter::Matthias,
             Boss::KeepConstruct => Encounter::KeepConstruct,
             Boss::Xera => Encounter::Xera,
@@ -468,6 +486,9 @@ impl FromStr for Boss {
             "sab" | "sabetha" => Ok(Boss::Sabetha),
 
             "sloth" | "slothasor" => Ok(Boss::Slothasor),
+            "berg" => Ok(Boss::Berg),
+            "zane" => Ok(Boss::Zane),
+            "narella" => Ok(Boss::Narella),
             "matthias" => Ok(Boss::Matthias),
 
             "kc" | "keep construct" => Ok(Boss::KeepConstruct),
@@ -523,6 +544,9 @@ impl Display for Boss {
             Boss::Gorseval => "Gorseval",
             Boss::Sabetha => "Sabetha",
             Boss::Slothasor => "Slothasor",
+            Boss::Berg => "Berg",
+            Boss::Zane => "Zane",
+            Boss::Narella => "Narella",
             Boss::Matthias => "Matthias Gabrel",
             Boss::KeepConstruct => "Keep Construct",
             Boss::Xera => "Xera",
