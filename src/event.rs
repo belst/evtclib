@@ -19,6 +19,8 @@ pub enum FromRawEventError {
     UnknownStateChange(raw::CbtStateChange),
     #[error("event contains an unknown damage event")]
     UnknownDamageEvent,
+    #[error("an unknown language byte was found")]
+    UnknownLanguage,
     #[error("the event contains invalid text")]
     InvalidText,
     #[error("an unexpected REPLINFO was found")]
@@ -338,7 +340,8 @@ impl TryFrom<&raw::CbtEvent> for Event {
                 agent_addr: raw_event.src_agent,
             },
             CbtStateChange::Language => EventKind::Language {
-                language: raw::Language::from_u64(raw_event.src_agent).unwrap(),
+                language: raw::Language::from_u64(raw_event.src_agent)
+                    .ok_or(FromRawEventError::UnknownLanguage)?,
             },
             CbtStateChange::GwBuild => EventKind::Build {
                 build: raw_event.src_agent,

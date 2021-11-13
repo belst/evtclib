@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - Boss and encounter definitions for the training golems (`StandardKittyGolem`,
   `MediumKittyGolem`, `LargeKittyGolem`)
 - `Log::is_generic` to check whether a log is generic (WvW)
+- `FromRawEventError::UnknownLanguage` has been added to deal with an invalid
+  language byte.
 
 ### Fixed
 - `evtclib` will no longer choke on WvW logs where player names might not contain the expected

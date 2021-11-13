@@ -188,6 +188,11 @@ impl Log {
     ///
     /// Be careful with encounters that have multiple boss agents, such as Trio
     /// and Xera.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the boss agent cannot be found. For a more failsafe version,
+    /// see [`Log::boss_agents`].
     pub fn boss(&self) -> &Agent {
         self.characters()
             .find(|c| c.character().id() == self.boss_id)
