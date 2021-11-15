@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Boss and encounter definitions for the training golems (`StandardKittyGolem`,
   `MediumKittyGolem`, `LargeKittyGolem`)
+- Missing encounters and bosses:
+  - `Encounter::BanditTrio` (`Boss::Berg`, `Boss::Zane`, `Boss::Narella`)
+  - `Encounter::RiverOfSouls` (no bosses)
+  - `Encounter::BrokenKing` (`Boss::BrokenKing`)
+  - `Encounter::EaterOfSouls` (`Boss::EaterOfSouls`)
+  - `Encounter::StatueOfDarkness` (`Boss::EyeOfJudgment` and `Boss::EyeOfFate`)
 - `Log::is_generic` to check whether a log is generic (WvW)
 - `FromRawEventError::UnknownLanguage` has been added to deal with an invalid
   language byte.
