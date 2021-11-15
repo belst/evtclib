@@ -12,7 +12,13 @@ use thiserror::Error;
 /// An encounter is a fight or event for which a log can exist. An encounter consists of no, one or
 /// multiple bosses. Most encounters map 1:1 to a boss (like Vale Guardian), however there are some
 /// encounters with multiple bosses (like Twin Largos), and even encounters without bosses (like
-/// the River of Souls, currently not implemented.).
+/// the River of Souls).
+///
+/// Note that the meaning of "encounter" in the Guild Wars 2 Wiki is not the same as what
+/// [`Encounter`] represents. In many cases, they match, however there are some encounters which
+/// have no associated [`Encounter`] (like Spirit Run or Escort) and some cases where multiple
+/// [`Encounter`]s exist for a single encounter (like the Statues of Grenth encounter in the Hall
+/// of Chains).
 ///
 /// This enum is non-exhaustive to ensure that future encounters can be added without
 /// inducing a breaking change.
