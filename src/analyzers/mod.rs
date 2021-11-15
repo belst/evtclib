@@ -101,6 +101,9 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
 
         Encounter::SoullessHorror => Some(Box::new(raids::SoullessHorror::new(log))),
         Encounter::RiverOfSouls => Some(Box::new(raids::RiverOfSouls::new(log))),
+        Encounter::BrokenKing | Encounter::EaterOfSouls | Encounter::StatueOfDarkness => {
+            Some(Box::new(raids::GenericRaid::new(log)))
+        }
         Encounter::VoiceInTheVoid => Some(Box::new(raids::Dhuum::new(log))),
 
         Encounter::ConjuredAmalgamate => Some(Box::new(raids::ConjuredAmalgamate::new(log))),

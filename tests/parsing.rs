@@ -301,6 +301,60 @@ test! {
 }
 
 test! {
+    name: parse_broken_king,
+    log: "logs/broken-king-20211115.zevtc",
+    boss: Encounter::BrokenKing,
+    players: &[
+        (1, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
+        (1, ":Straimer.1093", "I Want Smite Back", Guardian, Some(Dragonhunter)),
+        (1, ":Taniniver BlindDragon.9503", "Dragon Kills You", Necromancer, Some(Scourge)),
+        (1, ":xyoz.6710", "Xaphwen", Mesmer, Some(Chronomancer)),
+        (2, ":Jupp.4570", "Aldwor", Guardian, Some(Firebrand)),
+        (2, ":Kiki.9576", "Spooky Kiki", Necromancer, Some(Scourge)),
+        (2, ":Rajnesh.4526", "I Rajnesh I", Revenant, Some(Renegade)),
+        (2, ":TheMakNoon.5071", "Twosouls M", Mesmer, Some(Chronomancer)),
+        (2, ":Timothy.5829", "Annegret On Frenzy", Ranger, Some(Druid)),
+        (3, ":neko.9741", "Syberia Nótt", Elementalist, Some(Tempest)),
+    ],
+}
+
+test! {
+    name: parse_eater,
+    log: "logs/eater-20211115.zevtc",
+    boss: Encounter::EaterOfSouls,
+    players: &[
+        (1, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
+        (1, ":Straimer.1093", "I Want Smite Back", Guardian, Some(Dragonhunter)),
+        (1, ":Taniniver BlindDragon.9503", "Dragon Kills You", Necromancer, Some(Scourge)),
+        (1, ":Timothy.5829", "Annegret On Frenzy", Ranger, Some(Druid)),
+        (1, ":xyoz.6710", "Xaphwen", Mesmer, Some(Chronomancer)),
+        (2, ":Jupp.4570", "Aldwor", Guardian, Some(Firebrand)),
+        (2, ":Kiki.9576", "Spooky Kiki", Necromancer, Some(Scourge)),
+        (2, ":Rajnesh.4526", "I Rajnesh I", Revenant, Some(Renegade)),
+        (2, ":TheMakNoon.5071", "Twosouls M", Mesmer, Some(Chronomancer)),
+        (2, ":neko.9741", "Syberia Nótt", Elementalist, Some(Tempest)),
+    ],
+}
+
+test! {
+    name: parse_eyes,
+    log: "logs/eyes-20211115.zevtc",
+    boss: Encounter::StatueOfDarkness,
+    players: &[
+        (1, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
+        (1, ":Straimer.1093", "I Want Smite Back", Guardian, Some(Dragonhunter)),
+        (1, ":Taniniver BlindDragon.9503", "Dragon Kills You", Necromancer, Some(Scourge)),
+        (1, ":Timothy.5829", "Annegret On Frenzy", Ranger, Some(Druid)),
+        (1, ":xyoz.6710", "Xaphwen", Mesmer, Some(Chronomancer)),
+        (2, ":Jupp.4570", "Aldwor", Guardian, Some(Firebrand)),
+        (2, ":Kiki.9576", "Spooky Kiki", Necromancer, Some(Scourge)),
+        (2, ":Rajnesh.4526", "I Rajnesh I", Revenant, Some(Renegade)),
+        (2, ":TheMakNoon.5071", "Twosouls M", Mesmer, Some(Chronomancer)),
+        (2, ":neko.9741", "Syberia Nótt", Elementalist, Some(Tempest)),
+    ],
+}
+
+test! {
     name: parse_dhuum,
     log: "logs/dhuum-20200428.zevtc",
     boss: Encounter::VoiceInTheVoid,

@@ -53,6 +53,15 @@ pub enum Encounter {
     ///
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Traverse_the_River_of_Souls)
     RiverOfSouls = 0x4D74,
+    BrokenKing = Boss::BrokenKing as u16,
+    EaterOfSouls = Boss::EaterOfSouls as u16,
+    /// The Statue of Darkness consists of killing the Eye of Judgment and the Eye of Fate.
+    ///
+    /// Colloquially known as just "eyes".
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Statue_of_Darkness)
+    StatueOfDarkness = Boss::EyeOfJudgment as u16,
+
     VoiceInTheVoid = Boss::Dhuum as u16,
 
     // Wing 6
@@ -116,6 +125,9 @@ impl Encounter {
             Encounter::Deimos => &[Boss::Deimos],
             Encounter::SoullessHorror => &[Boss::SoullessHorror],
             Encounter::RiverOfSouls => &[],
+            Encounter::BrokenKing => &[Boss::BrokenKing],
+            Encounter::EaterOfSouls => &[Boss::EaterOfSouls],
+            Encounter::StatueOfDarkness => &[Boss::EyeOfJudgment, Boss::EyeOfFate],
             Encounter::VoiceInTheVoid => &[Boss::Dhuum],
             Encounter::ConjuredAmalgamate => &[Boss::ConjuredAmalgamate],
             Encounter::TwinLargos => &[Boss::Nikare, Boss::Kenut],
@@ -182,6 +194,7 @@ impl FromStr for Encounter {
         match &lower as &str {
             "trio" | "bandit trio" => Ok(Encounter::BanditTrio),
             "river" | "river of souls" => Ok(Encounter::RiverOfSouls),
+            "eyes" | "statue of darkness" => Ok(Encounter::StatueOfDarkness),
             "largos" | "twins" | "largos twins" | "twin largos" => Ok(Encounter::TwinLargos),
             "kodans" | "super kodan brothers" => Ok(Encounter::SuperKodanBrothers),
 
@@ -207,6 +220,9 @@ impl Display for Encounter {
             Encounter::Deimos => "Deimos",
             Encounter::SoullessHorror => "Soulless Horror",
             Encounter::RiverOfSouls => "River of Souls",
+            Encounter::BrokenKing => "Broken King",
+            Encounter::EaterOfSouls => "Eater of Souls",
+            Encounter::StatueOfDarkness => "Statue of Darkness",
             Encounter::VoiceInTheVoid => "Voice in the Void",
             Encounter::ConjuredAmalgamate => "Conjured Amalgamate",
             Encounter::TwinLargos => "Twin Largos",
@@ -322,6 +338,22 @@ pub enum Boss {
     ///
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Soulless_Horror)
     SoullessHorror = 0x4D37,
+    /// Broken King, part of the Statues of Grenth event in the Hall of Chains.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Broken_King)
+    BrokenKing = 0x4CEB,
+    /// Eater of Souls, part of the Statues of Grenth event in the Hall of Chains.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Eater_of_Souls_(Hall_of_Chains))
+    EaterOfSouls = 0x4C50,
+    /// The Eye of Judgment, part of the Statue of Darkness event in the Hall of Chains.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Eye_of_Judgment)
+    EyeOfJudgment = 0x4CC3,
+    /// The Eye of Fate, part of the Statue of Darkness event in the Hall of Chains.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Eye_of_Fate)
+    EyeOfFate = 0x4D84,
     /// Dhuum, second boss of the Hall of Chains.
     ///
     /// The encounter to this boss is called [Voice in the Void][Encounter::VoiceInTheVoid].
@@ -458,6 +490,10 @@ impl Boss {
             Boss::Samarog => Encounter::Samarog,
             Boss::Deimos => Encounter::Deimos,
             Boss::SoullessHorror => Encounter::SoullessHorror,
+            Boss::BrokenKing => Encounter::BrokenKing,
+            Boss::EaterOfSouls => Encounter::EaterOfSouls,
+            Boss::EyeOfJudgment => Encounter::StatueOfDarkness,
+            Boss::EyeOfFate => Encounter::StatueOfDarkness,
             Boss::Dhuum => Encounter::VoiceInTheVoid,
             Boss::ConjuredAmalgamate => Encounter::ConjuredAmalgamate,
             Boss::Nikare => Encounter::TwinLargos,
@@ -516,6 +552,10 @@ impl FromStr for Boss {
             "deimos" => Ok(Boss::Deimos),
 
             "desmina" | "sh" | "soulless horror" => Ok(Boss::SoullessHorror),
+            "broken king" => Ok(Boss::BrokenKing),
+            "eater" | "eater of souls" => Ok(Boss::EaterOfSouls),
+            "eye of judgment" => Ok(Boss::EyeOfJudgment),
+            "eye of fate" => Ok(Boss::EyeOfFate),
             "dhuum" | "voice in the void" => Ok(Boss::Dhuum),
 
             "ca" | "conjured amalgamate" => Ok(Boss::ConjuredAmalgamate),
@@ -572,6 +612,10 @@ impl Display for Boss {
             Boss::Samarog => "Samarog",
             Boss::Deimos => "Deimos",
             Boss::SoullessHorror => "Soulless Horror",
+            Boss::BrokenKing => "Broken King",
+            Boss::EaterOfSouls => "Eater of Souls",
+            Boss::EyeOfJudgment => "Eye of Judgment",
+            Boss::EyeOfFate => "Eye of Fate",
             Boss::Dhuum => "Dhuum",
             Boss::ConjuredAmalgamate => "Conjured Amalgamate",
             Boss::Nikare => "Nikare",
@@ -826,6 +870,14 @@ mod tests {
             ("river", RiverOfSouls),
             ("River", RiverOfSouls),
             ("river of souls", RiverOfSouls),
+            ("broken king", BrokenKing),
+            ("Broken King", BrokenKing),
+            ("eater", EaterOfSouls),
+            ("eater of souls", EaterOfSouls),
+            ("Eater of Souls", EaterOfSouls),
+            ("eyes", StatueOfDarkness),
+            ("statue of darkness", StatueOfDarkness),
+            ("Statue of Darkness", StatueOfDarkness),
             ("dhuum", VoiceInTheVoid),
             ("Dhuum", VoiceInTheVoid),
             ("ca", ConjuredAmalgamate),
@@ -945,6 +997,15 @@ mod tests {
             ("soulless horror", SoullessHorror),
             ("desmina", SoullessHorror),
             ("Desmina", SoullessHorror),
+            ("broken king", BrokenKing),
+            ("Broken King", BrokenKing),
+            ("eater", EaterOfSouls),
+            ("eater of souls", EaterOfSouls),
+            ("Eater of Souls", EaterOfSouls),
+            ("eye of judgment", EyeOfJudgment),
+            ("Eye of Judgment", EyeOfJudgment),
+            ("eye of fate", EyeOfFate),
+            ("Eye of Fate", EyeOfFate),
             ("dhuum", Dhuum),
             ("Dhuum", Dhuum),
             ("ca", ConjuredAmalgamate),
