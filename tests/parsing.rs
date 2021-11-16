@@ -3,10 +3,10 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use evtclib::{EliteSpec::*, Encounter, Profession::*};
+use evtclib::{EliteSpec::*, Encounter, GameMode::*, Profession::*};
 
 macro_rules! test {
-    (name: $name:ident, log: $log:literal, boss: $boss:expr, players: $players:expr,) => {
+    (name: $name:ident, log: $log:literal, boss: $boss:expr, mode: $mode:expr, players: $players:expr,) => {
         #[test]
         fn $name() {
             let mut file = BufReader::new(File::open(format!("tests/{}", $log)).unwrap());
@@ -14,6 +14,7 @@ macro_rules! test {
             let log = evtclib::process(&log).expect("processing log failed");
             assert_eq!(log.encounter(), Some($boss));
             assert!(!log.is_generic());
+            assert_eq!(log.game_mode(), Some($mode));
 
             let players = $players;
 
@@ -44,6 +45,7 @@ test! {
     name: parse_vale_guardian,
     log: "logs/vg-20200421.zevtc",
     boss: Encounter::ValeGuardian,
+    mode: Raid,
     players: &[
         (4, ":AliceWindwalker.6238", "Fafnarin Sunseeker", Warrior, Some(Berserker)),
         (4, ":Gellalli.6580", "Germi N", Revenant, Some(Renegade)),
@@ -62,6 +64,7 @@ test! {
     name: parse_gorseval,
     log: "logs/gorseval-20200421.zevtc",
     boss: Encounter::Gorseval,
+    mode: Raid,
     players: &[
         (4, ":AliceWindwalker.6238", "Fafnarin Sunseeker", Warrior, Some(Berserker)),
         (4, ":Gellalli.6580", "Germi N", Revenant, Some(Renegade)),
@@ -80,6 +83,7 @@ test! {
     name: parse_sabetha,
     log: "logs/sabetha-20200421.zevtc",
     boss: Encounter::Sabetha,
+    mode: Raid,
     players: &[
         (4, ":AliceWindwalker.6238", "Fafnarin Sunseeker", Warrior, Some(Berserker)),
         (4, ":Gellalli.6580", "Germi N", Revenant, Some(Renegade)),
@@ -100,6 +104,7 @@ test! {
     name: parse_slothasor,
     log: "logs/slothasor-20200420.zevtc",
     boss: Encounter::Slothasor,
+    mode: Raid,
     players: &[
         (2, ":Basafrass.4138", "Miss Mary J", Guardian, Some(Dragonhunter)),
         (2, ":Gellalli.6580", "Gellalli V", Guardian, Some(Dragonhunter)),
@@ -118,6 +123,7 @@ test! {
     name: parse_bandit_trio,
     log: "logs/trio-20210501.zevtc",
     boss: Encounter::BanditTrio,
+    mode: Raid,
     players: &[
         (2, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
         (2, ":Straimer.1093", "Deepfreeze Myself", Elementalist, Some(Weaver)),
@@ -136,6 +142,7 @@ test! {
     name: parse_matthias,
     log: "logs/matthias-20200421.zevtc",
     boss: Encounter::Matthias,
+    mode: Raid,
     players: &[
         (2, ":Basafrass.4138", "Miss Mary J", Guardian, Some(Dragonhunter)),
         (2, ":Gellalli.6580", "Germi N", Revenant, Some(Renegade)),
@@ -156,6 +163,7 @@ test! {
     name: parse_keep_construct,
     log: "logs/kc-20200426.zevtc",
     boss: Encounter::KeepConstruct,
+    mode: Raid,
     players: &[
         (3, ":Bomaga.2106", "Krupniczek", Guardian, Some(Dragonhunter)),
         (3, ":Buddy Christ.1758", "Block Buddy", Guardian, Some(Dragonhunter)),
@@ -174,6 +182,7 @@ test! {
     name: parse_xera,
     log: "logs/xera-20200415.zevtc",
     boss: Encounter::Xera,
+    mode: Raid,
     players: &[
         (2, ":Marcoliveira.7526", "Flamed Horns", Guardian, Some(Dragonhunter)),
         (2, ":Marvin.4612", "Necro Rp", Necromancer, Some(Reaper)),
@@ -194,6 +203,7 @@ test! {
     name: parse_cairn,
     log: "logs/cairn-20200426.zevtc",
     boss: Encounter::Cairn,
+    mode: Raid,
     players: &[
         (3, ":Bomaga.2106", "Krupniczek", Guardian, Some(Dragonhunter)),
         (3, ":Buddy Christ.1758", "Block Buddy", Guardian, Some(Firebrand)),
@@ -212,6 +222,7 @@ test! {
     name: parse_mursaat_overseer,
     log: "logs/mo-20200426.zevtc",
     boss: Encounter::MursaatOverseer,
+    mode: Raid,
     players: &[
         (3, ":Bomaga.2106", "Krupniczek", Guardian, Some(Dragonhunter)),
         (3, ":Buddy Christ.1758", "Block Buddy", Guardian, Some(Dragonhunter)),
@@ -230,6 +241,7 @@ test! {
     name: parse_samarog,
     log: "logs/samarog-20200426.zevtc",
     boss: Encounter::Samarog,
+    mode: Raid,
     players: &[
         (3, ":Bomaga.2106", "Krupniczek", Guardian, Some(Dragonhunter)),
         (3, ":Buddy Christ.1758", "Block Buddy", Guardian, Some(Dragonhunter)),
@@ -248,6 +260,7 @@ test! {
     name: parse_deimos,
     log: "logs/deimos-20200428.zevtc",
     boss: Encounter::Deimos,
+    mode: Raid,
     players: &[
         (2, ":CrusaderCody.6935", "Cody Quickfire", Guardian, Some(Firebrand)),
         (2, ":Mrperfect.5213", "Hanna Kowalski", Revenant, Some(Renegade)),
@@ -268,6 +281,7 @@ test! {
     name: parse_desmina,
     log: "logs/desmina-20200425.zevtc",
     boss: Encounter::SoullessHorror,
+    mode: Raid,
     players: &[
         (3, ":AliceWindwalker.6238", "Fafnarin Sunseeker", Warrior, Some(Berserker)),
         (3, ":Dunje.4863", "Godric Gobbledygook", Mesmer, Some(Chronomancer)),
@@ -286,6 +300,7 @@ test! {
     name: parse_river,
     log: "logs/river-20210412.zevtc",
     boss: Encounter::RiverOfSouls,
+    mode: Raid,
     players: &[
         (1, ":Baragos.2384", "Cicadania", Mesmer, Some(Chronomancer)),
         (1, ":Jupp.4570", "Aldwor", Guardian, Some(Firebrand)),
@@ -304,6 +319,7 @@ test! {
     name: parse_broken_king,
     log: "logs/broken-king-20211115.zevtc",
     boss: Encounter::BrokenKing,
+    mode: Raid,
     players: &[
         (1, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
         (1, ":Straimer.1093", "I Want Smite Back", Guardian, Some(Dragonhunter)),
@@ -322,6 +338,7 @@ test! {
     name: parse_eater,
     log: "logs/eater-20211115.zevtc",
     boss: Encounter::EaterOfSouls,
+    mode: Raid,
     players: &[
         (1, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
         (1, ":Straimer.1093", "I Want Smite Back", Guardian, Some(Dragonhunter)),
@@ -340,6 +357,7 @@ test! {
     name: parse_eyes,
     log: "logs/eyes-20211115.zevtc",
     boss: Encounter::StatueOfDarkness,
+    mode: Raid,
     players: &[
         (1, ":Dunje.4863", "Pallida Howhite", Warrior, Some(Berserker)),
         (1, ":Straimer.1093", "I Want Smite Back", Guardian, Some(Dragonhunter)),
@@ -358,6 +376,7 @@ test! {
     name: parse_dhuum,
     log: "logs/dhuum-20200428.zevtc",
     boss: Encounter::VoiceInTheVoid,
+    mode: Raid,
     players: &[
         (1, ":DaZzius.4753", "Amestye Aëther", Mesmer, Some(Chronomancer)),
         (1, ":Dunje.4863", "Maho Shiina", Revenant, Some(Renegade)),
@@ -378,6 +397,7 @@ test! {
     name: parse_conjured_amalgamate,
     log: "logs/ca-20200426.zevtc",
     boss: Encounter::ConjuredAmalgamate,
+    mode: Raid,
     players: &[
         (3, ":Admiral Aka Inu.4962", "Großadmiral Aka Inu", Warrior, Some(Berserker)),
         (3, ":Dunje.4863", "Irodo", Elementalist, Some(Weaver)),
@@ -396,6 +416,7 @@ test! {
     name: parse_largos_twins,
     log: "logs/largos-20200426.zevtc",
     boss: Encounter::TwinLargos,
+    mode: Raid,
     players: &[
         (3, ":Cyen Lazarus.4170", "Cyen Blackarrow", Ranger, Some(Druid)),
         (3, ":Dunje.4863", "Godric Gobbledygook", Mesmer, Some(Mirage)),
@@ -414,6 +435,7 @@ test! {
     name: parse_qadim,
     log: "logs/qadim-20200427.zevtc",
     boss: Encounter::Qadim,
+    mode: Raid,
     players: &[
         (3, ":Cyen Lazarus.4170", "Cyen Blackarrow", Ranger, Some(Druid)),
         (3, ":Lopoeo.1594", "Glücklich Und Satt", Mesmer, Some(Chronomancer)),
@@ -434,6 +456,7 @@ test! {
     name: parse_adina,
     log: "logs/adina-20200427.zevtc",
     boss: Encounter::CardinalAdina,
+    mode: Raid,
     players: &[
         (3, ":Arkady.3768", "Just Pakly", Engineer, Some(Holosmith)),
         (3, ":Dunje.4863", "Peter Party", Ranger, Some(Soulbeast)),
@@ -452,6 +475,7 @@ test! {
     name: parse_sabir,
     log: "logs/sabir-20200427.zevtc",
     boss: Encounter::CardinalSabir,
+    mode: Raid,
     players: &[
         (3, ":Arkady.3768", "Just Pakly", Engineer, Some(Holosmith)),
         (3, ":Dunje.4863", "Emma Hydes", Elementalist, Some(Weaver)),
@@ -470,6 +494,7 @@ test! {
     name: parse_qadim_the_peerless,
     log: "logs/qadimp-20200427.zevtc",
     boss: Encounter::QadimThePeerless,
+    mode: Raid,
     players: &[
         (3, ":AliceWindwalker.6238", "Fafnarin Sunseeker", Warrior, Some(Berserker)),
         (3, ":Arkady.3768", "Just Pakly", Engineer, Some(Holosmith)),
@@ -490,6 +515,7 @@ test! {
     name: parse_standard_kitty_golem,
     log: "logs/standard-golem-20211112.zevtc",
     boss: Encounter::StandardKittyGolem,
+    mode: Golem,
     players: &[
         (1, ":Dunje.4863", "Ai Higashi", Guardian, Some(Dragonhunter)),
     ],
@@ -499,6 +525,7 @@ test! {
     name: parse_medium_kitty_golem,
     log: "logs/medium-golem-20211112.zevtc",
     boss: Encounter::MediumKittyGolem,
+    mode: Golem,
     players: &[
         (1, ":Dunje.4863", "Ai Higashi", Guardian, Some(Dragonhunter)),
     ],
@@ -508,6 +535,7 @@ test! {
     name: parse_large_kitty_golem,
     log: "logs/large-golem-20211112.zevtc",
     boss: Encounter::LargeKittyGolem,
+    mode: Golem,
     players: &[
         (1, ":Dunje.4863", "Ai Higashi", Guardian, Some(Dragonhunter)),
     ],
@@ -519,6 +547,7 @@ test! {
     name: parse_ai,
     log: "logs/ai-20200922.zevtc",
     boss: Encounter::Ai,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Padme Amidada", Guardian, Some(Firebrand)),
         (0, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
@@ -534,6 +563,7 @@ test! {
     name: parse_skorvald,
     log: "logs/skorvald-20200427.zevtc",
     boss: Encounter::Skorvald,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Jane Whiskerlisp", Revenant, Some(Renegade)),
         (0, ":Gellalli.6580", "Germi X", Ranger, Some(Soulbeast)),
@@ -547,6 +577,7 @@ test! {
     name: parse_artsariiv,
     log: "logs/artsariiv-20200427.zevtc",
     boss: Encounter::Artsariiv,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Jane Whiskerlisp", Revenant, Some(Renegade)),
         (0, ":Gellalli.6580", "Germi X", Ranger, Some(Soulbeast)),
@@ -560,6 +591,7 @@ test! {
     name: parse_arkk,
     log: "logs/arkk-20200427.zevtc",
     boss: Encounter::Arkk,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Jane Whiskerlisp", Revenant, Some(Renegade)),
         (0, ":Gellalli.6580", "Germi X", Ranger, Some(Soulbeast)),
@@ -575,6 +607,7 @@ test! {
     name: parse_mama,
     log: "logs/mama-20200427.zevtc",
     boss: Encounter::MAMA,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Jane Whiskerlisp", Revenant, Some(Renegade)),
         (0, ":Gellalli.6580", "Germi X", Ranger, Some(Soulbeast)),
@@ -588,6 +621,7 @@ test! {
     name: parse_siax,
     log: "logs/siax-20200427.zevtc",
     boss: Encounter::Siax,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Jane Whiskerlisp", Revenant, Some(Renegade)),
         (0, ":Gellalli.6580", "Germi X", Ranger, Some(Soulbeast)),
@@ -601,6 +635,7 @@ test! {
     name: parse_ensolyss,
     log: "logs/ensolyss-20200427.zevtc",
     boss: Encounter::Ensolyss,
+    mode: Fractal,
     players: &[
         (0, ":Dunje.4863", "Jane Whiskerlisp", Revenant, Some(Renegade)),
         (0, ":Gellalli.6580", "Germi X", Ranger, Some(Soulbeast)),
@@ -616,6 +651,7 @@ test! {
     name: parse_icebrood,
     log: "logs/icebrood-20200424.zevtc",
     boss: Encounter::IcebroodConstruct,
+    mode: Strike,
     players: &[
         (3, ":Dunje.4863", "Thank You Exorcist", Necromancer, Some(Reaper)),
         (3, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
@@ -634,6 +670,7 @@ test! {
     name: parse_kodan_brothers,
     log: "logs/kodans-20200424.zevtc",
     boss: Encounter::SuperKodanBrothers,
+    mode: Strike,
     players: &[
         (3, ":Gellalli.6580", "Germi J", Necromancer, Some(Scourge)),
         (3, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
@@ -652,6 +689,7 @@ test! {
     name: parse_fraenir_of_jormag,
     log: "logs/fraenir-20200424.zevtc",
     boss: Encounter::FraenirOfJormag,
+    mode: Strike,
     players: &[
         (3, ":Dunje.4863", "Thank You Exorcist", Necromancer, Some(Reaper)),
         (3, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
@@ -670,6 +708,7 @@ test! {
     name: parse_boneskinner,
     log: "logs/boneskinner-20200424.zevtc",
     boss: Encounter::Boneskinner,
+    mode: Strike,
     players: &[
         (3, ":Gellalli.6580", "Germi J", Necromancer, Some(Scourge)),
         (3, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
@@ -688,6 +727,7 @@ test! {
     name: parse_whisper_of_jormag,
     log: "logs/whisper-20200424.zevtc",
     boss: Encounter::WhisperOfJormag,
+    mode: Strike,
     players: &[
         (3, ":Gellalli.6580", "Germi J", Necromancer, Some(Scourge)),
         (3, ":Speeaaakmaan.8974", "Damage Modifiers", Guardian, Some(Firebrand)),
@@ -708,6 +748,7 @@ test! {
     name: parse_old_cairn_log,
     log: "logs/old-cairn-20180321.evtc.zip",
     boss: Encounter::Cairn,
+    mode: Raid,
     players: &[
         (1, ":Medejz.1679", "Nuerha", Guardian, Some(Firebrand)),
         (1, ":ONEVA.5860", "Berserkoala", Revenant, Some(Renegade)),

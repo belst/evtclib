@@ -8,4 +8,5 @@ fn test_smoke() {
     let log = "./tests/logs/wvw-20211112.zevtc";
     let log = evtclib::process_file(log, evtclib::Compression::Zip).unwrap();
     assert!(log.is_generic());
+    assert_eq!(log.game_mode(), Some(evtclib::GameMode::WvW));
 }
