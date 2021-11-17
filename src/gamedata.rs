@@ -7,6 +7,25 @@ use std::{
 };
 use thiserror::Error;
 
+/// The game mode in which a log was produced.
+///
+/// Note that the distinction made here is relatively arbitrary, but hopefully still useful. In
+/// Guild Wars 2 terms, there is no clear definition of what a "game mode" is.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum GameMode {
+    /// The log is from a raid encounter.
+    Raid,
+    /// The log is from a fractal fight.
+    Fractal,
+    /// The log is from a strike mission.
+    Strike,
+    /// The log is from a training golem.
+    Golem,
+    /// The log is from a world-versus-world fight.
+    WvW,
+}
+
 /// Enum containing all encounters with their IDs.
 ///
 /// An encounter is a fight or event for which a log can exist. An encounter consists of no, one or
@@ -176,6 +195,28 @@ impl Encounter {
             return Some(Encounter::RiverOfSouls);
         }
         Boss::from_u16(id).map(Boss::encounter)
+    }
+
+    /// Returns the game mode of the encounter.
+    ///
+    /// This is one of [`GameMode::Raid`], [`GameMode::Fractal`], [`GameMode::Golem`] or
+    /// [`GameMode::Strike`].
+    pub fn game_mode(self) -> GameMode {
+        use Encounter::*;
+        match self {
+            MAMA | Siax | Ensolyss | Skorvald | Artsariiv | Arkk | Ai => GameMode::Fractal,
+
+            ValeGuardian | Gorseval | Sabetha | Slothasor | BanditTrio | Matthias
+            | KeepConstruct | Xera | Cairn | MursaatOverseer | Samarog | Deimos
+            | SoullessHorror | RiverOfSouls | BrokenKing | EaterOfSouls | StatueOfDarkness
+            | VoiceInTheVoid | ConjuredAmalgamate | TwinLargos | Qadim | CardinalAdina
+            | CardinalSabir | QadimThePeerless => GameMode::Raid,
+
+            IcebroodConstruct | Boneskinner | SuperKodanBrothers | FraenirOfJormag
+            | WhisperOfJormag => GameMode::Strike,
+
+            StandardKittyGolem | MediumKittyGolem | LargeKittyGolem => GameMode::Golem,
+        }
     }
 }
 

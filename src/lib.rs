@@ -102,7 +102,7 @@ mod processing;
 pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
-pub use gamedata::{EliteSpec, Encounter, Profession};
+pub use gamedata::{EliteSpec, Encounter, GameMode, Profession};
 
 pub mod analyzers;
 pub use analyzers::{Analyzer, Outcome};
@@ -132,27 +132,6 @@ pub enum EvtcError {
     /// The file contains invalid utf-8.
     #[error("utf8 decoding error: {0}")]
     Utf8Error(#[from] std::str::Utf8Error),
-}
-
-/// The game mode in which a log was produced.
-///
-/// Note that the distinction made here is relatively arbitrary, but hopefully still useful. In
-/// Guild Wars 2 terms, there is no clear definition of what a "game mode" is.
-///
-/// The game mode of a [`Log`] is obtained through [`Log::game_mode()`].
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum GameMode {
-    /// The log is from a raid encounter.
-    Raid,
-    /// The log is from a fractal fight.
-    Fractal,
-    /// The log is from a strike mission.
-    Strike,
-    /// The log is from a training golem.
-    Golem,
-    /// The log is from a world-versus-world fight.
-    WvW,
 }
 
 /// A fully processed log file.
@@ -304,22 +283,9 @@ impl Log {
         // Here we assume that any generic log is a WvW log, I'm not aware of other generic logs
         // being produced at the moment.
         if self.is_generic() {
-            return Some(GameMode::WvW);
-        }
-        use Encounter::*;
-        match self.encounter()? {
-            MAMA | Siax | Ensolyss | Skorvald | Artsariiv | Arkk | Ai => Some(GameMode::Fractal),
-
-            ValeGuardian | Gorseval | Sabetha | Slothasor | BanditTrio | Matthias
-            | KeepConstruct | Xera | Cairn | MursaatOverseer | Samarog | Deimos
-            | SoullessHorror | RiverOfSouls | BrokenKing | EaterOfSouls | StatueOfDarkness
-            | VoiceInTheVoid | ConjuredAmalgamate | TwinLargos | Qadim | CardinalAdina
-            | CardinalSabir | QadimThePeerless => Some(GameMode::Raid),
-
-            IcebroodConstruct | Boneskinner | SuperKodanBrothers | FraenirOfJormag
-            | WhisperOfJormag => Some(GameMode::Strike),
-
-            StandardKittyGolem | MediumKittyGolem | LargeKittyGolem => Some(GameMode::Golem),
+            Some(GameMode::WvW)
+        } else {
+            self.encounter().map(Encounter::game_mode)
         }
     }
 }

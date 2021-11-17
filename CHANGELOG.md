@@ -13,7 +13,8 @@ All notable changes to this project will be documented in this file.
   - `Encounter::EaterOfSouls` (`Boss::EaterOfSouls`)
   - `Encounter::StatueOfDarkness` (`Boss::EyeOfJudgment` and `Boss::EyeOfFate`)
 - `Log::is_generic` to check whether a log is generic (WvW)
-- `GameMode` and the `Log::game_mode` method
+- `gamedata::GameMode` and the `Encounter::game_mode` and `Log::game_mode`
+  methods
 - `FromRawEventError::UnknownLanguage` has been added to deal with an invalid
   language byte.
 
