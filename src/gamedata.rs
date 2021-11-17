@@ -26,6 +26,28 @@ pub enum GameMode {
     WvW,
 }
 
+/// Error for when converting a string to a game mode fails.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Error)]
+#[error("Invalid encounter identifier: {0}")]
+pub struct ParseGameModeError(String);
+
+impl FromStr for GameMode {
+    type Err = ParseGameModeError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let lower = s.to_lowercase();
+        match &lower as &str {
+            "raid" => Ok(GameMode::Raid),
+            "fractal" => Ok(GameMode::Fractal),
+            "strike" => Ok(GameMode::Strike),
+            "golem" => Ok(GameMode::Golem),
+            "wvw" => Ok(GameMode::WvW),
+
+            _ => Err(ParseGameModeError(s.to_owned())),
+        }
+    }
+}
+
 /// Enum containing all encounters with their IDs.
 ///
 /// An encounter is a fight or event for which a log can exist. An encounter consists of no, one or
@@ -867,6 +889,32 @@ impl EliteSpec {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_gamemode_parsing_ok() {
+        use GameMode::*;
+        let tests: &[(&'static str, GameMode)] = &[
+            ("raid", Raid),
+            ("Raid", Raid),
+            ("fractal", Fractal),
+            ("Fractal", Fractal),
+            ("strike", Strike),
+            ("Strike", Strike),
+            ("golem", Golem),
+            ("Golem", Golem),
+            ("wvw", WvW),
+            ("WvW", WvW),
+        ];
+
+        for (input, expected) in tests {
+            assert_eq!(
+                input.parse(),
+                Ok(*expected),
+                "parsing input {:?} failed",
+                input
+            );
+        }
+    }
 
     #[test]
     fn test_encounter_parsing_ok() {
