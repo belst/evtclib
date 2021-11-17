@@ -2,9 +2,8 @@
 //!
 //! This module contains the translated definitions from arcdps's C structs.
 use num_derive::FromPrimitive;
-use std::{self, fmt};
 
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 
 /// The "friend or foe" enum.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -377,7 +376,7 @@ pub struct CbtEvent {
 }
 
 /// An agent.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Agent {
     /// Agent id.
     pub addr: u64,
@@ -422,49 +421,6 @@ impl Agent {
 
 // We need to implement this manually, as our array is bigger than 32.
 
-impl fmt::Debug for Agent {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Agent")
-            .field("addr", &self.addr)
-            .field("prof", &self.prof)
-            .field("is_elite", &self.is_elite)
-            .field("toughness", &self.toughness)
-            .field("concentration", &self.concentration)
-            .field("healing", &self.healing)
-            .field("condition", &self.condition)
-            .field("name", &(&self.name as &[u8]))
-            .finish()
-    }
-}
-
-impl PartialEq for Agent {
-    fn eq(&self, other: &Self) -> bool {
-        self.addr == other.addr
-            && self.prof == other.prof
-            && self.is_elite == other.is_elite
-            && self.toughness == other.toughness
-            && self.concentration == other.concentration
-            && self.healing == other.healing
-            && self.condition == other.condition
-            && &self.name as &[u8] == &other.name as &[u8]
-    }
-}
-
-impl Eq for Agent {}
-
-impl Hash for Agent {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.addr.hash(state);
-        self.prof.hash(state);
-        self.is_elite.hash(state);
-        self.toughness.hash(state);
-        self.concentration.hash(state);
-        self.healing.hash(state);
-        self.condition.hash(state);
-        self.name.hash(state);
-    }
-}
-
 impl Default for Agent {
     fn default() -> Self {
         Self {
@@ -481,7 +437,7 @@ impl Default for Agent {
 }
 
 /// A skill.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Skill {
     /// Skill id.
     pub id: i32,
@@ -501,30 +457,6 @@ impl Skill {
             .take_while(|b| *b != 0)
             .collect::<Vec<_>>();
         String::from_utf8(bytes).ok()
-    }
-}
-
-impl fmt::Debug for Skill {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Skill")
-            .field("id", &self.id)
-            .field("name", &(&self.name as &[u8]))
-            .finish()
-    }
-}
-
-impl PartialEq for Skill {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && &self.name as &[u8] == &other.name as &[u8]
-    }
-}
-
-impl Eq for Skill {}
-
-impl Hash for Skill {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
-        self.name.hash(state);
     }
 }
 
