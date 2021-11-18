@@ -23,7 +23,7 @@ macro_rules! analyzer_benchmark {
             });
             group.finish();
         }
-    }
+    };
 }
 
 macro_rules! benchmarks {
