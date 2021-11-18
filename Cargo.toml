@@ -21,6 +21,10 @@ default = []
 name = "parsing_benchmark"
 harness = false
 
+[[bench]]
+name = "analyzers"
+harness = false
+
 [dev-dependencies]
 serde_json = "1.0"
 criterion = "0.3"
