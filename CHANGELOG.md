@@ -18,6 +18,11 @@ All notable changes to this project will be documented in this file.
 - `FromRawEventError::UnknownLanguage` has been added to deal with an invalid
   language byte.
 
+### Changes
+- Internal changes that lead to some small speedups, especially in the
+  *Soulless Horror* outcome analyzer (~50x speedup) as well as most other
+  analyzers (up to a 2.77x speedup).
+
 ### Fixed
 - `evtclib` will no longer choke on WvW logs where player names might not contain the expected
   information.
