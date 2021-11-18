@@ -138,6 +138,8 @@ pub enum EvtcError {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone)]
 pub struct Log {
+    // evtclib assumes that the agents in this vector are sorted by their address. This information
+    // is used to speed up the agent_by_addr search.
     agents: Vec<Agent>,
     events: Vec<Event>,
     boss_id: u16,
@@ -152,7 +154,12 @@ impl Log {
 
     /// Return an agent based on its address.
     pub fn agent_by_addr(&self, addr: u64) -> Option<&Agent> {
-        self.agents.iter().find(|a| a.addr() == addr)
+        // We know that the agents are sorted because processing::process puts them like that. We
+        // can use the same trick here to achieve a faster agent searching:
+        self.agents
+            .binary_search_by_key(&addr, Agent::addr)
+            .ok()
+            .map(|i| &self.agents[i])
     }
 
     /// Return an agent based on the instance ID.
