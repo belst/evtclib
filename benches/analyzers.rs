@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use evtclib::Compression;
 
 macro_rules! analyzer_benchmark {
@@ -7,17 +7,21 @@ macro_rules! analyzer_benchmark {
             let log = evtclib::process_file($log, Compression::Zip).unwrap();
             let analyzer = log.analyzer().unwrap();
 
-            c.bench_function(&format!("analyzers/{}/is_cm", $boss), |b| {
+            let mut group = c.benchmark_group(&format!("analyzers/{}", $boss));
+            group.throughput(Throughput::Elements(1));
+
+            group.bench_function("is_cm", |b| {
                 b.iter(|| {
                     black_box(analyzer.is_cm());
                 })
             });
 
-            c.bench_function(&format!("analyzers/{}/outcome", $boss), |b| {
+            group.bench_function("outcome", |b| {
                 b.iter(|| {
                     black_box(analyzer.outcome());
                 })
             });
+            group.finish();
         }
     }
 }
