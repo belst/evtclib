@@ -46,7 +46,7 @@ impl<'log> Analyzer for SoullessHorror<'log> {
                 ..
             } = event.kind()
             {
-                self.log.is_boss(*destination_agent_addr) && *buff_id == DESMINA_DEATH_BUFF
+                *buff_id == DESMINA_DEATH_BUFF && self.log.is_boss(*destination_agent_addr)
             } else {
                 false
             }
