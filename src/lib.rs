@@ -88,6 +88,7 @@
 //! While there are legitimate use cases for writing/modification support, they are currently not
 //! implemented (but might be in a future version).
 
+use num_traits::FromPrimitive;
 use thiserror::Error;
 
 pub mod raw;
@@ -102,6 +103,7 @@ mod processing;
 pub use processing::{process, process_file, process_stream, Compression};
 
 pub mod gamedata;
+use gamedata::Boss;
 pub use gamedata::{EliteSpec, Encounter, GameMode, Profession};
 
 pub mod analyzers;
@@ -224,7 +226,15 @@ impl Log {
 
     /// Check whether the given address is a boss agent.
     pub fn is_boss(&self, addr: u64) -> bool {
-        self.boss_agents().into_iter().any(|a| a.addr() == addr)
+        let bosses = self
+            .encounter()
+            .map(Encounter::bosses)
+            .unwrap_or(&[] as &[_]);
+        let agent = self
+            .agent_by_addr(addr)
+            .and_then(Agent::as_character)
+            .and_then(|c| Boss::from_u16(c.id()));
+        agent.map(|e| bosses.contains(&e)).unwrap_or(false)
     }
 
     /// Returns the encounter id.
