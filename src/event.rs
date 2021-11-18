@@ -32,6 +32,7 @@ pub enum FromRawEventError {
 /// This makes dealing with [`CbtEvent`][raw::CbtEvent] a bit saner (and safer).
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum EventKind {
     // State change events
     /// The agent has entered combat.
