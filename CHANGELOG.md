@@ -5,23 +5,28 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 ### Added
 - Boss and encounter definitions for the training golems (`StandardKittyGolem`,
-  `MediumKittyGolem`, `LargeKittyGolem`)
+  `MediumKittyGolem`, `LargeKittyGolem`).
 - Missing encounters and bosses:
   - `Encounter::BanditTrio` (`Boss::Berg`, `Boss::Zane`, `Boss::Narella`)
   - `Encounter::RiverOfSouls` (no bosses)
   - `Encounter::BrokenKing` (`Boss::BrokenKing`)
   - `Encounter::EaterOfSouls` (`Boss::EaterOfSouls`)
   - `Encounter::StatueOfDarkness` (`Boss::EyeOfJudgment` and `Boss::EyeOfFate`)
-- `Log::is_generic` to check whether a log is generic (WvW)
+- `Log::is_generic` to check whether a log is generic (WvW).
 - `gamedata::GameMode` and the `Encounter::game_mode` and `Log::game_mode`
-  methods
+  methods.
 - `FromRawEventError::UnknownLanguage` has been added to deal with an invalid
   language byte.
+- The `CbtStateChange::BarrierUpdate` and `CbtResult::Breakbar` low-level
+  variants.
+- The `EventKind::{BuffInitial, StackActive, StackReset}` events.
 
 ### Changes
 - Internal changes that lead to some small speedups, especially in the
   *Soulless Horror* outcome analyzer (~50x speedup) as well as most other
   analyzers (up to a 2.77x speedup).
+- An internal parsing change to speed up log processing (by around 50%).
+- `EventKind` has been marked non-exhaustive.
 
 ### Fixed
 - `evtclib` will no longer choke on WvW logs where player names might not contain the expected
