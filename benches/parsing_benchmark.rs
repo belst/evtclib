@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use std::{fs, io, io::Read};
 use zip::ZipArchive;
 
@@ -11,7 +11,11 @@ const QADIM_LOG: &str = "tests/logs/qadim-20200427.zevtc";
 /// (such as a buffered reader or a memory mapped file) so that the downstream application will
 /// receive the log fast.
 fn zipped_qadim_benchmark(c: &mut Criterion) {
-    c.bench_function("on-disk zipped Qadim", |b| {
+    let file_size = fs::metadata(QADIM_LOG).unwrap().len();
+    let mut group = c.benchmark_group("parsing/qadim/zipped");
+
+    group.throughput(Throughput::Bytes(file_size));
+    group.bench_function("disk", |b| {
         b.iter(|| evtclib::process_file(black_box(QADIM_LOG), evtclib::Compression::Zip).unwrap())
     });
 }
@@ -24,8 +28,11 @@ fn zipped_qadim_benchmark(c: &mut Criterion) {
 /// have to de-compress logs at some point.
 fn zipped_qadim_ram_benchmark(c: &mut Criterion) {
     let log_data = &fs::read(QADIM_LOG).unwrap();
+    let file_size = log_data.len();
+    let mut group = c.benchmark_group("parsing/qadim/zipped");
 
-    c.bench_function("in-memory zipped Qadim", |b| {
+    group.throughput(Throughput::Bytes(file_size as u64));
+    group.bench_function("memory", |b| {
         b.iter(|| {
             evtclib::process_stream(io::Cursor::new(log_data), evtclib::Compression::Zip).unwrap()
         })
@@ -48,7 +55,10 @@ fn unzipped_qadim_benchmark(c: &mut Criterion) {
         .unwrap();
     let log_data = &log_data;
 
-    c.bench_function("in-memory unzipped Qadim", |b| {
+    let mut group = c.benchmark_group("parsing/qadim/unzipped");
+
+    group.throughput(Throughput::Bytes(log_data.len() as u64));
+    group.bench_function("memory", |b| {
         b.iter(|| {
             evtclib::process_stream(io::Cursor::new(log_data), evtclib::Compression::None).unwrap()
         })
@@ -66,7 +76,7 @@ fn process_qadim(c: &mut Criterion) {
     let file = io::BufReader::new(fs::File::open(QADIM_LOG).unwrap());
     let raw_evtc = evtclib::raw::parse_zip(file).unwrap();
 
-    c.bench_function("process Qadim", |b| {
+    c.bench_function("process/qadim", |b| {
         b.iter(|| evtclib::process(&raw_evtc).unwrap())
     });
 }
