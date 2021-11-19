@@ -9,6 +9,7 @@ repository = "https://gitlab.com/dunj3/evtclib"
 license = "MIT"
 include = [
     "/src/**/*.rs",
+    "/benches/**/*.rs",
     "/README.md",
     "/CHANGELOG.md",
     "/LICENSE",
