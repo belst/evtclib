@@ -382,7 +382,7 @@ pub struct Agent {
     pub addr: u64,
     /// Agent profession id.
     pub prof: u32,
-    /// Agent elite specialisation.
+    /// Agent elite specialization.
     pub is_elite: u32,
     /// Toughnes.
     pub toughness: i16,

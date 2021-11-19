@@ -19,7 +19,7 @@
 //! # Crate Structure
 //!
 //! The crate consists of two main parts: The [`raw`][raw] parser, which is used to read structured
-//! data from binary input streams, and the higher-level abstrations provided in the root and
+//! data from binary input streams, and the higher-level abstractions provided in the root and
 //! [`event`][event] submodules.
 //!
 //! Additionally, there are some defintions (such as IDs for various game items) in the

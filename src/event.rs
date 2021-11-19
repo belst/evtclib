@@ -580,7 +580,7 @@ pub enum WeaponSet {
     Land1,
     /// An unknown weapon set.
     ///
-    /// This can be caused bundles or anything else that uses the "weapon swap"
+    /// This can be caused by bundles or anything else that uses the "weapon swap"
     /// event but is not a normal weapon set.
     Unknown(u8),
 }
