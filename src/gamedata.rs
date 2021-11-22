@@ -86,6 +86,10 @@ pub enum Encounter {
 
     // Wing 3
     KeepConstruct = Boss::KeepConstruct as u16,
+    /// The "Traverse the Twisted Castle" encounter, between Keep Construct and Xera.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Traverse_the_Twisted_Castle)
+    TwistedCastle = 0x3F77,
     Xera = Boss::Xera as u16,
 
     // Wing 4
@@ -165,6 +169,7 @@ impl Encounter {
             Encounter::BanditTrio => &[Boss::Berg, Boss::Zane, Boss::Narella],
             Encounter::Matthias => &[Boss::Matthias],
             Encounter::KeepConstruct => &[Boss::KeepConstruct],
+            Encounter::TwistedCastle => &[],
             Encounter::Xera => &[Boss::Xera, Boss::Xera2],
             Encounter::Cairn => &[Boss::Cairn],
             Encounter::MursaatOverseer => &[Boss::MursaatOverseer],
@@ -212,11 +217,12 @@ impl Encounter {
     /// ```
     #[inline]
     pub fn from_header_id(id: u16) -> Option<Encounter> {
-        // For the encounter without boss, we do it manually.
-        if id == Encounter::RiverOfSouls as u16 {
-            return Some(Encounter::RiverOfSouls);
+        // For the encounters without boss, we do it manually.
+        match id {
+            _ if id == Encounter::TwistedCastle as u16 => Some(Encounter::TwistedCastle),
+            _ if id == Encounter::RiverOfSouls as u16 => Some(Encounter::RiverOfSouls),
+            _ => Boss::from_u16(id).map(Boss::encounter),
         }
-        Boss::from_u16(id).map(Boss::encounter)
     }
 
     /// Returns the game mode of the encounter.
@@ -229,7 +235,7 @@ impl Encounter {
             MAMA | Siax | Ensolyss | Skorvald | Artsariiv | Arkk | Ai => GameMode::Fractal,
 
             ValeGuardian | Gorseval | Sabetha | Slothasor | BanditTrio | Matthias
-            | KeepConstruct | Xera | Cairn | MursaatOverseer | Samarog | Deimos
+            | KeepConstruct | TwistedCastle | Xera | Cairn | MursaatOverseer | Samarog | Deimos
             | SoullessHorror | RiverOfSouls | BrokenKing | EaterOfSouls | StatueOfDarkness
             | VoiceInTheVoid | ConjuredAmalgamate | TwinLargos | Qadim | CardinalAdina
             | CardinalSabir | QadimThePeerless => GameMode::Raid,
@@ -262,6 +268,7 @@ impl FromStr for Encounter {
         let lower = s.to_lowercase();
         match &lower as &str {
             "trio" | "bandit trio" => Ok(Encounter::BanditTrio),
+            "tc" | "twisted castle" => Ok(Encounter::TwistedCastle),
             "river" | "river of souls" => Ok(Encounter::RiverOfSouls),
             "eyes" | "statue of darkness" => Ok(Encounter::StatueOfDarkness),
             "largos" | "twins" | "largos twins" | "twin largos" => Ok(Encounter::TwinLargos),
@@ -282,6 +289,7 @@ impl Display for Encounter {
             Encounter::BanditTrio => "Bandit Trio",
             Encounter::Matthias => "Matthias Gabrel",
             Encounter::KeepConstruct => "Keep Construct",
+            Encounter::TwistedCastle => "Twisted Castle",
             Encounter::Xera => "Xera",
             Encounter::Cairn => "Cairn the Indomitable",
             Encounter::MursaatOverseer => "Mursaat Overseer",
@@ -946,6 +954,10 @@ mod tests {
             ("KC", KeepConstruct),
             ("keep construct", KeepConstruct),
             ("Keep Construct", KeepConstruct),
+            ("tc", TwistedCastle),
+            ("TC", TwistedCastle),
+            ("twisted castle", TwistedCastle),
+            ("Twisted Castle", TwistedCastle),
             ("xera", Xera),
             ("Xera", Xera),
             ("cairn", Cairn),

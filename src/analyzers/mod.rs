@@ -92,6 +92,7 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
         }
 
         Encounter::KeepConstruct => Some(Box::new(raids::GenericRaid::new(log))),
+        Encounter::TwistedCastle => Some(Box::new(raids::TwistedCastle::new(log))),
         Encounter::Xera => Some(Box::new(raids::Xera::new(log))),
 
         Encounter::Cairn => Some(Box::new(raids::Cairn::new(log))),

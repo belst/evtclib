@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- `Encounter::TwistedCastle` to identify twisted castle logs.
 
 ## 0.6.0 - 2021-11-19
 ### Added

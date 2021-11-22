@@ -179,6 +179,25 @@ test! {
 }
 
 test! {
+    name: parse_twisted_castle,
+    log: "logs/tc-20211122.zevtc",
+    boss: Encounter::TwistedCastle,
+    mode: Raid,
+    players: &[
+        (1, ":Kiki.9576", "Sir Kiki", Warrior, Some(Berserker)),
+        (1, ":Timothy.5829", "Arwen Elrondsdottir", Warrior, Some(Berserker)),
+        (1, ":Straimer.1093", "Deepfreeze Myself", Elementalist, Some(Weaver)),
+        (1, ":xyoz.6710", "Xaphwen", Mesmer, Some(Mirage)),
+        (1, ":Dracia.5287", "Dracia", Ranger, Some(Druid)),
+        (2, ":Taniniver BlindDragon.9503", "Dragon Kills You", Necromancer, Some(Scourge)),
+        (2, ":Rajnesh.4526", "I Rajnesh I", Revenant, Some(Renegade)),
+        (2, ":Dunje.4863", "Irodo", Elementalist, Some(Weaver)),
+        (2, ":neko.9741", "Mordrem Cat", Ranger, Some(Soulbeast)),
+        (2, ":Jupp.4570", "Aldwor", Guardian, Some(Firebrand)),
+    ],
+}
+
+test! {
     name: parse_xera,
     log: "logs/xera-20200415.zevtc",
     boss: Encounter::Xera,

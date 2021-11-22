@@ -10,7 +10,7 @@ use crate::{
 };
 
 mod w3;
-pub use w3::Xera;
+pub use w3::{TwistedCastle, Xera};
 
 mod w4;
 pub use w4::{Cairn, Deimos, MursaatOverseer, Samarog};
