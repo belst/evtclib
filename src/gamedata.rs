@@ -815,6 +815,17 @@ pub enum EliteSpec {
     Mirage = 59,
     Scourge = 60,
     Renegade = 63,
+
+    // End of Dragons elites:
+    Willbender = 65,
+    Bladesworn = 68,
+    Mechanist = 70,
+    Untamed = 72,
+    Specter = 71,
+    Catalyst = 67,
+    Virtuoso = 66,
+    Harbinger = 64,
+    Vindicator = 69,
 }
 
 impl FromStr for EliteSpec {
@@ -842,6 +853,16 @@ impl FromStr for EliteSpec {
             "scourge" => Ok(EliteSpec::Scourge),
             "renegade" => Ok(EliteSpec::Renegade),
 
+            "willbender" => Ok(EliteSpec::Willbender),
+            "bladesworn" => Ok(EliteSpec::Bladesworn),
+            "mechanist" => Ok(EliteSpec::Mechanist),
+            "untamed" => Ok(EliteSpec::Untamed),
+            "specter" => Ok(EliteSpec::Specter),
+            "catalyst" => Ok(EliteSpec::Catalyst),
+            "virtuoso" => Ok(EliteSpec::Virtuoso),
+            "harbinger" => Ok(EliteSpec::Harbinger),
+            "vindicator" => Ok(EliteSpec::Vindicator),
+
             _ => Err(ParseEliteSpecError(s.to_owned())),
         }
     }
@@ -868,6 +889,15 @@ impl Display for EliteSpec {
             EliteSpec::Mirage => "Mirage",
             EliteSpec::Scourge => "Scourge",
             EliteSpec::Renegade => "Renegade",
+            EliteSpec::Willbender => "Willbender",
+            EliteSpec::Bladesworn => "Bladesworn",
+            EliteSpec::Mechanist => "Mechanist",
+            EliteSpec::Untamed => "Untamed",
+            EliteSpec::Specter => "Specter",
+            EliteSpec::Catalyst => "Catalyst",
+            EliteSpec::Virtuoso => "Virtuoso",
+            EliteSpec::Harbinger => "Harbinger",
+            EliteSpec::Vindicator => "Vindicator",
         };
         write!(f, "{}", name)
     }
@@ -881,15 +911,15 @@ impl EliteSpec {
     pub fn profession(self) -> Profession {
         use EliteSpec::*;
         match self {
-            Dragonhunter | Firebrand => Profession::Guardian,
-            Berserker | Spellbreaker => Profession::Warrior,
-            Scrapper | Holosmith => Profession::Engineer,
-            Druid | Soulbeast => Profession::Ranger,
-            Daredevil | Deadeye => Profession::Thief,
-            Tempest | Weaver => Profession::Elementalist,
-            Chronomancer | Mirage => Profession::Mesmer,
-            Reaper | Scourge => Profession::Necromancer,
-            Herald | Renegade => Profession::Revenant,
+            Dragonhunter | Firebrand | Willbender => Profession::Guardian,
+            Berserker | Spellbreaker | Bladesworn => Profession::Warrior,
+            Scrapper | Holosmith | Mechanist => Profession::Engineer,
+            Druid | Soulbeast | Untamed => Profession::Ranger,
+            Daredevil | Deadeye | Specter => Profession::Thief,
+            Tempest | Weaver | Catalyst => Profession::Elementalist,
+            Chronomancer | Mirage | Virtuoso => Profession::Mesmer,
+            Reaper | Scourge | Harbinger => Profession::Necromancer,
+            Herald | Renegade | Vindicator => Profession::Revenant,
         }
     }
 }
@@ -1246,38 +1276,56 @@ mod tests {
             ("Dragonhunter", Dragonhunter),
             ("firebrand", Firebrand),
             ("Firebrand", Firebrand),
+            ("willbender", Willbender),
+            ("Willbender", Willbender),
             ("berserker", Berserker),
             ("Berserker", Berserker),
             ("spellbreaker", Spellbreaker),
             ("Spellbreaker", Spellbreaker),
+            ("bladesworn", Bladesworn),
+            ("Bladesworn", Bladesworn),
             ("herald", Herald),
             ("Herald", Herald),
             ("renegade", Renegade),
             ("Renegade", Renegade),
+            ("vindicator", Vindicator),
+            ("Vindicator", Vindicator),
             ("daredevil", Daredevil),
             ("Daredevil", Daredevil),
             ("deadeye", Deadeye),
             ("Deadeye", Deadeye),
+            ("specter", Specter),
+            ("Specter", Specter),
             ("scrapper", Scrapper),
             ("Scrapper", Scrapper),
             ("holosmith", Holosmith),
             ("Holosmith", Holosmith),
+            ("mechanist", Mechanist),
+            ("Mechanist", Mechanist),
             ("druid", Druid),
             ("Druid", Druid),
             ("soulbeast", Soulbeast),
             ("Soulbeast", Soulbeast),
+            ("untamed", Untamed),
+            ("Untamed", Untamed),
             ("tempest", Tempest),
             ("Tempest", Tempest),
             ("weaver", Weaver),
             ("Weaver", Weaver),
+            ("catalyst", Catalyst),
+            ("Catalyst", Catalyst),
             ("chronomancer", Chronomancer),
             ("Chronomancer", Chronomancer),
             ("mirage", Mirage),
             ("Mirage", Mirage),
+            ("virtuoso", Virtuoso),
+            ("Virtuoso", Virtuoso),
             ("reaper", Reaper),
             ("Reaper", Reaper),
             ("scourge", Scourge),
             ("Scourge", Scourge),
+            ("harbinger", Harbinger),
+            ("Harbinger", Harbinger),
         ];
 
         for (input, expected) in tests {

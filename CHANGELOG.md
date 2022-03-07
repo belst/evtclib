@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- `EliteSpec`s for the new End of Dragons specializations
 
 ## 0.6.1 - 2021-11-25
 ### Added
