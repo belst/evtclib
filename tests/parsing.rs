@@ -761,6 +761,82 @@ test! {
     ],
 }
 
+test! {
+    name: parse_mai_trin,
+    log: "logs/mai-trin-20220303.zevtc",
+    boss: Encounter::CaptainMaiTrin,
+    mode: Strike,
+    players: &[
+        (2, ":Areki.5906", "Areki Is Too Loud", Ranger, Some(Druid)),
+        (2, ":DarkSide.8427", "Nova Kings", Mesmer, Some(Virtuoso)),
+        (2, ":Master Dragon.6712", "Dragonnic", Warrior, Some(Berserker)),
+        (2, ":Salieri.7962", "Attack The Illusion", Mesmer, Some(Chronomancer)),
+        (2, ":vuko.3692", "Jgww", Thief, Some(Specter)),
+        (3, ":LINKAZZATORE.8135", "Urtola", Necromancer, Some(Scourge)),
+        (3, ":Lawitz.5128", "It Should Be Weaver", Engineer, Some(Mechanist)),
+        (3, ":Lin Chin Ping.9480", "Luna L Fay", Necromancer, Some(Scourge)),
+        (3, ":Tareo.3726", "Tarea A", Necromancer, Some(Scourge)),
+        (3, ":nate.5871", "Cute Aníme Waifu", Mesmer, Some(Chronomancer)),
+    ],
+}
+
+test! {
+    name: parse_ankka,
+    log: "logs/ankka-20220303.zevtc",
+    boss: Encounter::Ankka,
+    mode: Strike,
+    players: &[
+        (2, ":Areki.5906", "Areki Is Too Loud", Ranger, Some(Druid)),
+        (2, ":DarkSide.8427", "Nova Kings", Mesmer, Some(Virtuoso)),
+        (2, ":Master Dragon.6712", "Dragonnic", Warrior, Some(Berserker)),
+        (2, ":Salieri.7962", "Attack The Illusion", Mesmer, Some(Chronomancer)),
+        (2, ":vuko.3692", "Jgww", Thief, Some(Specter)),
+        (3, ":LINKAZZATORE.8135", "Urtola", Necromancer, Some(Scourge)),
+        (3, ":Lawitz.5128", "It Should Be Weaver", Engineer, Some(Mechanist)),
+        (3, ":Lin Chin Ping.9480", "Luna L Fay", Necromancer, Some(Scourge)),
+        (3, ":Tareo.3726", "Tarea A", Necromancer, Some(Scourge)),
+        (3, ":nate.5871", "Cute Aníme Waifu", Mesmer, Some(Chronomancer)),
+    ],
+}
+
+test! {
+    name: parse_minister_li,
+    log: "logs/minister-li-20220303.zevtc",
+    boss: Encounter::MinisterLi,
+    mode: Strike,
+    players: &[
+        (2, ":Areki.5906", "Areki Is Too Loud", Ranger, Some(Druid)),
+        (2, ":DarkSide.8427", "Nova Kings", Mesmer, Some(Virtuoso)),
+        (2, ":Master Dragon.6712", "Dragonnic", Warrior, Some(Berserker)),
+        (2, ":Salieri.7962", "Attack The Illusion", Mesmer, Some(Chronomancer)),
+        (2, ":vuko.3692", "Jgww", Thief, Some(Specter)),
+        (3, ":LINKAZZATORE.8135", "Urtola", Necromancer, Some(Scourge)),
+        (3, ":Lawitz.5128", "It Should Be Weaver", Engineer, Some(Mechanist)),
+        (3, ":Lin Chin Ping.9480", "Luna L Fay", Necromancer, Some(Scourge)),
+        (3, ":Tareo.3726", "Tarea A", Necromancer, Some(Scourge)),
+        (3, ":nate.5871", "Cute Aníme Waifu", Mesmer, Some(Chronomancer)),
+    ],
+}
+
+test! {
+    name: parse_dragonvoid,
+    log: "logs/dragonvoid-20220303.zevtc",
+    boss: Encounter::Dragonvoid,
+    mode: Strike,
+    players: &[
+        (2, ":Areki.5906", "Areki Is Too Loud", Ranger, Some(Druid)),
+        (2, ":DarkSide.8427", "Nova Kings", Mesmer, Some(Virtuoso)),
+        (2, ":Master Dragon.6712", "Dragonnic", Warrior, Some(Berserker)),
+        (2, ":Salieri.7962", "Attack The Illusion", Mesmer, Some(Chronomancer)),
+        (2, ":vuko.3692", "Jgww", Thief, Some(Specter)),
+        (3, ":LINKAZZATORE.8135", "Urtola", Necromancer, Some(Scourge)),
+        (3, ":Lawitz.5128", "It Should Be Weaver", Engineer, Some(Mechanist)),
+        (3, ":Lin Chin Ping.9480", "Luna L Fay", Necromancer, Some(Scourge)),
+        (3, ":Tareo.3726", "Tarea A", Necromancer, Some(Scourge)),
+        (3, ":nate.5871", "Cute Aníme Waifu", Mesmer, Some(Chronomancer)),
+    ],
+}
+
 // Various tests
 
 test! {

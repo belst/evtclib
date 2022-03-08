@@ -131,6 +131,10 @@ pub fn for_log<'l>(log: &'l Log) -> Option<Box<dyn Analyzer + 'l>> {
         | Encounter::SuperKodanBrothers
         | Encounter::FraenirOfJormag
         | Encounter::Boneskinner
-        | Encounter::WhisperOfJormag => Some(Box::new(strikes::GenericStrike::new(log))),
+        | Encounter::WhisperOfJormag
+        | Encounter::CaptainMaiTrin
+        | Encounter::Ankka
+        | Encounter::MinisterLi
+        | Encounter::Dragonvoid => Some(Box::new(strikes::GenericStrike::new(log))),
     }
 }

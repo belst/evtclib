@@ -150,6 +150,10 @@ pub enum Encounter {
     FraenirOfJormag = Boss::FraenirOfJormag as u16,
     Boneskinner = Boss::Boneskinner as u16,
     WhisperOfJormag = Boss::WhisperOfJormag as u16,
+    CaptainMaiTrin = Boss::CaptainMaiTrin as u16,
+    Ankka = Boss::Ankka as u16,
+    MinisterLi = Boss::MinisterLi as u16,
+    Dragonvoid = Boss::Dragonvoid as u16,
 }
 
 impl Encounter {
@@ -202,6 +206,10 @@ impl Encounter {
             Encounter::FraenirOfJormag => &[Boss::FraenirOfJormag],
             Encounter::Boneskinner => &[Boss::Boneskinner],
             Encounter::WhisperOfJormag => &[Boss::WhisperOfJormag],
+            Encounter::CaptainMaiTrin => &[Boss::CaptainMaiTrin],
+            Encounter::Ankka => &[Boss::Ankka],
+            Encounter::MinisterLi => &[Boss::MinisterLi],
+            Encounter::Dragonvoid => &[Boss::Dragonvoid],
         }
     }
 
@@ -241,7 +249,9 @@ impl Encounter {
             | CardinalSabir | QadimThePeerless => GameMode::Raid,
 
             IcebroodConstruct | Boneskinner | SuperKodanBrothers | FraenirOfJormag
-            | WhisperOfJormag => GameMode::Strike,
+            | WhisperOfJormag | CaptainMaiTrin | Ankka | MinisterLi | Dragonvoid => {
+                GameMode::Strike
+            }
 
             StandardKittyGolem | MediumKittyGolem | LargeKittyGolem => GameMode::Golem,
         }
@@ -322,6 +332,10 @@ impl Display for Encounter {
             Encounter::FraenirOfJormag => "Fraenir of Jormag",
             Encounter::Boneskinner => "Boneskinner",
             Encounter::WhisperOfJormag => "Whisper of Jormag",
+            Encounter::CaptainMaiTrin => "Captain Mai Trin",
+            Encounter::Ankka => "Ankka",
+            Encounter::MinisterLi => "Minister Li",
+            Encounter::Dragonvoid => "The Dragonvoid",
         };
         write!(f, "{}", name)
     }
@@ -545,6 +559,22 @@ pub enum Boss {
     ///
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Whisper_of_Jormag)
     WhisperOfJormag = 0x58B7,
+    /// Captain Mai Trin, boss of the Aetherblade Hideout strike mission.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Strike_Mission:_Aetherblade_Hideout)
+    CaptainMaiTrin = 0x5DE1,
+    /// Ankka, boss in the Xunlai Jade Junkyard.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Strike_Mission:_Xunlai_Jade_Junkyard)
+    Ankka = 0x5D95,
+    /// Minister Li, boss in the Kaineng Overlook.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Strike_Mission:_Kaineng_Overlook)
+    MinisterLi = 0x5FA5,
+    /// The Dragonvoid, boss in the Harvest Temple.
+    ///
+    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Strike_Mission:_Harvest_Temple)
+    Dragonvoid = 0x5F37,
 }
 
 impl Boss {
@@ -595,6 +625,10 @@ impl Boss {
             Boss::FraenirOfJormag => Encounter::FraenirOfJormag,
             Boss::Boneskinner => Encounter::Boneskinner,
             Boss::WhisperOfJormag => Encounter::WhisperOfJormag,
+            Boss::CaptainMaiTrin => Encounter::CaptainMaiTrin,
+            Boss::Ankka => Encounter::Ankka,
+            Boss::MinisterLi => Encounter::MinisterLi,
+            Boss::Dragonvoid => Encounter::Dragonvoid,
         }
     }
 }
@@ -664,6 +698,10 @@ impl FromStr for Boss {
             "fraenir" | "fraenir of jormag" => Ok(Boss::FraenirOfJormag),
             "boneskinner" => Ok(Boss::Boneskinner),
             "whisper" | "whisper of jormag" => Ok(Boss::WhisperOfJormag),
+            "captain mai trin" | "mai trin" | "mai" => Ok(Boss::CaptainMaiTrin),
+            "ankka" => Ok(Boss::Ankka),
+            "minister li" | "li" => Ok(Boss::MinisterLi),
+            "dragonvoid" | "the dragonvoid" => Ok(Boss::Dragonvoid),
 
             _ => Err(ParseBossError(s.to_owned())),
         }
@@ -717,6 +755,10 @@ impl Display for Boss {
             Boss::FraenirOfJormag => "Fraenir of Jormag",
             Boss::Boneskinner => "Boneskinner",
             Boss::WhisperOfJormag => "Whisper of Jormag",
+            Boss::CaptainMaiTrin => "Captain Mai Trin",
+            Boss::Ankka => "Ankka",
+            Boss::MinisterLi => "Minister Li",
+            Boss::Dragonvoid => "The Dragonvoid",
         };
         write!(f, "{}", name)
     }
@@ -1057,6 +1099,20 @@ mod tests {
             ("kodans", SuperKodanBrothers),
             ("whisper", WhisperOfJormag),
             ("Whisper of Jormag", WhisperOfJormag),
+            ("captain mai trin", CaptainMaiTrin),
+            ("Captain Mai Trin", CaptainMaiTrin),
+            ("mai trin", CaptainMaiTrin),
+            ("Mai Trin", CaptainMaiTrin),
+            ("ankka", Ankka),
+            ("Ankka", Ankka),
+            ("minister li", MinisterLi),
+            ("Minister Li", MinisterLi),
+            ("li", MinisterLi),
+            ("Li", MinisterLi),
+            ("dragonvoid", Dragonvoid),
+            ("Dragonvoid", Dragonvoid),
+            ("the dragonvoid", Dragonvoid),
+            ("The Dragonvoid", Dragonvoid),
         ];
 
         for (input, expected) in tests {
@@ -1191,6 +1247,20 @@ mod tests {
             ("Voice of the Fallen", VoiceOfTheFallen),
             ("whisper", WhisperOfJormag),
             ("Whisper of Jormag", WhisperOfJormag),
+            ("captain mai trin", CaptainMaiTrin),
+            ("Captain Mai Trin", CaptainMaiTrin),
+            ("mai trin", CaptainMaiTrin),
+            ("Mai Trin", CaptainMaiTrin),
+            ("ankka", Ankka),
+            ("Ankka", Ankka),
+            ("minister li", MinisterLi),
+            ("Minister Li", MinisterLi),
+            ("li", MinisterLi),
+            ("Li", MinisterLi),
+            ("dragonvoid", Dragonvoid),
+            ("Dragonvoid", Dragonvoid),
+            ("the dragonvoid", Dragonvoid),
+            ("The Dragonvoid", Dragonvoid),
         ];
 
         for (input, expected) in tests {

@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 ### Added
 - `EliteSpec`s for the new End of Dragons specializations
+- `Boss` and `Encounter` for the new strikes
+  - `{Boss, Encounter}::CaptainMaiTrin`
+  - `{Boss, Encounter}::Ankka`
+  - `{Boss, Encounter}::MinisterLi`
+  - `{Boss, Encounter}::Dragonvoid`
 
 ## 0.6.1 - 2021-11-25
 ### Added
