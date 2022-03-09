@@ -153,7 +153,7 @@ pub enum Encounter {
     CaptainMaiTrin = Boss::CaptainMaiTrin as u16,
     Ankka = Boss::Ankka as u16,
     MinisterLi = Boss::MinisterLi as u16,
-    Dragonvoid = Boss::Dragonvoid as u16,
+    Dragonvoid = 0x0562,
 }
 
 impl Encounter {
@@ -209,7 +209,7 @@ impl Encounter {
             Encounter::CaptainMaiTrin => &[Boss::CaptainMaiTrin],
             Encounter::Ankka => &[Boss::Ankka],
             Encounter::MinisterLi => &[Boss::MinisterLi],
-            Encounter::Dragonvoid => &[Boss::Dragonvoid],
+            Encounter::Dragonvoid => &[],
         }
     }
 
@@ -229,6 +229,7 @@ impl Encounter {
         match id {
             _ if id == Encounter::TwistedCastle as u16 => Some(Encounter::TwistedCastle),
             _ if id == Encounter::RiverOfSouls as u16 => Some(Encounter::RiverOfSouls),
+            _ if id == Encounter::Dragonvoid as u16 => Some(Encounter::Dragonvoid),
             _ => Boss::from_u16(id).map(Boss::encounter),
         }
     }
@@ -283,6 +284,7 @@ impl FromStr for Encounter {
             "eyes" | "statue of darkness" => Ok(Encounter::StatueOfDarkness),
             "largos" | "twins" | "largos twins" | "twin largos" => Ok(Encounter::TwinLargos),
             "kodans" | "super kodan brothers" => Ok(Encounter::SuperKodanBrothers),
+            "dragonvoid" | "the dragonvoid" => Ok(Encounter::Dragonvoid),
 
             _ => Err(ParseEncounterError(s.to_owned())),
         }
@@ -571,10 +573,6 @@ pub enum Boss {
     ///
     /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Strike_Mission:_Kaineng_Overlook)
     MinisterLi = 0x5FA5,
-    /// The Dragonvoid, boss in the Harvest Temple.
-    ///
-    /// [Guild Wars 2 Wiki](https://wiki.guildwars2.com/wiki/Strike_Mission:_Harvest_Temple)
-    Dragonvoid = 0x5F37,
 }
 
 impl Boss {
@@ -628,7 +626,6 @@ impl Boss {
             Boss::CaptainMaiTrin => Encounter::CaptainMaiTrin,
             Boss::Ankka => Encounter::Ankka,
             Boss::MinisterLi => Encounter::MinisterLi,
-            Boss::Dragonvoid => Encounter::Dragonvoid,
         }
     }
 }
@@ -701,7 +698,6 @@ impl FromStr for Boss {
             "captain mai trin" | "mai trin" | "mai" => Ok(Boss::CaptainMaiTrin),
             "ankka" => Ok(Boss::Ankka),
             "minister li" | "li" => Ok(Boss::MinisterLi),
-            "dragonvoid" | "the dragonvoid" => Ok(Boss::Dragonvoid),
 
             _ => Err(ParseBossError(s.to_owned())),
         }
@@ -758,7 +754,6 @@ impl Display for Boss {
             Boss::CaptainMaiTrin => "Captain Mai Trin",
             Boss::Ankka => "Ankka",
             Boss::MinisterLi => "Minister Li",
-            Boss::Dragonvoid => "The Dragonvoid",
         };
         write!(f, "{}", name)
     }
@@ -1257,10 +1252,6 @@ mod tests {
             ("Minister Li", MinisterLi),
             ("li", MinisterLi),
             ("Li", MinisterLi),
-            ("dragonvoid", Dragonvoid),
-            ("Dragonvoid", Dragonvoid),
-            ("the dragonvoid", Dragonvoid),
-            ("The Dragonvoid", Dragonvoid),
         ];
 
         for (input, expected) in tests {

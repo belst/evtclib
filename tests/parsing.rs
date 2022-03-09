@@ -820,20 +820,20 @@ test! {
 
 test! {
     name: parse_dragonvoid,
-    log: "logs/dragonvoid-20220303.zevtc",
+    log: "logs/dragonvoid-20220309.zevtc",
     boss: Encounter::Dragonvoid,
     mode: Strike,
     players: &[
-        (2, ":Areki.5906", "Areki Is Too Loud", Ranger, Some(Druid)),
-        (2, ":DarkSide.8427", "Nova Kings", Mesmer, Some(Virtuoso)),
-        (2, ":Master Dragon.6712", "Dragonnic", Warrior, Some(Berserker)),
-        (2, ":Salieri.7962", "Attack The Illusion", Mesmer, Some(Chronomancer)),
-        (2, ":vuko.3692", "Jgww", Thief, Some(Specter)),
-        (3, ":LINKAZZATORE.8135", "Urtola", Necromancer, Some(Scourge)),
-        (3, ":Lawitz.5128", "It Should Be Weaver", Engineer, Some(Mechanist)),
-        (3, ":Lin Chin Ping.9480", "Luna L Fay", Necromancer, Some(Scourge)),
-        (3, ":Tareo.3726", "Tarea A", Necromancer, Some(Scourge)),
-        (3, ":nate.5871", "Cute Aníme Waifu", Mesmer, Some(Chronomancer)),
+        (2, ":Mariopi.3485", "Xx Nendel Xx", Mesmer, Some(Virtuoso)),
+        (2, ":Rembar.7298", "Sr Rembar", Elementalist, Some(Catalyst)),
+        (2, ":Saint Peter.8329", "Mecha Booner", Engineer, Some(Mechanist)),
+        (2, ":Voldtekstoffer.6750", "Darkie Waifu", Necromancer, Some(Scourge)),
+        (2, ":neko.9741", "Cat Of Jormag", Engineer, Some(Holosmith)),
+        (3, ":Dunje.4863", "Engineer Effie", Engineer, Some(Holosmith)),
+        (3, ":Lykaon.4590", "Chubby Chad", Guardian, Some(Firebrand)),
+        (3, ":Straimer.1093", "Revenge On The Meta", Revenant, Some(Renegade)),
+        (3, ":UprisingSoul.6312", "Bogeygirl", Thief, Some(Specter)),
+        (3, ":gumpo.7518", "Lyrano Ela", Necromancer, Some(Reaper)),
     ],
 }
 
