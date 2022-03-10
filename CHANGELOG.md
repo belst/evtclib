@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.7.0 - 2022-03-10
 ### Added
 - `EliteSpec`s for the new End of Dragons specializations
 - `Boss` and `Encounter` for the new strikes
