@@ -241,3 +241,80 @@ impl<'log> Analyzer for MinisterLi<'log> {
         Outcome::from_bool(phase_change_count >= Self::MINIMUM_PHASE_COUNT)
     }
 }
+
+/// Analyzer for the Dragonvoid/Harvest Temple strike.
+#[derive(Debug, Clone, Copy)]
+pub struct Dragonvoid<'log> {
+    log: &'log Log,
+}
+
+impl<'log> Dragonvoid<'log> {
+    pub const EXPECTED_TARGET_OFF_COUNT: usize = 2;
+
+    /// Create a new [`Dragonvoid`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
+    pub fn new(log: &'log Log) -> Self {
+        Dragonvoid { log }
+    }
+}
+
+impl<'log> Analyzer for Dragonvoid<'log> {
+    fn log(&self) -> &Log {
+        self.log
+    }
+
+    fn is_cm(&self) -> bool {
+        // EoD strike CMs are not implemented yet as of 2022-03-31
+        false
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        // check_reward is pointless because the reward is delayed.
+
+        // First, we find the right agent_addr
+        let mut first_voids = None;
+        for event in self.log.events() {
+            if let EventKind::AttackTarget {
+                agent_addr,
+                parent_agent_addr,
+                ..
+            } = event.kind()
+            {
+                if first_voids.is_none() {
+                    first_voids = Some(parent_agent_addr);
+                } else if first_voids != Some(parent_agent_addr) {
+                    // We find the amount of target off switches that occurred after a target on
+                    // switch.
+                    let mut is_on = false;
+                    let mut target_off_count = 0;
+
+                    // The nested loop over events is not ideal, but it is currently the easiest
+                    // way to implement this logic without trying to cram it into a single loop.
+                    for e in self.log.events() {
+                        if let EventKind::Targetable {
+                            agent_addr: taa,
+                            targetable,
+                        } = e.kind()
+                        {
+                            if *taa != *agent_addr {
+                                continue;
+                            }
+                            if *targetable {
+                                is_on = true;
+                            } else if !targetable && is_on {
+                                target_off_count += 1;
+                            }
+                        }
+                    }
+
+                    if target_off_count == Self::EXPECTED_TARGET_OFF_COUNT {
+                        return Some(Outcome::Success);
+                    }
+                }
+            }
+        }
+        Some(Outcome::Failure)
+    }
+}
