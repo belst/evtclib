@@ -62,4 +62,9 @@ benchmarks! {
     (fractal_skorvald, "skorvald", "tests/logs/skorvald-20200920.zevtc"),
 
     (strike_generic, "generic-strike", "tests/logs/whisper-20200424.zevtc"),
+
+    (strike_mai_trin, "maitrin", "tests/logs/mai-trin-20220303.zevtc"),
+    (strike_ankka, "ankka", "tests/logs/ankka-20220303.zevtc"),
+    (strike_li, "li", "tests/logs/minister-li-20220303.zevtc"),
+    (strike_dragonvoid, "dragonvoid", "tests/logs/dragonvoid-20220309.zevtc"),
 }
