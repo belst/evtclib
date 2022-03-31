@@ -48,6 +48,8 @@ impl FromStr for GameMode {
     }
 }
 
+static DRAGONVOID_IDS: &[u16] = &[Encounter::Dragonvoid as u16, 0xA9E0, 0x5F37];
+
 /// Enum containing all encounters with their IDs.
 ///
 /// An encounter is a fight or event for which a log can exist. An encounter consists of no, one or
@@ -229,7 +231,7 @@ impl Encounter {
         match id {
             _ if id == Encounter::TwistedCastle as u16 => Some(Encounter::TwistedCastle),
             _ if id == Encounter::RiverOfSouls as u16 => Some(Encounter::RiverOfSouls),
-            _ if id == Encounter::Dragonvoid as u16 => Some(Encounter::Dragonvoid),
+            _ if DRAGONVOID_IDS.contains(&id) => Some(Encounter::Dragonvoid),
             _ => Boss::from_u16(id).map(Boss::encounter),
         }
     }
