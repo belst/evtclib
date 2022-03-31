@@ -38,13 +38,6 @@ impl<'log> Analyzer for GenericStrike<'log> {
     }
 }
 
-/// The ID of the "Determined" buff.
-///
-/// This buff is applied to the strike mission bosses when they die instead or phase.
-///
-/// Teh chat link for this buff is `[&Bn8DAAA=]`.
-pub const DETERMINED_ID: u32 = 895;
-
 /// Analyzer for the Captain Mai Trin/Aetherblade Hideout strike.
 #[derive(Debug, Clone, Copy)]
 pub struct CaptainMaiTrin<'log> {
@@ -53,6 +46,13 @@ pub struct CaptainMaiTrin<'log> {
 
 impl<'log> CaptainMaiTrin<'log> {
     pub const ECHO_OF_SCARLET_BRIAR: u16 = 24_768;
+    /// Determined buff that is used in Mai Trin's Strike.
+    ///
+    /// Thanks to ArenaNet's consistency, there are multiple versions of the Determined buff in
+    /// use.
+    ///
+    /// The chat link for this buff is `[&Bn8DAAA=]`.
+    pub const DETERMINED_ID: u32 = 895;
 
     /// Create a new [`CaptainMaiTrin`] analyzer for the given log.
     ///
@@ -92,7 +92,7 @@ impl<'log> Analyzer for CaptainMaiTrin<'log> {
                 ..
             } = event.kind()
             {
-                if *buff_id == DETERMINED_ID
+                if *buff_id == Self::DETERMINED_ID
                     && *destination_agent_addr == mai.addr()
                     && event.time() > scarlet.first_aware()
                 {
@@ -112,6 +112,13 @@ pub struct Ankka<'log> {
 }
 
 impl<'log> Ankka<'log> {
+    /// Determined buff that is used in Ankka's Strike.
+    ///
+    /// Thanks to ArenaNet's consistency, there are multiple versions of the Determined buff in
+    /// use.
+    ///
+    /// The chat link for this buff is `[&Bn8DAAA=]`.
+    pub const DETERMINED_ID: u32 = CaptainMaiTrin::DETERMINED_ID;
     /// The minimum duration of [`DETERMINED_ID`] buff applications.
     pub const DURATION_CUTOFF: i32 = i32::MAX;
     /// The expected number of times that Ankka needs to phase before we consider it a success.
@@ -156,7 +163,7 @@ impl<'log> Analyzer for Ankka<'log> {
                     ..
                 } = event.kind()
                 {
-                    *buff_id == DETERMINED_ID
+                    *buff_id == Self::DETERMINED_ID
                         && *destination_agent_addr == ankka.addr()
                         && *duration == Self::DURATION_CUTOFF
                 } else {
@@ -166,5 +173,71 @@ impl<'log> Analyzer for Ankka<'log> {
             .count();
 
         Outcome::from_bool(phase_change_count == Self::EXPECTED_PHASE_COUNT)
+    }
+}
+
+/// Analyzer for the Minister Li/Kaineng Overlook strike.
+#[derive(Debug, Clone, Copy)]
+pub struct MinisterLi<'log> {
+    log: &'log Log,
+}
+
+impl<'log> MinisterLi<'log> {
+    /// Determined buff that is used in Minister Li's Strike.
+    ///
+    /// Thanks to ArenaNet's consistency, there are multiple versions of the Determined buff in
+    /// use.
+    ///
+    /// The chat link for this buff is `[&BvoCAAA=]`.
+    pub const DETERMINED_ID: u32 = 762;
+    /// The minimum number of times that Minister Li needs to phase before we consider it a success.
+    pub const MINIMUM_PHASE_COUNT: usize = 3;
+
+    /// Create a new [`MinisterLi`] analyzer for the given log.
+    ///
+    /// **Do not** use this method unless you know what you are doing. Instead, rely on
+    /// [`Log::analyzer`]!
+    pub fn new(log: &'log Log) -> Self {
+        MinisterLi { log }
+    }
+}
+
+impl<'log> Analyzer for MinisterLi<'log> {
+    fn log(&self) -> &Log {
+        self.log
+    }
+
+    fn is_cm(&self) -> bool {
+        // EoD strike CMs are not implemented yet as of 2022-03-31
+        false
+    }
+
+    fn outcome(&self) -> Option<Outcome> {
+        check_reward!(self.log);
+
+        let li = self
+            .log
+            .characters()
+            .find(|npc| npc.id() == Boss::MinisterLi as u16)?;
+
+        let phase_change_count = self
+            .log
+            .events()
+            .iter()
+            .filter(|event| {
+                if let EventKind::BuffApplication {
+                    destination_agent_addr,
+                    buff_id,
+                    ..
+                } = event.kind()
+                {
+                    *buff_id == Self::DETERMINED_ID && *destination_agent_addr == li.addr()
+                } else {
+                    false
+                }
+            })
+            .count();
+
+        Outcome::from_bool(phase_change_count >= Self::MINIMUM_PHASE_COUNT)
     }
 }
