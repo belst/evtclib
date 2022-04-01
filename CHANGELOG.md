@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Various analyzers for the End of Dragons strike missions:
+  - `analyzers::strikes::CaptainMaiTrin`
+  - `analyzers::strikes::Ankka`
+  - `analyzers::strikes::MinisterLi`
+  - `analyzers::strikes::Dragonvoid`
+
+### Fixed
+- Success/failure detection for the End of Dragons strike missions.
+- Some Dragonvoid logs not being recognized as such.
 
 ## 0.7.0 - 2022-03-10
 ### Added
