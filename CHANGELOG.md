@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
   - Success detection for CM logs
   - CM detection
 
+### Fixed
+- Success detection for Mai Trin logs that ended before the Echo of Scarlet
+  Briar spawned.
+
 ## 0.7.1 - 2022-04-01
 ### Added
 - Various analyzers for the End of Dragons strike missions:

@@ -86,7 +86,12 @@ impl<'log> Analyzer for CaptainMaiTrin<'log> {
 
         let scarlet = self.log.characters().find(|npc| {
             npc.id() == Self::ECHO_OF_SCARLET_BRIAR || npc.id() == Self::ECHO_OF_SCARLET_BRIAR_CM
-        })?;
+        });
+        // If the log ends before Scarlet even spawns, then it for sure is a failure.
+        let scarlet = match scarlet {
+            Some(s) => s,
+            None => return Some(Outcome::Failure),
+        };
         let mai = self
             .log
             .characters()

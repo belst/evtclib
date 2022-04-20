@@ -63,7 +63,21 @@ fn test_mai_cm_succeeded() {
 
 #[test]
 fn test_mai_cm_failed() {
-    let log = evtclib::process_file("tests/logs/cms/mai-trin-failed.zevtc", Compression::Zip).unwrap();
+    let log =
+        evtclib::process_file("tests/logs/cms/mai-trin-failed.zevtc", Compression::Zip).unwrap();
+
+    let analyzer = log.analyzer().expect("No analyzer for Mai Trin");
+
+    assert_eq!(analyzer.outcome(), Some(Outcome::Failure));
+}
+
+#[test]
+fn test_mai_failed_pre_echo() {
+    let log = evtclib::process_file(
+        "tests/logs/analyzers/mai-failed-pre-echo-20220420.zevtc",
+        Compression::Zip,
+    )
+    .unwrap();
 
     let analyzer = log.analyzer().expect("No analyzer for Mai Trin");
 
