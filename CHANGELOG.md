@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Support for Aetherblade Hideout logs with the Challenge Mote active:
+  - Success detection for CM logs
+  - CM detection
 
 ## 0.7.1 - 2022-04-01
 ### Added

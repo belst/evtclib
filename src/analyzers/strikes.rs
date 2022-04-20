@@ -45,7 +45,10 @@ pub struct CaptainMaiTrin<'log> {
 }
 
 impl<'log> CaptainMaiTrin<'log> {
+    /// ID of the Echo of Scarlet Briar in normal mode.
     pub const ECHO_OF_SCARLET_BRIAR: u16 = 24_768;
+    /// ID of the ECho of Scarlet Briar with the challenge mote active.
+    pub const ECHO_OF_SCARLET_BRIAR_CM: u16 = 25_247;
     /// Determined buff that is used in Mai Trin's Strike.
     ///
     /// Thanks to ArenaNet's consistency, there are multiple versions of the Determined buff in
@@ -53,6 +56,12 @@ impl<'log> CaptainMaiTrin<'log> {
     ///
     /// The chat link for this buff is `[&Bn8DAAA=]`.
     pub const DETERMINED_ID: u32 = 895;
+    /// Cutoff for when the fight is considered CM.
+    ///
+    /// See
+    /// <https://wiki.guildwars2.com/wiki/Strike_Mission:_Aetherblade_Hideout#Stats_of_encounter_relevant_enemies>
+    /// for a reference.
+    pub const MAI_CM_HEALTH: u64 = 8_000_000;
 
     /// Create a new [`CaptainMaiTrin`] analyzer for the given log.
     ///
@@ -69,17 +78,15 @@ impl<'log> Analyzer for CaptainMaiTrin<'log> {
     }
 
     fn is_cm(&self) -> bool {
-        // EoD strike CMs are not implemented yet as of 2022-03-31
-        false
+        helpers::boss_health(self.log).unwrap_or_default() > Self::MAI_CM_HEALTH
     }
 
     fn outcome(&self) -> Option<Outcome> {
         check_reward!(self.log);
 
-        let scarlet = self
-            .log
-            .characters()
-            .find(|npc| npc.id() == Self::ECHO_OF_SCARLET_BRIAR)?;
+        let scarlet = self.log.characters().find(|npc| {
+            npc.id() == Self::ECHO_OF_SCARLET_BRIAR || npc.id() == Self::ECHO_OF_SCARLET_BRIAR_CM
+        })?;
         let mai = self
             .log
             .characters()
@@ -119,7 +126,7 @@ impl<'log> Ankka<'log> {
     ///
     /// The chat link for this buff is `[&Bn8DAAA=]`.
     pub const DETERMINED_ID: u32 = CaptainMaiTrin::DETERMINED_ID;
-    /// The minimum duration of [`DETERMINED_ID`] buff applications.
+    /// The minimum duration of [`Ankka::DETERMINED_ID`] buff applications.
     pub const DURATION_CUTOFF: i32 = i32::MAX;
     /// The expected number of times that Ankka needs to phase before we consider it a success.
     pub const EXPECTED_PHASE_COUNT: usize = 3;
