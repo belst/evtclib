@@ -3,8 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.7.3 - 2022-05-11
 ### Added
-- Support for Xunlai Jade Junkyard with the Challenge Mote active
+- Support for CM detection in the Xunlai Jade Junkyard strike (Ankka)
 
 ## 0.7.2 - 2022-04-20
 ### Added
