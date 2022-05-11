@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+### Added
+- Support for Xunlai Jade Junkyard with the Challenge Mote active
 
 ## 0.7.2 - 2022-04-20
 ### Added

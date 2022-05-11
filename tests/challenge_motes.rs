@@ -53,3 +53,4 @@ test!(test_siax_cm, "logs/siax-20200427.zevtc");
 test!(test_ensolyss_cm, "logs/ensolyss-20200427.zevtc");
 
 test!(test_mai_trin_cm, "logs/cms/mai-trin.zevtc");
+test!(test_ankka_cm, "logs/cms/ankka.zevtc");

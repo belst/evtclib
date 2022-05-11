@@ -135,6 +135,8 @@ impl<'log> Ankka<'log> {
     pub const DURATION_CUTOFF: i32 = i32::MAX;
     /// The expected number of times that Ankka needs to phase before we consider it a success.
     pub const EXPECTED_PHASE_COUNT: usize = 3;
+    /// Cutoff for when the fight is considered CM.
+    pub const ANKKA_CM_HEALTH: u64 = 50_000_000;
 
     /// Create a new [`Ankka`] analyzer for the given log.
     ///
@@ -151,8 +153,7 @@ impl<'log> Analyzer for Ankka<'log> {
     }
 
     fn is_cm(&self) -> bool {
-        // EoD strike CMs are not implemented yet as of 2022-03-31
-        false
+        helpers::boss_health(self.log).unwrap_or_default() > Self::ANKKA_CM_HEALTH
     }
 
     fn outcome(&self) -> Option<Outcome> {
